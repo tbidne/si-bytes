@@ -1,0 +1,54 @@
+cabal-version:      2.4
+name:               byte-types
+version:            0.1.0.0
+license:            BSD-3-Clause
+license-file:       LICENSE
+copyright:          2021 Thomas Bidne
+author:             Thomas Bidne
+maintainer:         tbidne@prontonmail.com
+homepage:           https://github.com/tbidne/byte-types/
+bug-reports:        https://github.com/tbidne/byte-types/issues
+synopsis:
+  Provides types for safely manipulating byte sizes (e.g. KB, MB, ...)
+
+description:
+  Please see the README at https://github.com/tbidne/byte-types/#readme
+
+category:
+extra-source-files:
+  CHANGELOG.md
+  README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/tbidne/byte-types
+
+library
+  exposed-modules:
+    ByteTypes.Class.Normalize
+    ByteTypes.Class.Num
+    ByteTypes.Class.PrettyPrint
+    ByteTypes.Data.Bytes
+    ByteTypes.Data.Network
+    ByteTypes.Data.Size
+
+  build-depends:      base ^>=4.14.1.0
+  hs-source-dirs:     src
+  default-extensions:
+    DataKinds
+    DeriveFunctor
+    FlexibleContexts
+    FlexibleInstances
+    GADTs
+    ImportQualifiedPost
+    KindSignatures
+    MultiWayIf
+    NumericUnderscores
+    RankNTypes
+    ScopedTypeVariables
+    StandaloneDeriving
+    StandaloneKindSignatures
+    TypeApplications
+    TypeFamilies
+
+  default-language:   Haskell2010
