@@ -11,22 +11,18 @@ module ByteTypes.Data.Bytes
     -- * Bytes
     Bytes (..),
     unBytes,
-    liftBytes2,
-    liftBytes3,
-    monoSize,
 
     -- * Byte Operations
     BytesNum (..),
+    LiftBase (..),
 
     -- * Unknown Size
     AnySize (..),
     mapAny,
-    liftAny,
-    liftAny2,
-    liftAny3,
 
     -- * Modifying Units
     Normalize (..),
+    Conversion (..),
     IncByteSize (..),
     DecByteSize (..),
 
@@ -35,16 +31,19 @@ module ByteTypes.Data.Bytes
   )
 where
 
-import ByteTypes.Class.Normalize (Normalize (..))
+import ByteTypes.Class.LiftBase (LiftBase (..))
 import ByteTypes.Class.Num (BytesNum (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Size
   ( ByteSize (..),
+    Conversion (..),
     DecByteSize (..),
     IncByteSize (..),
     NextUnit,
+    Normalize (..),
     PrevUnit,
   )
+import ByteTypes.Data.Size qualified as Size
 import Data.Kind (Type)
 import Text.Printf (PrintfArg (..))
 import Text.Printf qualified as Pf
@@ -100,10 +99,60 @@ instance Applicative (Bytes s) => Monad (Bytes s) where
   MkTB x >>= f = f x
   MkPB x >>= f = f x
 
+instance Fractional n => Conversion (Bytes s n) where
+  type BType (Bytes s n) = Bytes 'B n
+  type KType (Bytes s n) = Bytes 'KB n
+  type MType (Bytes s n) = Bytes 'MB n
+  type GType (Bytes s n) = Bytes 'GB n
+  type TType (Bytes s n) = Bytes 'TB n
+  type PType (Bytes s n) = Bytes 'PB n
+  toB (MkB x) = MkB $ Size.convert B B x
+  toB (MkKB x) = MkB $ Size.convert KB B x
+  toB (MkMB x) = MkB $ Size.convert MB B x
+  toB (MkGB x) = MkB $ Size.convert GB B x
+  toB (MkTB x) = MkB $ Size.convert TB B x
+  toB (MkPB x) = MkB $ Size.convert PB B x
+  toKB (MkB x) = MkKB $ Size.convert B KB x
+  toKB (MkKB x) = MkKB $ Size.convert KB KB x
+  toKB (MkMB x) = MkKB $ Size.convert MB KB x
+  toKB (MkGB x) = MkKB $ Size.convert GB KB x
+  toKB (MkTB x) = MkKB $ Size.convert TB KB x
+  toKB (MkPB x) = MkKB $ Size.convert PB KB x
+  toMB (MkB x) = MkMB $ Size.convert B MB x
+  toMB (MkKB x) = MkMB $ Size.convert KB MB x
+  toMB (MkMB x) = MkMB $ Size.convert MB MB x
+  toMB (MkGB x) = MkMB $ Size.convert GB MB x
+  toMB (MkTB x) = MkMB $ Size.convert TB MB x
+  toMB (MkPB x) = MkMB $ Size.convert PB MB x
+  toGB (MkB x) = MkGB $ Size.convert B GB x
+  toGB (MkKB x) = MkGB $ Size.convert KB GB x
+  toGB (MkMB x) = MkGB $ Size.convert MB GB x
+  toGB (MkGB x) = MkGB $ Size.convert GB GB x
+  toGB (MkTB x) = MkGB $ Size.convert TB GB x
+  toGB (MkPB x) = MkGB $ Size.convert PB GB x
+  toTB (MkB x) = MkTB $ Size.convert B TB x
+  toTB (MkKB x) = MkTB $ Size.convert KB TB x
+  toTB (MkMB x) = MkTB $ Size.convert MB TB x
+  toTB (MkGB x) = MkTB $ Size.convert GB TB x
+  toTB (MkTB x) = MkTB $ Size.convert TB TB x
+  toTB (MkPB x) = MkTB $ Size.convert PB TB x
+  toPB (MkB x) = MkPB $ Size.convert B PB x
+  toPB (MkKB x) = MkPB $ Size.convert KB PB x
+  toPB (MkMB x) = MkPB $ Size.convert MB PB x
+  toPB (MkGB x) = MkPB $ Size.convert GB PB x
+  toPB (MkTB x) = MkPB $ Size.convert TB PB x
+  toPB (MkPB x) = MkPB $ Size.convert PB PB x
+
+instance LiftBase (Bytes s n) where
+  type Base (Bytes s n) = n
+  liftB f x = getCons x $ f $ unBytes x
+  liftB2 f x y = getCons x $ f (unBytes x) (unBytes y)
+  liftB3 f x y z = getCons x $ f (unBytes x) (unBytes y) (unBytes z)
+
 instance (Num n) => BytesNum (Bytes s n) where
   type Scalar (Bytes s n) = n
-  (|+|) = liftBytes2 (+)
-  (|-|) = liftBytes2 (-)
+  (|+|) = liftB2 (+)
+  (|-|) = liftB2 (-)
   (*|) c = fmap (* c)
 
 instance Fractional n => IncByteSize (Bytes s n) where
@@ -155,47 +204,13 @@ unBytes (MkGB x) = x
 unBytes (MkTB x) = x
 unBytes (MkPB x) = x
 
--- | Lifts a binary function onto 'Bytes'. This is a convenient alternative
--- to 'Control.Applicative.liftA2', as the latter unfortunately requires
--- pattern matching on the constructor ('pure' prevents us from being able to
--- implement 'Applicative' for @Bytes s@).
-liftBytes2 :: (n -> n -> n) -> Bytes s n -> Bytes s n -> Bytes s n
-liftBytes2 f (MkB x) (MkB y) = MkB $ f x y
-liftBytes2 f (MkKB x) (MkKB y) = MkKB $ f x y
-liftBytes2 f (MkMB x) (MkMB y) = MkMB $ f x y
-liftBytes2 f (MkGB x) (MkGB y) = MkGB $ f x y
-liftBytes2 f (MkTB x) (MkTB y) = MkTB $ f x y
-liftBytes2 f (MkPB x) (MkPB y) = MkPB $ f x y
-
--- | Lifts a ternary function onto 'Bytes'.
-liftBytes3 ::
-  (n -> n -> n -> n) ->
-  Bytes s n ->
-  Bytes s n ->
-  Bytes s n ->
-  Bytes s n
-liftBytes3 f (MkB x) (MkB y) (MkB z) = MkB $ f x y z
-liftBytes3 f (MkKB x) (MkKB y) (MkKB z) = MkKB $ f x y z
-liftBytes3 f (MkMB x) (MkMB y) (MkMB z) = MkMB $ f x y z
-liftBytes3 f (MkGB x) (MkGB y) (MkGB z) = MkGB $ f x y z
-liftBytes3 f (MkTB x) (MkTB y) (MkTB z) = MkTB $ f x y z
-liftBytes3 f (MkPB x) (MkPB y) (MkPB z) = MkPB $ f x y z
-
--- | Maps any @Bytes s n@ to @Bytes 'B n@, multiplying the numerical value as
--- necessary. This is useful for when we need to ensure two byte types have
--- the same type, e.g.,
---
--- @
---   -- x :: Bytes s Float, y :: Bytes t Float
---   (monoSize x) |+| (monoSize y)
--- @
-monoSize :: Num n => Bytes s n -> Bytes 'B n
-monoSize (MkB b) = MkB b
-monoSize (MkKB b) = MkB $ b * 1_000
-monoSize (MkMB b) = MkB $ b * 1_000_000
-monoSize (MkGB b) = MkB $ b * 1_000_000_000
-monoSize (MkTB b) = MkB $ b * 1_000_000_000_000
-monoSize (MkPB b) = MkB $ b * 1_000_000_000_000_000
+getCons :: Bytes s n -> (n -> Bytes s n)
+getCons (MkB _) = MkB
+getCons (MkKB _) = MkKB
+getCons (MkMB _) = MkMB
+getCons (MkGB _) = MkGB
+getCons (MkTB _) = MkTB
+getCons (MkPB _) = MkPB
 
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return, e.g.,
@@ -218,10 +233,32 @@ deriving instance Show n => Show (AnySize n)
 
 deriving instance Functor AnySize
 
+instance Fractional n => Conversion (AnySize n) where
+  type BType (AnySize n) = AnySize n
+  type KType (AnySize n) = AnySize n
+  type MType (AnySize n) = AnySize n
+  type GType (AnySize n) = AnySize n
+  type TType (AnySize n) = AnySize n
+  type PType (AnySize n) = AnySize n
+  toB (MkAnySize x) = MkAnySize $ toB x
+  toKB (MkAnySize x) = MkAnySize $ toKB x
+  toMB (MkAnySize x) = MkAnySize $ toMB x
+  toGB (MkAnySize x) = MkAnySize $ toGB x
+  toTB (MkAnySize x) = MkAnySize $ toTB x
+  toPB (MkAnySize x) = MkAnySize $ toPB x
+
+instance (Fractional n, Ord n) => LiftBase (AnySize n) where
+  type Base (AnySize n) = Bytes 'B n
+  liftB f (MkAnySize x) = normalize $ f $ toB x
+  liftB2 f (MkAnySize x) (MkAnySize y) =
+    normalize $ f (toB x) (toB y)
+  liftB3 f (MkAnySize x) (MkAnySize y) (MkAnySize z) =
+    normalize $ f (toB x) (toB y) (toB z)
+
 instance (Ord n, Fractional n) => BytesNum (AnySize n) where
   type Scalar (AnySize n) = n
-  (|+|) = liftAny2 (|+|)
-  (|-|) = liftAny2 (|-|)
+  (|+|) = liftB2 (|+|)
+  (|-|) = liftB2 (|-|)
   (*|) c = fmap (* c)
 
 instance PrintfArg n => PrettyPrint (AnySize n) where
@@ -236,42 +273,6 @@ instance (Ord n, Fractional n) => Normalize (AnySize n) where
 -- care must be taken. As such, the caller is assumed to know what they are
 -- doing, and no normalization is performed.
 --
--- Whenever possible, 'liftAny' is preferred.
+-- Whenever possible, 'liftB' is preferred.
 mapAny :: (forall s. Bytes s m -> Bytes t n) -> AnySize m -> AnySize n
 mapAny f (MkAnySize x) = MkAnySize $ f x
-
--- | Lifts a 'Bytes' function onto 'AnySize'. The difference between this
--- and 'mapAny' is that the parameter function need only work for size 'B'
--- (i.e. the type cannot change), and the result is 'normalize'd.
-liftAny ::
-  (Fractional n, Ord n) =>
-  (Bytes 'B n -> Bytes 'B n) ->
-  AnySize n ->
-  AnySize n
-liftAny f (MkAnySize x) = normalize $ f $ monoSize x
-
--- | Lifts a binary 'Bytes' function onto 'AnySize' and 'normalize's.
-liftAny2 ::
-  (Fractional n, Ord n) =>
-  (Bytes 'B n -> Bytes 'B n -> Bytes 'B n) ->
-  AnySize n ->
-  AnySize n ->
-  AnySize n
-liftAny2 f (MkAnySize x) (MkAnySize y) =
-  let x' = monoSize x
-      y' = monoSize y
-   in normalize $ f x' y'
-
--- | Lifts a ternary 'Bytes' function onto 'AnySize' and 'normalize's.
-liftAny3 ::
-  (Fractional n, Ord n) =>
-  (Bytes 'B n -> Bytes 'B n -> Bytes 'B n -> Bytes 'B n) ->
-  AnySize n ->
-  AnySize n ->
-  AnySize n ->
-  AnySize n
-liftAny3 f (MkAnySize x) (MkAnySize y) (MkAnySize z) =
-  let x' = monoSize x
-      y' = monoSize y
-      z' = monoSize z
-   in normalize $ f x' y' z'
