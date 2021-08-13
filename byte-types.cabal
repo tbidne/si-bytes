@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-    ByteTypes.Class.Normalize
+    ByteTypes.Class.LiftBase
     ByteTypes.Class.Num
     ByteTypes.Class.PrettyPrint
     ByteTypes.Data.Bytes
