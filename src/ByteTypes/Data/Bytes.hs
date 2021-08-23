@@ -55,7 +55,8 @@ import Text.Printf qualified as Pf
 --
 -- To take full advantage of the API (e.g. `normalize`), the underlying
 -- numerical type should be 'Fractional' whenever possible.
-data Bytes :: ByteSize -> Type -> Type where
+type Bytes :: ByteSize -> Type -> Type
+data Bytes s n where
   MkB :: n -> Bytes 'B n
   MkKB :: n -> Bytes 'KB n
   MkMB :: n -> Bytes 'MB n
@@ -167,11 +168,11 @@ instance Fractional n => IncByteSize (Bytes s n) where
 instance Fractional n => DecByteSize (Bytes s n) where
   type Prev (Bytes s n) = Bytes (PrevUnit s) n
   prev (MkB x) = MkB x
-  prev (MkKB x) = MkB $ x / 1_000
-  prev (MkMB x) = MkKB $ x / 1_000
-  prev (MkGB x) = MkMB $ x / 1_000
-  prev (MkTB x) = MkGB $ x / 1_000
-  prev (MkPB x) = MkTB $ x / 1_000
+  prev (MkKB x) = MkB $ x * 1_000
+  prev (MkMB x) = MkKB $ x * 1_000
+  prev (MkGB x) = MkMB $ x * 1_000
+  prev (MkTB x) = MkGB $ x * 1_000
+  prev (MkPB x) = MkTB $ x * 1_000
 
 instance PrintfArg n => PrettyPrint (Bytes a n) where
   pretty (MkB x) = Pf.printf "%.2f" x <> " B"
@@ -226,7 +227,8 @@ getCons (MkPB _) = MkPB
 -- @
 --
 -- 'AnySize'\'s 'BytesNum' functions are 'normalize'd.
-data AnySize :: Type -> Type where
+type AnySize :: Type -> Type
+data AnySize n where
   MkAnySize :: Bytes s n -> AnySize n
 
 deriving instance Show n => Show (AnySize n)

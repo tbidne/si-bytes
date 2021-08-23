@@ -24,17 +24,7 @@ source-repository head
   type:     git
   location: https://github.com/tbidne/byte-types
 
-library
-  exposed-modules:
-    ByteTypes.Class.LiftBase
-    ByteTypes.Class.Num
-    ByteTypes.Class.PrettyPrint
-    ByteTypes.Data.Bytes
-    ByteTypes.Data.Network
-    ByteTypes.Data.Size
-
-  build-depends:      base ^>=4.14.1.0
-  hs-source-dirs:     src
+common common-exts
   default-extensions:
     DataKinds
     DeriveFunctor
@@ -52,4 +42,37 @@ library
     TypeApplications
     TypeFamilies
 
-  default-language:   Haskell2010
+library
+  import:           common-exts
+  exposed-modules:
+    ByteTypes.Class.LiftBase
+    ByteTypes.Class.Num
+    ByteTypes.Class.PrettyPrint
+    ByteTypes.Data.Bytes
+    ByteTypes.Data.Network
+    ByteTypes.Data.Size
+
+  build-depends:    base ^>=4.14.1.0
+  hs-source-dirs:   src
+  default-language: Haskell2010
+
+test-suite unit
+  import:           common-exts
+  type:             exitcode-stdio-1.0
+  main-is:          Main.hs
+  other-modules:
+    Props.Data.Bytes
+    Props.Data.Bytes.Generators
+    Props.Data.Size
+    Props.Data.Size.Generators
+    Props.Utils
+
+  build-depends:
+    , base
+    , byte-types
+    , hedgehog
+    , tasty
+    , tasty-hedgehog
+
+  hs-source-dirs:   test/unit
+  default-language: Haskell2010

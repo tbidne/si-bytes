@@ -27,7 +27,7 @@ data ByteSize
   | GB
   | TB
   | PB
-  deriving (Show)
+  deriving (Eq, Ord, Show)
 
 -- | Closed type family that relates units to the next larger one.
 type NextUnit :: ByteSize -> ByteSize

@@ -24,3 +24,6 @@ jobs:
 
       - name: Compile
         run: nix-shell shell.nix --command "cabal update && cabal build"
+
+      - name: Unit Test
+        run: nix-shell shell.nix --command "cabal update && cabal test unit --test-show-details=direct"

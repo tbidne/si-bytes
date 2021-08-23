@@ -1,5 +1,5 @@
 {
-  description = "shell-run flake";
+  description = "byte-types flake";
   inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   outputs = { self, nixpkgs, flake-utils }:

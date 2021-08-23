@@ -65,7 +65,8 @@ data ByteDirection
   deriving (Show)
 
 -- | Wrapper around the 'Bytes' type that adds the 'ByteDirection' tag.
-data NetBytes :: ByteDirection -> ByteSize -> Type -> Type where
+type NetBytes :: ByteDirection -> ByteSize -> Type -> Type
+data NetBytes d s n where
   MkDown :: Bytes s n -> NetBytes 'Down s n
   MkUp :: Bytes s n -> NetBytes 'Up s n
 
@@ -180,7 +181,8 @@ mapNet f x =
 -- @
 --
 -- 'AnyNetSize'\'s 'BytesNum' functions are 'normalize'd.
-data AnyNetSize :: ByteDirection -> Type -> Type where
+type AnyNetSize :: ByteDirection -> Type -> Type
+data AnyNetSize d n where
   MkAnyNetSize :: NetBytes d s n -> AnyNetSize d n
 
 deriving instance Show n => Show (AnyNetSize d n)
@@ -254,7 +256,8 @@ mapAnyNetSize f (MkAnyNetSize x) = MkAnyNetSize $ f x
 -- do not provide instances for 'LiftBase' as combining arbitrary
 -- 'AnyNet's would defeat the type's purpose of keeping different
 -- directions separate.
-data AnyNet :: Type -> Type where
+type AnyNet :: Type -> Type
+data AnyNet n where
   MkAnyNet :: NetBytes d s n -> AnyNet n
 
 deriving instance Show n => Show (AnyNet n)
