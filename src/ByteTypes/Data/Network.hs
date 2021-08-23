@@ -42,7 +42,7 @@ module ByteTypes.Data.Network
 where
 
 import ByteTypes.Class.LiftBase (LiftBase (..))
-import ByteTypes.Class.Num (BytesNum (..))
+import ByteTypes.Class.Num (BytesNum (..), Scalar)
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
@@ -113,11 +113,12 @@ instance LiftBase (NetBytes d s n) where
     getNetCons x $
       f (unNetBytes x) (unNetBytes y) (unNetBytes z)
 
+type instance Scalar (NetBytes d s n) = n
+
 instance Num n => BytesNum (NetBytes d s n) where
-  type Scalar (NetBytes d s n) = n
-  (|+|) = liftB2 (|+|)
-  (|-|) = liftB2 (|-|)
-  (*|) c = fmap (* c)
+  (.+.) = liftB2 (.+.)
+  (.-.) = liftB2 (.-.)
+  (*.) c = fmap (* c)
 
 instance Fractional n => IncByteSize (NetBytes d s n) where
   type Next (NetBytes d s n) = NetBytes d (NextUnit s) n
@@ -133,7 +134,7 @@ instance PrintfArg n => PrettyPrint (NetBytes d s n) where
   pretty (MkDown x) = pretty x <> " Down"
   pretty (MkUp x) = pretty x <> " Up"
 
-instance (Ord n, Fractional n) => Normalize (NetBytes d s n) where
+instance (Fractional n, Ord n) => Normalize (NetBytes d s n) where
   type Result (NetBytes d s n) = AnyNetSize d n
 
   normalize (MkDown x) =
@@ -211,11 +212,12 @@ instance (Fractional n, Ord n) => LiftBase (AnyNetSize d n) where
   liftB3 f (MkAnyNetSize x) (MkAnyNetSize y) (MkAnyNetSize z) =
     normalize $ f (toB x) (toB y) (toB z)
 
+type instance Scalar (AnyNetSize d n) = n
+
 instance (Fractional n, Ord n) => BytesNum (AnyNetSize d n) where
-  type Scalar (AnyNetSize d n) = n
-  (|+|) = liftB2 (|+|)
-  (|-|) = liftB2 (|-|)
-  (*|) c = fmap (* c)
+  (.+.) = liftB2 (.+.)
+  (.-.) = liftB2 (.-.)
+  (*.) c = fmap (* c)
 
 instance PrintfArg n => PrettyPrint (AnyNetSize d n) where
   pretty (MkAnyNetSize b) = pretty b

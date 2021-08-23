@@ -3,10 +3,10 @@ module Props.Data.Size (props) where
 
 import ByteTypes.Data.Size (ByteSize (..))
 import ByteTypes.Data.Size qualified as S
+import ByteTypes.Utils qualified as Utils
 import Hedgehog (Gen)
 import Hedgehog qualified as H
 import Props.Data.Size.Generators qualified as Gens
-import Props.Utils qualified as Utils
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Test.Tasty.Hedgehog qualified as TH

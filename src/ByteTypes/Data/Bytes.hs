@@ -32,7 +32,7 @@ module ByteTypes.Data.Bytes
 where
 
 import ByteTypes.Class.LiftBase (LiftBase (..))
-import ByteTypes.Class.Num (BytesNum (..))
+import ByteTypes.Class.Num (BytesEq (..), BytesNum (..), BytesOrd (..), Scalar)
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Size
   ( ByteSize (..),
@@ -44,6 +44,7 @@ import ByteTypes.Data.Size
     PrevUnit,
   )
 import ByteTypes.Data.Size qualified as Size
+import ByteTypes.Utils qualified as Utils
 import Data.Kind (Type)
 import Text.Printf (PrintfArg (..))
 import Text.Printf qualified as Pf
@@ -150,11 +151,32 @@ instance LiftBase (Bytes s n) where
   liftB2 f x y = getCons x $ f (unBytes x) (unBytes y)
   liftB3 f x y z = getCons x $ f (unBytes x) (unBytes y) (unBytes z)
 
+type instance Scalar (Bytes s n) = n
+
 instance (Num n) => BytesNum (Bytes s n) where
-  type Scalar (Bytes s n) = n
-  (|+|) = liftB2 (+)
-  (|-|) = liftB2 (-)
-  (*|) c = fmap (* c)
+  (.+.) = liftB2 (+)
+  (.-.) = liftB2 (-)
+  (*.) c = fmap (* c)
+
+instance (Fractional n, Ord n) => BytesEq (Bytes s n) where
+  x .=. y =
+    let x' = unBytes x
+        y' = unBytes y
+     in Utils.epsEq x' y'
+
+  x .= k =
+    let x' = unBytes x
+     in Utils.epsEq x' k
+
+instance (Fractional n, Ord n) => BytesOrd (Bytes s n) where
+  x .<=. y =
+    let x' = unBytes x
+        y' = unBytes y
+     in x' < y' || Utils.epsEq x' y'
+
+  k <=. x =
+    let x' = unBytes x
+     in k < x' || Utils.epsEq x' k
 
 instance Fractional n => IncByteSize (Bytes s n) where
   type Next (Bytes s n) = Bytes (NextUnit s) n
@@ -182,19 +204,18 @@ instance PrintfArg n => PrettyPrint (Bytes a n) where
   pretty (MkTB x) = Pf.printf "%.2f" x <> " TB"
   pretty (MkPB x) = Pf.printf "%.2f" x <> " PB"
 
-instance (Ord n, Fractional n) => Normalize (Bytes s n) where
+instance (Fractional n, Ord n) => Normalize (Bytes s n) where
   type Result (Bytes s n) = AnySize n
 
-  normalize bytes@(MkB x)
-    | x < 1 = MkAnySize bytes
-  normalize bytes@(MkPB x)
-    | x > 999 = MkAnySize bytes
+  normalize bytes@(MkB _)
+    | bytes .< 1 = MkAnySize bytes
+  normalize bytes@(MkPB _)
+    | bytes .> 999 = MkAnySize bytes
   normalize bytes =
-    let n = unBytes bytes
-     in if
-            | n < 1 -> normalize $ prev bytes
-            | n > 999 -> normalize $ next bytes
-            | otherwise -> MkAnySize bytes
+    if
+        | bytes .< 1 -> normalize $ prev bytes
+        | bytes .> 999 -> normalize $ next bytes
+        | otherwise -> MkAnySize bytes
 
 -- | Unwraps the bytes.
 unBytes :: Bytes s n -> n
@@ -257,16 +278,43 @@ instance (Fractional n, Ord n) => LiftBase (AnySize n) where
   liftB3 f (MkAnySize x) (MkAnySize y) (MkAnySize z) =
     normalize $ f (toB x) (toB y) (toB z)
 
-instance (Ord n, Fractional n) => BytesNum (AnySize n) where
-  type Scalar (AnySize n) = n
-  (|+|) = liftB2 (|+|)
-  (|-|) = liftB2 (|-|)
-  (*|) c = fmap (* c)
+type instance Scalar (AnySize n) = n
+
+instance (Fractional n, Ord n) => BytesNum (AnySize n) where
+  (.+.) = liftB2 (.+.)
+  (.-.) = liftB2 (.-.)
+  (*.) c = normalize . fmap (* c)
+
+instance (Fractional n, Ord n) => BytesEq (AnySize n) where
+  x .=. y = case x of
+    MkAnySize x' -> case y of
+      MkAnySize y' ->
+        let x'' = unBytes x'
+            y'' = unBytes y'
+         in Utils.epsEq x'' y''
+
+  x .= k = case x of
+    MkAnySize x' ->
+      let x'' = unBytes x'
+       in Utils.epsEq x'' k
+
+instance (Fractional n, Ord n) => BytesOrd (AnySize n) where
+  x .<=. y = case x of
+    MkAnySize x' -> case y of
+      MkAnySize y' ->
+        let x'' = unBytes x'
+            y'' = unBytes y'
+         in x'' < y'' || Utils.epsEq x'' y''
+
+  k <=. x = case x of
+    MkAnySize x' ->
+      let x'' = unBytes x'
+       in k < x'' || Utils.epsEq x'' k
 
 instance PrintfArg n => PrettyPrint (AnySize n) where
   pretty (MkAnySize b) = pretty b
 
-instance (Ord n, Fractional n) => Normalize (AnySize n) where
+instance (Fractional n, Ord n) => Normalize (AnySize n) where
   type Result (AnySize n) = AnySize n
   normalize (MkAnySize x) = normalize x
 
