@@ -40,6 +40,7 @@ where
 import ByteTypes.Class.Div (Div (..))
 import ByteTypes.Class.Isomorphism (Isomorphism (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
+import ByteTypes.Class.ScalarOrd (Scalar, ScalarEq (..), ScalarOrd (..))
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Direction
@@ -95,6 +96,18 @@ instance Num n => Num (NetBytes d s n) where
   abs = fmap abs
   signum = fmap signum
   fromInteger = pure . fromInteger
+
+type instance Scalar (NetBytes d s n) = n
+
+instance Eq n => ScalarEq (NetBytes d s n) where
+  MkNetBytes x .= k = x .= k
+
+instance Ord n => ScalarOrd (NetBytes d s n) where
+  MkNetBytes x .<= k = x .<= k
+
+instance Isomorphism (NetBytes d s n) (Bytes s n) where
+  to = unNetBytes
+  from = MkNetBytes
 
 instance (Div n, Num n, SingByteSize s) => Conversion (NetBytes d s n) where
   type Converted 'B (NetBytes d s n) = NetBytes d 'B n
@@ -217,6 +230,14 @@ instance (Div n, Num n, Ord n) => Num (AnyNetSize d n) where
   abs (MkAnyNetSize sz x) = MkAnyNetSize sz $ abs x
   signum (MkAnyNetSize sz x) = MkAnyNetSize sz $ signum x
   fromInteger n = MkAnyNetSize SB $ fromInteger n
+
+type instance Scalar (AnyNetSize d n) = n
+
+instance Eq n => ScalarEq (AnyNetSize d n) where
+  MkAnyNetSize _ x .= k = x .= k
+
+instance Ord n => ScalarOrd (AnyNetSize d n) where
+  MkAnyNetSize _ x .<= k = x .<= k
 
 instance (Div n, Num n, SingByteSize s) => Isomorphism (AnyNetSize d n) (NetBytes d s n) where
   to (MkAnyNetSize sz x) = case (singByteSize @s) of
@@ -366,6 +387,14 @@ data AnyNet n where
 deriving instance Show n => Show (AnyNet n)
 
 deriving instance Functor AnyNet
+
+type instance Scalar (AnyNet n) = n
+
+instance Eq n => ScalarEq (AnyNet n) where
+  MkAnyNet _ x .= k = x .= k
+
+instance Ord n => ScalarOrd (AnyNet n) where
+  MkAnyNet _ x .<= k = x .<= k
 
 instance (Div n, Num n) => Conversion (AnyNet n) where
   type Converted _ (AnyNet n) = AnyNet n
