@@ -31,15 +31,11 @@ module ByteTypes.Data.Network
     Conversion (..),
     IncByteSize (..),
     DecByteSize (..),
-
-    -- * Printing
-    PrettyPrint (..),
   )
 where
 
 import ByteTypes.Class.Div (Div (..))
 import ByteTypes.Class.Isomorphism (Isomorphism (..))
-import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Class.ScalarOrd (Scalar, ScalarEq (..), ScalarOrd (..))
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
@@ -61,7 +57,6 @@ import ByteTypes.Data.Size
   )
 import Control.Applicative (liftA2)
 import Data.Kind (Type)
-import Text.Printf (PrintfArg)
 
 -- | Wrapper around the 'Bytes' type that adds the 'ByteDirection' tag.
 type NetBytes :: ByteDirection -> ByteSize -> Type -> Type
@@ -131,11 +126,6 @@ instance (Div n, Num n, SingByteSize s) => IncByteSize (NetBytes d s n) where
 instance (Num n, SingByteSize s) => DecByteSize (NetBytes d s n) where
   type Prev (NetBytes d s n) = NetBytes d (PrevUnit s) n
   prev (MkNetBytes x) = MkNetBytes $ prev x
-
-instance forall d s n. (PrintfArg n, SingByteDirection d, SingByteSize s) => PrettyPrint (NetBytes d s n) where
-  pretty (MkNetBytes x) = case singByteDirection @d of
-    SDown -> pretty x <> " Down"
-    SUp -> pretty x <> " Up"
 
 instance (Div n, Num n, Ord n, SingByteSize s) => Normalize (NetBytes d s n) where
   type Norm (NetBytes d s n) = AnyNetSize d n
@@ -338,15 +328,6 @@ instance (Div n, Num n) => Conversion (AnyNetSize d n) where
     STB -> let x' = toPB x in MkAnyNetSize SPB x'
     SPB -> let x' = toPB x in MkAnyNetSize SPB x'
 
-instance (PrintfArg n, SingByteDirection d) => PrettyPrint (AnyNetSize d n) where
-  pretty (MkAnyNetSize sz b) = case sz of
-    SB -> pretty b
-    SKB -> pretty b
-    SMB -> pretty b
-    SGB -> pretty b
-    STB -> pretty b
-    SPB -> pretty b
-
 instance (Div n, Num n, Ord n) => Normalize (AnyNetSize d n) where
   type Norm (AnyNetSize d n) = AnyNetSize d n
   normalize (MkAnyNetSize sz x) = case sz of
@@ -405,11 +386,6 @@ instance (Div n, Num n) => Conversion (AnyNet n) where
   toGB (MkAnyNet dir x) = MkAnyNet dir $ toGB x
   toTB (MkAnyNet dir x) = MkAnyNet dir $ toTB x
   toPB (MkAnyNet dir x) = MkAnyNet dir $ toPB x
-
-instance PrintfArg n => PrettyPrint (AnyNet n) where
-  pretty (MkAnyNet dir x) = case dir of
-    SDown -> pretty x
-    SUp -> pretty x
 
 instance (Div n, Num n, Ord n) => Normalize (AnyNet n) where
   type Norm (AnyNet n) = AnyNet n

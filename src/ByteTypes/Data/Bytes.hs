@@ -21,15 +21,11 @@ module ByteTypes.Data.Bytes
     Conversion (..),
     IncByteSize (..),
     DecByteSize (..),
-
-    -- * Printing
-    PrettyPrint (..),
   )
 where
 
 import ByteTypes.Class.Div (Div (..))
 import ByteTypes.Class.Isomorphism (Isomorphism (..))
-import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Class.ScalarOrd (Scalar, ScalarEq (..), ScalarOrd (..))
 import ByteTypes.Data.Size
   ( ByteSize (..),
@@ -45,8 +41,6 @@ import ByteTypes.Data.Size
 import ByteTypes.Data.Size qualified as Size
 import Control.Applicative (liftA2)
 import Data.Kind (Type)
-import Text.Printf (PrintfArg (..))
-import Text.Printf qualified as Pf
 
 -- | This is the core type for handling type-safe byte operations. It is
 -- intended to be used as a simple wrapper over some numerical type,
@@ -166,15 +160,6 @@ instance (Num n, SingByteSize s) => DecByteSize (Bytes s n) where
     SGB -> MkBytes $ x * 1_000
     STB -> MkBytes $ x * 1_000
     SPB -> MkBytes $ x * 1_000
-
-instance (PrintfArg n, SingByteSize s) => PrettyPrint (Bytes s n) where
-  pretty (MkBytes x) = case singByteSize @s of
-    SB -> Pf.printf "%.2f" x <> " B"
-    SKB -> Pf.printf "%.2f" x <> " KB"
-    SMB -> Pf.printf "%.2f" x <> " MB"
-    SGB -> Pf.printf "%.2f" x <> " GB"
-    STB -> Pf.printf "%.2f" x <> " TB"
-    SPB -> Pf.printf "%.2f" x <> " PB"
 
 instance forall n s. (Div n, Num n, Ord n, SingByteSize s) => Normalize (Bytes s n) where
   type Norm (Bytes s n) = AnySize n
@@ -394,15 +379,6 @@ instance (Div n, Num n) => Conversion (AnySize n) where
     SGB -> let x' = toPB x in MkAnySize SPB x'
     STB -> let x' = toPB x in MkAnySize SPB x'
     SPB -> let x' = toPB x in MkAnySize SPB x'
-
-instance PrintfArg n => PrettyPrint (AnySize n) where
-  pretty (MkAnySize sz b) = case sz of
-    SB -> pretty b
-    SKB -> pretty b
-    SMB -> pretty b
-    SGB -> pretty b
-    STB -> pretty b
-    SPB -> pretty b
 
 instance (Div n, Num n, Ord n) => Normalize (AnySize n) where
   type Norm (AnySize n) = AnySize n
