@@ -11,24 +11,20 @@ module ByteTypes.Data.Network
     -- * Bytes
     Bytes (..),
     Bytes.unBytes,
+    Bytes.bytesToSByteSize,
 
     -- * Network Bytes
     NetBytes (..),
     unNetBytes,
-    mapNet,
-
-    -- * Byte Operations
-    BytesNum (..),
-    LiftBase (..),
+    netToSByteSize,
+    netToSByteDirection,
 
     -- * Unknown Size
     AnyNetSize (..),
-    mapAnyNetSize,
+    anyNetSizeToSByteDirection,
 
     -- * Unknown Size and Direction
     AnyNet (..),
-    mapAnyNet,
-    liftAnyNet,
 
     -- * Modifying Units
     Normalize (..),
@@ -41,11 +37,16 @@ module ByteTypes.Data.Network
   )
 where
 
-import ByteTypes.Class.LiftBase (LiftBase (..))
-import ByteTypes.Class.Num (BytesNum (..), Scalar)
+import ByteTypes.Class.Div (Div (..))
+import ByteTypes.Class.Isomorphism (Isomorphism (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
+import ByteTypes.Data.Direction
+  ( ByteDirection (..),
+    SByteDirection (..),
+    SingByteDirection (..),
+  )
 import ByteTypes.Data.Size
   ( ByteSize (..),
     Conversion (..),
@@ -54,119 +55,87 @@ import ByteTypes.Data.Size
     NextUnit,
     Normalize (..),
     PrevUnit,
+    SByteSize (..),
+    SingByteSize (..),
   )
 import Data.Kind (Type)
 import Text.Printf (PrintfArg)
 
--- | Tags for differentiating downloaded vs. uploaded bytes.
-data ByteDirection
-  = Down
-  | Up
-  deriving (Show)
-
 -- | Wrapper around the 'Bytes' type that adds the 'ByteDirection' tag.
 type NetBytes :: ByteDirection -> ByteSize -> Type -> Type
 data NetBytes d s n where
-  MkDown :: Bytes s n -> NetBytes 'Down s n
-  MkUp :: Bytes s n -> NetBytes 'Up s n
+  MkNetBytes :: Bytes s n -> NetBytes d s n
+
+-- | Unwraps the 'NetBytes'.
+unNetBytes :: NetBytes d s n -> Bytes s n
+unNetBytes (MkNetBytes x) = x
 
 deriving instance Show n => Show (NetBytes d s n)
 
 deriving instance Functor (NetBytes d s)
 
-instance (Applicative (Bytes s)) => Applicative (NetBytes 'Down s) where
-  pure = MkDown . pure
-  MkDown f <*> MkDown b = MkDown $ f <*> b
+instance Applicative (NetBytes d s) where
+  pure = MkNetBytes . pure
+  MkNetBytes f <*> MkNetBytes x = MkNetBytes $ f <*> x
 
-instance (Applicative (Bytes s)) => Applicative (NetBytes 'Up s) where
-  pure = MkUp . pure
-  MkUp f <*> MkUp b = MkUp $ f <*> b
+instance Monad (NetBytes d s) where
+  MkNetBytes x >>= f = MkNetBytes $ x >>= (unNetBytes . f)
 
-instance
-  (Applicative (NetBytes d s), Monad (Bytes s)) =>
-  Monad (NetBytes d s)
-  where
-  MkDown b >>= f = MkDown $ b >>= unNetBytes . f
-  MkUp b >>= f = MkUp $ b >>= unNetBytes . f
+instance Eq n => Eq (NetBytes d s n) where
+  MkNetBytes x == MkNetBytes y = x == y
 
-instance Fractional n => Conversion (NetBytes d s n) where
-  type BType (NetBytes d s n) = NetBytes d 'B n
-  type KType (NetBytes d s n) = NetBytes d 'KB n
-  type MType (NetBytes d s n) = NetBytes d 'MB n
-  type GType (NetBytes d s n) = NetBytes d 'GB n
-  type TType (NetBytes d s n) = NetBytes d 'TB n
-  type PType (NetBytes d s n) = NetBytes d 'PB n
-  toB x = getNetAnySizeCons x $ toB $ unNetBytes x
-  toKB x = getNetAnySizeCons x $ toKB $ unNetBytes x
-  toMB x = getNetAnySizeCons x $ toMB $ unNetBytes x
-  toGB x = getNetAnySizeCons x $ toGB $ unNetBytes x
-  toTB x = getNetAnySizeCons x $ toTB $ unNetBytes x
-  toPB x = getNetAnySizeCons x $ toPB $ unNetBytes x
+instance Ord n => Ord (NetBytes d s n) where
+  MkNetBytes x <= MkNetBytes y = x <= y
 
-instance LiftBase (NetBytes d s n) where
-  type Base (NetBytes d s n) = Bytes s n
-  liftB f x = getNetCons x $ f (unNetBytes x)
-  liftB2 f x y =
-    getNetCons x $
-      f (unNetBytes x) (unNetBytes y)
-  liftB3 f x y z =
-    getNetCons x $
-      f (unNetBytes x) (unNetBytes y) (unNetBytes z)
+instance Num n => Num (NetBytes d s n) where
+  MkNetBytes x + MkNetBytes y = MkNetBytes $ x + y
+  MkNetBytes x - MkNetBytes y = MkNetBytes $ x - y
+  MkNetBytes x * MkNetBytes y = MkNetBytes $ x * y
+  abs (MkNetBytes x) = MkNetBytes $ abs x
+  signum (MkNetBytes x) = MkNetBytes $ signum x
+  fromInteger i = MkNetBytes $ fromInteger i
 
-type instance Scalar (NetBytes d s n) = n
+instance (Div n, Num n, SingByteSize s) => Conversion (NetBytes d s n) where
+  type Converted 'B (NetBytes d s n) = NetBytes d 'B n
+  type Converted 'KB (NetBytes d s n) = NetBytes d 'KB n
+  type Converted 'MB (NetBytes d s n) = NetBytes d 'MB n
+  type Converted 'GB (NetBytes d s n) = NetBytes d 'GB n
+  type Converted 'TB (NetBytes d s n) = NetBytes d 'TB n
+  type Converted 'PB (NetBytes d s n) = NetBytes d 'PB n
 
-instance Num n => BytesNum (NetBytes d s n) where
-  (.+.) = liftB2 (.+.)
-  (.-.) = liftB2 (.-.)
-  (*.) c = fmap (* c)
+  toB (MkNetBytes b) = MkNetBytes $ toB b
+  toKB (MkNetBytes b) = MkNetBytes $ toKB b
+  toMB (MkNetBytes b) = MkNetBytes $ toMB b
+  toGB (MkNetBytes b) = MkNetBytes $ toGB b
+  toTB (MkNetBytes b) = MkNetBytes $ toTB b
+  toPB (MkNetBytes b) = MkNetBytes $ toPB b
 
-instance Fractional n => IncByteSize (NetBytes d s n) where
+instance (Div n, Num n, SingByteSize s) => IncByteSize (NetBytes d s n) where
   type Next (NetBytes d s n) = NetBytes d (NextUnit s) n
-  next (MkDown x) = MkDown $ next x
-  next (MkUp x) = MkUp $ next x
+  next (MkNetBytes x) = MkNetBytes $ next x
 
-instance Fractional n => DecByteSize (NetBytes d s n) where
+instance (Num n, SingByteSize s) => DecByteSize (NetBytes d s n) where
   type Prev (NetBytes d s n) = NetBytes d (PrevUnit s) n
-  prev (MkDown b) = MkDown $ prev b
-  prev (MkUp b) = MkUp $ prev b
+  prev (MkNetBytes x) = MkNetBytes $ prev x
 
-instance PrintfArg n => PrettyPrint (NetBytes d s n) where
-  pretty (MkDown x) = pretty x <> " Down"
-  pretty (MkUp x) = pretty x <> " Up"
+instance forall d s n. (PrintfArg n, SingByteDirection d, SingByteSize s) => PrettyPrint (NetBytes d s n) where
+  pretty (MkNetBytes x) = case singByteDirection @d of
+    SDown -> pretty x <> " Down"
+    SUp -> pretty x <> " Up"
 
-instance (Fractional n, Ord n) => Normalize (NetBytes d s n) where
-  type Result (NetBytes d s n) = AnyNetSize d n
+instance (Div n, Num n, Ord n, SingByteSize s) => Normalize (NetBytes d s n) where
+  type Norm (NetBytes d s n) = AnyNetSize d n
 
-  normalize (MkDown x) =
-    case normalize x of
-      MkAnySize x' -> MkAnyNetSize $ MkDown x'
-  normalize (MkUp x) =
-    case normalize x of
-      MkAnySize x' -> MkAnyNetSize $ MkUp x'
+  normalize (MkNetBytes bytes) = case normalize bytes of
+    MkAnySize sz bytes' -> MkAnyNetSize sz $ MkNetBytes bytes'
 
--- | Unwraps the 'NetBytes'.
-unNetBytes :: NetBytes d s n -> Bytes s n
-unNetBytes (MkDown b) = b
-unNetBytes (MkUp b) = b
+-- | Retrieves the 'SByteDirection' witness.
+netToSByteDirection :: SingByteDirection d => NetBytes d s n -> SByteDirection d
+netToSByteDirection _ = singByteDirection
 
-getNetCons :: NetBytes d s n -> (Bytes s n -> NetBytes d s n)
-getNetCons (MkDown _) = MkDown
-getNetCons (MkUp _) = MkUp
-
-getNetAnySizeCons :: NetBytes d s n -> (forall x. Bytes x n -> NetBytes d x n)
-getNetAnySizeCons (MkDown _) = MkDown
-getNetAnySizeCons (MkUp _) = MkUp
-
--- | Maps a 'Bytes' function onto 'NetBytes'. Because this function can change
--- the 'ByteSize', care must be taken. As such, the caller is assumed to know
--- what they are doing.
---
--- Whenever possible, 'liftB' is preferred.
-mapNet :: (Bytes s n -> Bytes t n) -> NetBytes d s n -> NetBytes d t n
-mapNet f x =
-  let cons = getNetAnySizeCons x
-      x' = unNetBytes x
-   in cons $ f x'
+-- | Retrieves the 'SingByteSize' witness.
+netToSByteSize :: SingByteSize s => NetBytes d s n -> SByteSize s
+netToSByteSize _ = singByteSize
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return, e.g.,
@@ -181,63 +150,194 @@ mapNet f x =
 --       ...
 -- @
 --
--- 'AnyNetSize'\'s 'BytesNum' functions are 'normalize'd.
+-- 'AnyNetSize'\'s 'Num' functions are 'normalize'd.
 type AnyNetSize :: ByteDirection -> Type -> Type
 data AnyNetSize d n where
-  MkAnyNetSize :: NetBytes d s n -> AnyNetSize d n
+  MkAnyNetSize :: SByteSize s -> NetBytes d s n -> AnyNetSize d n
 
 deriving instance Show n => Show (AnyNetSize d n)
 
 deriving instance Functor (AnyNetSize d)
 
-instance Fractional n => Conversion (AnyNetSize d n) where
-  type BType (AnyNetSize d n) = AnyNetSize d n
-  type KType (AnyNetSize d n) = AnyNetSize d n
-  type MType (AnyNetSize d n) = AnyNetSize d n
-  type GType (AnyNetSize d n) = AnyNetSize d n
-  type TType (AnyNetSize d n) = AnyNetSize d n
-  type PType (AnyNetSize d n) = AnyNetSize d n
-  toB (MkAnyNetSize x) = MkAnyNetSize $ toB x
-  toKB (MkAnyNetSize x) = MkAnyNetSize $ toKB x
-  toMB (MkAnyNetSize x) = MkAnyNetSize $ toMB x
-  toGB (MkAnyNetSize x) = MkAnyNetSize $ toGB x
-  toTB (MkAnyNetSize x) = MkAnyNetSize $ toTB x
-  toPB (MkAnyNetSize x) = MkAnyNetSize $ toPB x
+instance Eq n => Eq (AnyNetSize d n) where
+  MkAnyNetSize szx x == MkAnyNetSize szy y =
+    case (szx, szy) of
+      (SB, SB) -> x == y
+      (SKB, SKB) -> x == y
+      (SMB, SMB) -> x == y
+      (SGB, SGB) -> x == y
+      (STB, STB) -> x == y
+      (SPB, SPB) -> x == y
+      _ -> False
 
-instance (Fractional n, Ord n) => LiftBase (AnyNetSize d n) where
-  type Base (AnyNetSize d n) = NetBytes d 'B n
-  liftB f (MkAnyNetSize x) = normalize $ f $ toB x
-  liftB2 f (MkAnyNetSize x) (MkAnyNetSize y) =
-    normalize $ f (toB x) (toB y)
-  liftB3 f (MkAnyNetSize x) (MkAnyNetSize y) (MkAnyNetSize z) =
-    normalize $ f (toB x) (toB y) (toB z)
+instance Ord n => Ord (AnyNetSize d n) where
+  MkAnyNetSize szx x <= MkAnyNetSize szy y =
+    case (szx, szy) of
+      (SB, SB) -> x <= y
+      (SB, _) -> True
+      (SKB, SB) -> False
+      (SKB, SKB) -> x <= y
+      (SKB, _) -> True
+      (SMB, SB) -> False
+      (SMB, SKB) -> False
+      (SMB, SMB) -> x <= y
+      (SMB, _) -> True
+      (SGB, SB) -> False
+      (SGB, SKB) -> False
+      (SGB, SMB) -> False
+      (SGB, SGB) -> x <= y
+      (SGB, _) -> True
+      (STB, SB) -> False
+      (STB, SKB) -> False
+      (STB, SMB) -> False
+      (STB, SGB) -> False
+      (STB, STB) -> x <= y
+      (STB, _) -> True
+      (SPB, SB) -> False
+      (SPB, SKB) -> False
+      (SPB, SMB) -> False
+      (SPB, SGB) -> False
+      (SPB, STB) -> False
+      (SPB, SPB) -> x <= y
 
-type instance Scalar (AnyNetSize d n) = n
+instance (Div n, Num n, Ord n) => Num (AnyNetSize d n) where
+  x + y =
+    let x' = toR @_ @(NetBytes d 'B n) x
+        y' = toR y
+     in normalize $ x' + y'
+  x - y =
+    let x' = toR @_ @(NetBytes d 'B n) x
+        y' = toR y
+     in normalize $ x' - y'
+  x * y =
+    let x' = toR @_ @(NetBytes d 'B n) x
+        y' = toR y
+     in normalize $ x' * y'
+  abs (MkAnyNetSize sz x) = MkAnyNetSize sz $ abs x
+  signum (MkAnyNetSize sz x) = MkAnyNetSize sz $ signum x
+  fromInteger n = MkAnyNetSize SB $ fromInteger n
 
-instance (Fractional n, Ord n) => BytesNum (AnyNetSize d n) where
-  (.+.) = liftB2 (.+.)
-  (.-.) = liftB2 (.-.)
-  (*.) c = fmap (* c)
+instance (Div n, Num n, SingByteSize s) => Isomorphism (AnyNetSize d n) (NetBytes d s n) where
+  toR (MkAnyNetSize sz x) = case (singByteSize @s) of
+    SB ->
+      case sz of
+        SB -> toB x
+        SKB -> toB x
+        SMB -> toB x
+        SGB -> toB x
+        STB -> toB x
+        SPB -> toB x
+    SKB ->
+      case sz of
+        SB -> toKB x
+        SKB -> toKB x
+        SMB -> toKB x
+        SGB -> toKB x
+        STB -> toKB x
+        SPB -> toKB x
+    SMB ->
+      case sz of
+        SB -> toMB x
+        SKB -> toMB x
+        SMB -> toMB x
+        SGB -> toMB x
+        STB -> toMB x
+        SPB -> toMB x
+    SGB ->
+      case sz of
+        SB -> toGB x
+        SKB -> toGB x
+        SMB -> toGB x
+        SGB -> toGB x
+        STB -> toGB x
+        SPB -> toGB x
+    STB ->
+      case sz of
+        SB -> toTB x
+        SKB -> toTB x
+        SMB -> toTB x
+        SGB -> toTB x
+        STB -> toTB x
+        SPB -> toTB x
+    SPB ->
+      case sz of
+        SB -> toPB x
+        SKB -> toPB x
+        SMB -> toPB x
+        SGB -> toPB x
+        STB -> toPB x
+        SPB -> toPB x
 
-instance PrintfArg n => PrettyPrint (AnyNetSize d n) where
-  pretty (MkAnyNetSize b) = pretty b
+  toL bytes = MkAnyNetSize (netToSByteSize bytes) bytes
 
-instance (Fractional n, Ord n) => Normalize (AnyNetSize d n) where
-  type Result (AnyNetSize d n) = AnyNetSize d n
-  normalize (MkAnyNetSize x) = normalize x
+instance (Div n, Num n) => Conversion (AnyNetSize d n) where
+  type Converted _ (AnyNetSize d n) = AnyNetSize d n
 
--- | Maps a 'NetBytes' function onto 'AnyNetSize'. The parameter function must
--- be polymorphic in the size /and/ direction. Because this function can
--- change the 'ByteSize' and 'ByteDirection', care must be taken. As such, the
--- caller is assumed to know what they are doing and no normalization is
--- performed.
---
--- Whenever possible, 'liftB' is preferred.
-mapAnyNetSize ::
-  (forall e s. NetBytes e s m -> NetBytes f t n) ->
-  AnyNetSize d m ->
-  AnyNetSize f n
-mapAnyNetSize f (MkAnyNetSize x) = MkAnyNetSize $ f x
+  toB (MkAnyNetSize sz x) = case sz of
+    SB -> let x' = toB x in MkAnyNetSize SB x'
+    SKB -> let x' = toB x in MkAnyNetSize SB x'
+    SMB -> let x' = toB x in MkAnyNetSize SB x'
+    SGB -> let x' = toB x in MkAnyNetSize SB x'
+    STB -> let x' = toB x in MkAnyNetSize SB x'
+    SPB -> let x' = toB x in MkAnyNetSize SB x'
+  toKB (MkAnyNetSize sz x) = case sz of
+    SB -> let x' = toKB x in MkAnyNetSize SKB x'
+    SKB -> let x' = toKB x in MkAnyNetSize SKB x'
+    SMB -> let x' = toKB x in MkAnyNetSize SKB x'
+    SGB -> let x' = toKB x in MkAnyNetSize SKB x'
+    STB -> let x' = toKB x in MkAnyNetSize SKB x'
+    SPB -> let x' = toKB x in MkAnyNetSize SKB x'
+  toMB (MkAnyNetSize sz x) = case sz of
+    SB -> let x' = toMB x in MkAnyNetSize SMB x'
+    SKB -> let x' = toMB x in MkAnyNetSize SMB x'
+    SMB -> let x' = toMB x in MkAnyNetSize SMB x'
+    SGB -> let x' = toMB x in MkAnyNetSize SMB x'
+    STB -> let x' = toMB x in MkAnyNetSize SMB x'
+    SPB -> let x' = toMB x in MkAnyNetSize SMB x'
+  toGB (MkAnyNetSize sz x) = case sz of
+    SB -> let x' = toGB x in MkAnyNetSize SGB x'
+    SKB -> let x' = toGB x in MkAnyNetSize SGB x'
+    SMB -> let x' = toGB x in MkAnyNetSize SGB x'
+    SGB -> let x' = toGB x in MkAnyNetSize SGB x'
+    STB -> let x' = toGB x in MkAnyNetSize SGB x'
+    SPB -> let x' = toGB x in MkAnyNetSize SGB x'
+  toTB (MkAnyNetSize sz x) = case sz of
+    SB -> let x' = toTB x in MkAnyNetSize STB x'
+    SKB -> let x' = toTB x in MkAnyNetSize STB x'
+    SMB -> let x' = toTB x in MkAnyNetSize STB x'
+    SGB -> let x' = toTB x in MkAnyNetSize STB x'
+    STB -> let x' = toTB x in MkAnyNetSize STB x'
+    SPB -> let x' = toTB x in MkAnyNetSize STB x'
+  toPB (MkAnyNetSize sz x) = case sz of
+    SB -> let x' = toPB x in MkAnyNetSize SPB x'
+    SKB -> let x' = toPB x in MkAnyNetSize SPB x'
+    SMB -> let x' = toPB x in MkAnyNetSize SPB x'
+    SGB -> let x' = toPB x in MkAnyNetSize SPB x'
+    STB -> let x' = toPB x in MkAnyNetSize SPB x'
+    SPB -> let x' = toPB x in MkAnyNetSize SPB x'
+
+instance (PrintfArg n, SingByteDirection d) => PrettyPrint (AnyNetSize d n) where
+  pretty (MkAnyNetSize sz b) = case sz of
+    SB -> pretty b
+    SKB -> pretty b
+    SMB -> pretty b
+    SGB -> pretty b
+    STB -> pretty b
+    SPB -> pretty b
+
+instance (Div n, Num n, Ord n) => Normalize (AnyNetSize d n) where
+  type Norm (AnyNetSize d n) = AnyNetSize d n
+  normalize (MkAnyNetSize sz x) = case sz of
+    SB -> normalize x
+    SKB -> normalize x
+    SMB -> normalize x
+    SGB -> normalize x
+    STB -> normalize x
+    SPB -> normalize x
+
+-- | Retrieves the 'SingByteDirection' witness.
+anyNetSizeToSByteDirection :: SingByteDirection d => AnyNetSize d n -> SByteDirection d
+anyNetSizeToSByteDirection _ = singByteDirection
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size /and/
 -- direction. This is useful when a function does not know a priori what
@@ -254,66 +354,33 @@ mapAnyNetSize f (MkAnyNetSize x) = MkAnyNetSize $ f x
 --       ...
 -- @
 --
--- 'AnyNet'\'s 'BytesNum' functions are 'normalize'd. We deliberately
--- do not provide instances for 'LiftBase' as combining arbitrary
+-- 'AnyNet'\'s 'Num' functions are 'normalize'd. We deliberately
+-- do not provide instances for 'Isomorphism' as combining arbitrary
 -- 'AnyNet's would defeat the type's purpose of keeping different
 -- directions separate.
 type AnyNet :: Type -> Type
 data AnyNet n where
-  MkAnyNet :: NetBytes d s n -> AnyNet n
+  MkAnyNet :: SByteDirection d -> AnyNetSize d n -> AnyNet n
 
 deriving instance Show n => Show (AnyNet n)
 
 deriving instance Functor AnyNet
 
-instance Fractional n => Conversion (AnyNet n) where
-  type BType (AnyNet n) = AnyNet n
-  type KType (AnyNet n) = AnyNet n
-  type MType (AnyNet n) = AnyNet n
-  type GType (AnyNet n) = AnyNet n
-  type TType (AnyNet n) = AnyNet n
-  type PType (AnyNet n) = AnyNet n
-  toB (MkAnyNet x) = MkAnyNet $ toB x
-  toKB (MkAnyNet x) = MkAnyNet $ toKB x
-  toMB (MkAnyNet x) = MkAnyNet $ toMB x
-  toGB (MkAnyNet x) = MkAnyNet $ toGB x
-  toTB (MkAnyNet x) = MkAnyNet $ toTB x
-  toPB (MkAnyNet x) = MkAnyNet $ toPB x
+instance (Div n, Num n) => Conversion (AnyNet n) where
+  type Converted _ (AnyNet n) = AnyNet n
+
+  toB (MkAnyNet dir x) = MkAnyNet dir $ toB x
+  toKB (MkAnyNet dir x) = MkAnyNet dir $ toKB x
+  toMB (MkAnyNet dir x) = MkAnyNet dir $ toMB x
+  toGB (MkAnyNet dir x) = MkAnyNet dir $ toGB x
+  toTB (MkAnyNet dir x) = MkAnyNet dir $ toTB x
+  toPB (MkAnyNet dir x) = MkAnyNet dir $ toPB x
 
 instance PrintfArg n => PrettyPrint (AnyNet n) where
-  pretty (MkAnyNet b) = pretty b
+  pretty (MkAnyNet dir x) = case dir of
+    SDown -> pretty x
+    SUp -> pretty x
 
-instance (Fractional n, Ord n) => Normalize (AnyNet n) where
-  type Result (AnyNet n) = AnyNet n
-  normalize (MkAnyNet x) =
-    case normalize x of
-      MkAnyNetSize x' -> MkAnyNet x'
-
--- | Maps a 'NetBytes' function onto 'AnyNetSize'. The parameter function must
--- be polymorphic in the size /and/ direction. Because this function can change
--- the 'ByteSize' and 'ByteDirection', care must be taken. As such, the caller is
--- assumed to know what they are doing and no normalization is performed.
---
--- Whenever possible, 'liftAnyNet' is preferred.
-mapAnyNet ::
-  (Fractional n, Ord n) =>
-  (forall e s. NetBytes e s m -> NetBytes f t n) ->
-  AnyNet m ->
-  AnyNet n
-mapAnyNet f (MkAnyNet x) =
-  case normalize (f x) of
-    MkAnyNetSize x' -> MkAnyNet x'
-
--- | Lifts any 'NetBytes' function onto 'AnyNet'. The difference between
--- this and 'mapAnyNet' is that the parameter function need only work for
--- size 'B' (i.e. the types cannot change), and the result is 'normalize'd.
-liftAnyNet ::
-  (Fractional n, Ord n) =>
-  (forall d. NetBytes d 'B n -> NetBytes d 'B n) ->
-  AnyNet n ->
-  AnyNet n
-liftAnyNet f (MkAnyNet x) =
-  let x' = toB x
-      normalized = normalize $ f x'
-   in case normalized of
-        MkAnyNetSize y -> MkAnyNet y
+instance (Div n, Num n, Ord n) => Normalize (AnyNet n) where
+  type Norm (AnyNet n) = AnyNet n
+  normalize (MkAnyNet dir x) = MkAnyNet dir $ normalize x

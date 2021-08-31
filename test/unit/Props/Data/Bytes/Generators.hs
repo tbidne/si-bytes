@@ -1,72 +1,48 @@
 -- | Exports generators for 'Bytes'.
 module Props.Data.Bytes.Generators
-  ( genB,
-    genKB,
-    genMB,
-    genGB,
-    genTB,
-    genPB,
+  ( genBytes,
     genNormalizedBytes,
     genSomeBytes,
   )
 where
 
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
-import ByteTypes.Data.Size (ByteSize (..))
+import ByteTypes.Data.Size (ByteSize (..), SByteSize (..))
+import Data.Ratio ((%))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
 import Hedgehog.Range qualified as HRange
 import Props.Data.Size.Generators qualified as Gens
 
 -- | Generates 'Bytes' over 'Gens.genBNum'.
-genB :: Gen (Bytes 'B Double)
-genB = MkB <$> Gens.genBNum
+genBytes :: Gen (Bytes s Rational)
+genBytes = MkBytes <$> Gens.genBNum
 
--- | Generates 'Bytes' over 'Gens.genKBNum'.
-genKB :: Gen (Bytes 'KB Double)
-genKB = MkKB <$> Gens.genKBNum
-
--- | Generates 'Bytes' over 'Gens.genMBNum'.
-genMB :: Gen (Bytes 'MB Double)
-genMB = MkMB <$> Gens.genMBNum
-
--- | Generates 'Bytes' over 'Gens.genGBNum'.
-genGB :: Gen (Bytes 'GB Double)
-genGB = MkGB <$> Gens.genGBNum
-
--- | Generates 'Bytes' over 'Gens.genTBNum'.
-genTB :: Gen (Bytes 'TB Double)
-genTB = MkTB <$> Gens.genTBNum
-
--- | Generates 'Bytes' over 'Gens.genPBNum'.
-genPB :: Gen (Bytes 'PB Double)
-genPB = MkPB <$> Gens.genPBNum
-
--- | Chooses one from [genB, genKB, ... genPB]
-genSomeBytes :: Gen (AnySize Double)
-genSomeBytes =
+-- | Chooses one from [B, KB, MB, ...]
+genSomeBytes :: Gen (AnySize Rational)
+genSomeBytes = do
   HGen.choice
-    [ MkAnySize <$> genB,
-      MkAnySize <$> genKB,
-      MkAnySize <$> genMB,
-      MkAnySize <$> genGB,
-      MkAnySize <$> genTB,
-      MkAnySize <$> genPB
+    [ MkAnySize SB <$> genBytes,
+      MkAnySize SKB <$> genBytes,
+      MkAnySize SMB <$> genBytes,
+      MkAnySize SGB <$> genBytes,
+      MkAnySize STB <$> genBytes,
+      MkAnySize SPB <$> genBytes
     ]
 
 -- | Generates a normalized 'Bytes', i.e., the numeric value
 -- is \[ 0 \le x < 1,000 \].
-genNormalizedBytes :: Gen (AnySize Double)
+genNormalizedBytes :: Gen (AnySize Rational)
 genNormalizedBytes = do
   sz <- Gens.genByteSize
   num <- gen_1_000
   pure $ case sz of
-    B -> MkAnySize $ MkB num
-    KB -> MkAnySize $ MkKB num
-    MB -> MkAnySize $ MkMB num
-    GB -> MkAnySize $ MkGB num
-    TB -> MkAnySize $ MkTB num
-    PB -> MkAnySize $ MkPB num
+    B -> MkAnySize SB $ MkBytes num
+    KB -> MkAnySize SKB $ MkBytes num
+    MB -> MkAnySize SMB $ MkBytes num
+    GB -> MkAnySize SGB $ MkBytes num
+    TB -> MkAnySize STB $ MkBytes num
+    PB -> MkAnySize SPB $ MkBytes num
 
-gen_1_000 :: Gen Double
-gen_1_000 = HGen.double $ HRange.linearFracFrom 500 0 1_000
+gen_1_000 :: Gen Rational
+gen_1_000 = (% 1) <$> HGen.integral (HRange.linearFrom 500 0 1_000)

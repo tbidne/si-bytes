@@ -28,11 +28,16 @@ common common-exts
   default-extensions:
     DataKinds
     DeriveFunctor
+    DerivingStrategies
+    DerivingVia
     FlexibleContexts
     FlexibleInstances
     GADTs
     ImportQualifiedPost
+    InstanceSigs
     KindSignatures
+    LambdaCase
+    MultiParamTypeClasses
     MultiWayIf
     NumericUnderscores
     RankNTypes
@@ -45,13 +50,14 @@ common common-exts
 library
   import:           common-exts
   exposed-modules:
-    ByteTypes.Class.LiftBase
-    ByteTypes.Class.Num
+    ByteTypes.Class.Div
+    ByteTypes.Class.Isomorphism
     ByteTypes.Class.PrettyPrint
+    ByteTypes.Class.ScalarOrd
     ByteTypes.Data.Bytes
+    ByteTypes.Data.Direction
     ByteTypes.Data.Network
     ByteTypes.Data.Size
-    ByteTypes.Utils
 
   build-depends:    base ^>=4.14.1.0
   hs-source-dirs:   src
@@ -64,14 +70,18 @@ test-suite unit
   other-modules:
     Props.Data.Bytes
     Props.Data.Bytes.Generators
+    Props.Data.Network
+    Props.Data.Network.Generators
     Props.Data.Size
     Props.Data.Size.Generators
+    Props.MaxRuns
     Props.Utils
 
   build-depends:
     , base
     , byte-types
     , hedgehog
+    , tagged
     , tasty
     , tasty-hedgehog
 

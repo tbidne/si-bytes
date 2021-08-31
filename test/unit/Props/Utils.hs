@@ -11,22 +11,16 @@ module Props.Utils
 
     -- * Miscellaneous
     isNormalized,
+    rationalEq,
+    reduce,
   )
 where
 
-import ByteTypes.Class.Num (BytesEq (..), BytesNum (..), BytesOrd (..), Scalar)
+import ByteTypes.Class.ScalarOrd (Scalar, ScalarOrd (..))
 import ByteTypes.Data.Size (ByteSize (..))
-import Hedgehog (PropertyT)
+import GHC.Real (Ratio (..))
+import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
-
--- | Verifies that the parameter 'BytesOrd' is normalized, taking care
--- to account for special 'B' and 'PB' rules.
-isNormalized :: (BytesOrd n, Num (Scalar n)) => ByteSize -> n -> Bool
-isNormalized B x = x .< 1_000
-isNormalized PB x = x .>= 1
-isNormalized _ x
-  | x .= 0 = True
-  | otherwise = x .>= 1 && x .<= 1_000
 
 -- | Logical implication.
 (==>) :: Bool -> Bool -> Bool
@@ -44,76 +38,80 @@ _ <=> _ = False
 infixr 1 <=>
 
 -- | Verifies 'Eq' laws for 'BytesEq'.
-eqLaws ::
-  (BytesEq a, Show a, Show (Scalar a)) =>
-  a ->
-  a ->
-  a ->
-  Scalar a ->
-  PropertyT IO ()
-eqLaws x y z k = do
+eqLaws :: (Eq a, Show a) => a -> a -> a -> PropertyT IO ()
+eqLaws x y z = do
   H.annotateShow x
   H.annotateShow y
   H.annotateShow z
-  H.annotateShow k
 
-  -- reflexive, symmetry, transitive
-  H.assert $ x .=. x
-  H.assert $ x .=. y <=> y .=. x
-  H.assert $ x .=. y && y .=. z ==> x .=. z
-  -- other laws
-  H.assert $ x .=. y <=> not (x ./=. y)
-  H.assert $ x .= k <=> k =. x <=> not (x ./= k) <=> not (k /=. x)
+  -- reflexivity, symmetry, transitivity
+  H.assert $ x == x
+  H.assert $ x == y <=> y == x
+  H.assert $ x == y && y == z ==> x == z
 
 -- | Verifies 'Ord' laws for 'BytesOrd'.
-ordLaws ::
-  (BytesOrd a, Show a, Show (Scalar a)) =>
-  a ->
-  a ->
-  a ->
-  Scalar a ->
-  PropertyT IO ()
-ordLaws x y z k = do
+ordLaws :: (Ord a, Show a) => a -> a -> a -> PropertyT IO ()
+ordLaws x y z = do
   H.annotateShow x
   H.annotateShow y
   H.annotateShow z
-  H.annotateShow k
-  -- reflexive, transitive, antisymmetry
-  H.assert $ x .<=. x
-  H.assert $ x .<=. y && y .<=. z ==> x .<=. z
-  H.assert $ x .<=. y && y .<=. x <=> x .=. y
+  -- reflexivity, transitivity, antisymmetry
+  H.assert $ x <= x
+  H.assert $ x <= y && y <= z ==> x <= z
+  H.assert $ x <= y && y <= x <=> x == y
   -- additional laws
-  H.assert $ x .<=. y <=> y .>=. x
-  H.assert $ x .<. y <=> x .<=. y && x ./=. y
-  H.assert $ x .<. y <=> y .>. x
-  -- laws for scalar comparisons
-  H.assert $ x .<= k <=> k >=. x
-  H.assert $ x .>= k <=> k <=. x
-  H.assert $ x .<= k && x .>= k <=> x .= k
-  H.assert $ k >=. x && k <=. x <=> k =. x
-  H.assert $ x .< k <=> x .<= k && x ./= k
-  H.assert $ x .> k <=> x .>= k && x ./= k
-  H.assert $ x .< k <=> k >. x
-  H.assert $ x .> k <=> k <=. x && x ./= k
+  H.assert $ x <= y <=> y >= x
+  H.assert $ x < y <=> x <= y && x /= y
+  H.assert $ x < y <=> y > x
 
 -- | Verify 'Num' laws for 'BytesNum'.
-numLaws ::
-  (BytesEq a, BytesNum a, Show a, Show (Scalar a)) =>
-  a ->
-  a ->
-  a ->
-  Scalar a ->
-  Scalar a ->
-  PropertyT IO ()
-numLaws x y z k l = do
+numLaws :: (Eq a, Num a, Show a) => a -> a -> a -> PropertyT IO ()
+numLaws x y z = do
   H.annotateShow x
   H.annotateShow y
   H.annotateShow z
-  H.annotateShow k
 
-  -- associative, commutative, distributive
-  H.assert $ (x .+. y) .+. z .=. x .+. (y .+. z)
-  H.assert $ x .+. y .=. y .+. x
-  H.assert $ (x .* k) .* l .=. (x .* k) .* l
-  H.assert $ k *. (x .+. y) .=. (k *. x) .+. (k *. y)
-  H.assert $ (x .+. y) .* k .=. (x .* k) .+. (y .* k)
+  -- associativity, commutativity, distributivity
+  H.annotateShow (x + y, (x + y) + z)
+  H.annotateShow (y + z, x + (y + z))
+  H.assert $ (x + y) + z == x + (y + z)
+
+  H.annotateShow (x + y, y + x)
+  H.assert $ x + y == y + x
+
+  H.annotateShow (x * y, (x * y) * z)
+  H.annotateShow (y * z, x * (y * z))
+  H.assert $ (x * y) * z == x * (y * z)
+
+  H.annotateShow (x * y, y * x)
+  H.assert $ x * y == y * x
+
+  H.annotateShow (z * (x + y), z * x, z * y, (z * x) + (z * y))
+  H.assert $ z * (x + y) == (z * x) + (z * y)
+
+-- | Verifies that the parameter 'BytesOrd' is normalized, taking care
+-- to account for special 'B' and 'PB' rules.
+isNormalized :: (Ord n, Num n, Show n, ScalarOrd n, Num (Scalar n)) => ByteSize -> n -> PropertyT IO ()
+isNormalized B x = do
+  H.footnoteShow x
+  H.assert $ abs x .< 1_000
+isNormalized PB x = do
+  H.footnoteShow x
+  H.assert $ abs x .>= 1
+isNormalized _ x
+  | x == 0 = pure ()
+  | otherwise = do
+    H.footnoteShow x
+    H.assert $ abs x .>= 1
+    H.assert $ abs x .< 1_000
+
+-- | Checks equality after 'reduce'ing.
+rationalEq :: (Integral q, Show q) => Ratio q -> Ratio q -> PropertyT IO ()
+rationalEq x y = reduce x === reduce y
+
+-- | Reduces a 'Ratio'.
+reduce :: Integral q => Ratio q -> Ratio q
+reduce (_ :% 0) = error "Division by zero when reducing rational"
+reduce (n :% d) = (n `quot` d') :% (d `quot` d')
+  where
+    d' = gcd n d

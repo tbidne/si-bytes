@@ -12,6 +12,7 @@ module Props.Data.Size.Generators
 where
 
 import ByteTypes.Data.Size (ByteSize (..))
+import Data.Ratio ((%))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
 import Hedgehog.Range qualified as HRange
@@ -21,8 +22,8 @@ genByteSize :: Gen ByteSize
 genByteSize = HGen.element [B, KB, MB, GB, TB, PB]
 
 -- | Generates a linear distribution from 0 to 1,000,000,000,000,000.
-genD :: Gen Double
-genD = HGen.double $ HRange.linearFracFrom origin lower upper
+genD :: Gen Rational
+genD = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 500_000_000_000_000
     lower = 0
@@ -30,8 +31,8 @@ genD = HGen.double $ HRange.linearFracFrom origin lower upper
 
 -- | Generates a linear distribution from 0 to 2,000,000,000,000,000,000.
 -- This covers the full range of (Bytes, PetaBytes).
-genBNum :: Gen Double
-genBNum = HGen.double $ HRange.linearFracFrom origin lower upper
+genBNum :: Gen Rational
+genBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000_000_000_000_000_000
     lower = 0
@@ -39,8 +40,8 @@ genBNum = HGen.double $ HRange.linearFracFrom origin lower upper
 
 -- | Generates a linear distribution from 0 to 2,000,000,000,000,000.
 -- When used with 'KB', this covers the full range of (Bytes, PetaBytes).
-genKBNum :: Gen Double
-genKBNum = HGen.double $ HRange.linearFracFrom origin lower upper
+genKBNum :: Gen Rational
+genKBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000_000_000_000_000
     lower = 0
@@ -48,8 +49,8 @@ genKBNum = HGen.double $ HRange.linearFracFrom origin lower upper
 
 -- | Generates a linear distribution from 0 to 2,000,000,000,000.
 -- When used with 'MB', this covers the full range of (Bytes, PetaBytes).
-genMBNum :: Gen Double
-genMBNum = HGen.double $ HRange.linearFracFrom origin lower upper
+genMBNum :: Gen Rational
+genMBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000_000_000_000
     lower = 0
@@ -57,8 +58,8 @@ genMBNum = HGen.double $ HRange.linearFracFrom origin lower upper
 
 -- | Generates a linear distribution from 0 to 2,000,000,000. When used
 -- with 'GB', this covers the full range of (Bytes, PetaBytes).
-genGBNum :: Gen Double
-genGBNum = HGen.double $ HRange.linearFracFrom origin lower upper
+genGBNum :: Gen Rational
+genGBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000_000_000
     lower = 0
@@ -66,8 +67,8 @@ genGBNum = HGen.double $ HRange.linearFracFrom origin lower upper
 
 -- | Generates a linear distribution from 0 to 2,000,000. When used with
 -- 'TB', this covers the full range of (Bytes, PetaBytes).
-genTBNum :: Gen Double
-genTBNum = HGen.double $ HRange.linearFracFrom origin lower upper
+genTBNum :: Gen Rational
+genTBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000_000
     lower = 0
@@ -75,8 +76,8 @@ genTBNum = HGen.double $ HRange.linearFracFrom origin lower upper
 
 -- | Generates a linear distribution from 0 to 2,000. When used with 'PB',
 -- this covers the full range of (Bytes, PetaBytes).
-genPBNum :: Gen Double
-genPBNum = HGen.double $ HRange.linearFracFrom origin lower upper
+genPBNum :: Gen Rational
+genPBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000
     lower = 0
