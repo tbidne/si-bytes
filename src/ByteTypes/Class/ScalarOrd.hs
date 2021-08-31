@@ -12,7 +12,7 @@ import Data.Kind (Type)
 type Scalar :: Type -> Type
 type family Scalar a
 
--- | 'Eq' class for types 'Scalar' comparisons. This is an alternative to
+-- | 'Eq' class for 'Scalar' comparisons. This is an alternative to
 -- the normal 'Eq' class. See 'ScalarOrd' for motivation.
 class ScalarEq a where
   (.=) :: a -> Scalar a -> Bool
@@ -33,12 +33,12 @@ infix 4 .=
 
 infix 4 =.
 
--- | 'Ord' class for types 'Scalar' comparisons. This is an alternative to
+-- | 'Ord' class for 'Scalar' comparisons. This is an alternative to
 -- the normal 'Ord' class. The motivation is as follows:
 --
--- Suppose we have to track distances, and the types can either be in
+-- Suppose we have to track distances, and the units can either be in
 -- kilometers or miles. We make a custom type, and for convenience we
--- implement 'Num' so we can use numeric literals.
+-- implement 'Num'.
 --
 -- @
 -- data Distance a = KiloM a | Miles a
@@ -67,14 +67,14 @@ infix 4 =.
 -- this was really @Miles 99 < KiloM 100@, which is false.
 --
 -- Of course we can manually unwrap our types, but doing so is error-prone
--- and confusing. The 'ScalarOrd' class exists so that we can take advantage
+-- and noisy. The 'ScalarOrd' class exists so that we can take advantage
 -- of comparing numeric literals to some wrapper type, while also ensuring
 -- any type-specific logic in the "usual" comparisons (i.e. 'Ord') does not
 -- wreak havoc. In this case, we would have
 --
 -- @
 -- type instance Scalar (Distance a) = a
--- instance ScalarOrd (Distance a) where
+-- instance Ord a => ScalarOrd (Distance a) where
 --   KiloM x <= k = x <= k
 --   Miles x <= k = x <= k
 --

@@ -1,12 +1,12 @@
 -- | Provides the 'Isomorphism' typeclass.
 module ByteTypes.Class.Isomorphism
   ( Isomorphism (..),
-    liftL,
-    liftL2,
-    liftL3,
-    liftR,
-    liftR2,
-    liftR3,
+    liftFrom,
+    liftFrom2,
+    liftFrom3,
+    liftTo,
+    liftTo2,
+    liftTo3,
   )
 where
 
@@ -15,32 +15,32 @@ where
 -- Instances should define an isomorphism, i.e.,
 --
 -- @
--- toR . toL == id == toL . toR
+-- to . from == id == from . to
 -- @
 class Isomorphism a b where
-  toR :: a -> b
-  toL :: b -> a
+  to :: a -> b
+  from :: b -> a
 
 -- | Lifts a function.
-liftL :: Isomorphism a b => (b -> b) -> a -> a
-liftL f = toL . f . toR
+liftFrom :: Isomorphism a b => (b -> b) -> a -> a
+liftFrom f = from . f . to
 
 -- | Lifts a binary function.
-liftL2 :: Isomorphism a b => (b -> b -> b) -> a -> a -> a
-liftL2 f x = toL . f (toR x) . toR
+liftFrom2 :: Isomorphism a b => (b -> b -> b) -> a -> a -> a
+liftFrom2 f x = from . f (to x) . to
 
 -- | Lifts a ternary function.
-liftL3 :: Isomorphism a b => (b -> b -> b -> b) -> a -> a -> a -> a
-liftL3 f x y = toL . f (toR x) (toR y) . toR
+liftFrom3 :: Isomorphism a b => (b -> b -> b -> b) -> a -> a -> a -> a
+liftFrom3 f x y = from . f (to x) (to y) . to
 
 -- | Lifts a function.
-liftR :: Isomorphism a b => (a -> a) -> b -> b
-liftR f = toR . f . toL
+liftTo :: Isomorphism a b => (a -> a) -> b -> b
+liftTo f = to . f . from
 
 -- | Lifts a binary function.
-liftR2 :: Isomorphism a b => (a -> a -> a) -> b -> b -> b
-liftR2 f x = toR . f (toL x) . toL
+liftTo2 :: Isomorphism a b => (a -> a -> a) -> b -> b -> b
+liftTo2 f x = to . f (from x) . from
 
 -- | Lifts a ternary function.
-liftR3 :: Isomorphism a b => (a -> a -> a -> a) -> b -> b -> b -> b
-liftR3 f x y = toR . f (toL x) (toL y) . toL
+liftTo3 :: Isomorphism a b => (a -> a -> a -> a) -> b -> b -> b -> b
+liftTo3 f x y = to . f (from x) (from y) . from

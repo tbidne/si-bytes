@@ -89,7 +89,7 @@ type family PrevUnit a where
 -- \]
 --
 -- If we view @normalize@ as single function taking in a type and a value,
--- then the only law is idemptotence:
+-- then the only law is idempotence:
 --
 -- \[
 --   \textrm{normalize} \circ \textrm{normalize} = \textrm{normalize}.

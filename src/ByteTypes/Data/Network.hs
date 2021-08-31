@@ -58,6 +58,7 @@ import ByteTypes.Data.Size
     SByteSize (..),
     SingByteSize (..),
   )
+import Control.Applicative (liftA2)
 import Data.Kind (Type)
 import Text.Printf (PrintfArg)
 
@@ -88,12 +89,12 @@ instance Ord n => Ord (NetBytes d s n) where
   MkNetBytes x <= MkNetBytes y = x <= y
 
 instance Num n => Num (NetBytes d s n) where
-  MkNetBytes x + MkNetBytes y = MkNetBytes $ x + y
-  MkNetBytes x - MkNetBytes y = MkNetBytes $ x - y
-  MkNetBytes x * MkNetBytes y = MkNetBytes $ x * y
-  abs (MkNetBytes x) = MkNetBytes $ abs x
-  signum (MkNetBytes x) = MkNetBytes $ signum x
-  fromInteger i = MkNetBytes $ fromInteger i
+  (+) = liftA2 (+)
+  (-) = liftA2 (-)
+  (*) = liftA2 (*)
+  abs = fmap abs
+  signum = fmap signum
+  fromInteger = pure . fromInteger
 
 instance (Div n, Num n, SingByteSize s) => Conversion (NetBytes d s n) where
   type Converted 'B (NetBytes d s n) = NetBytes d 'B n
@@ -202,23 +203,23 @@ instance Ord n => Ord (AnyNetSize d n) where
 
 instance (Div n, Num n, Ord n) => Num (AnyNetSize d n) where
   x + y =
-    let x' = toR @_ @(NetBytes d 'B n) x
-        y' = toR y
+    let x' = to @_ @(NetBytes d 'B n) x
+        y' = to y
      in normalize $ x' + y'
   x - y =
-    let x' = toR @_ @(NetBytes d 'B n) x
-        y' = toR y
+    let x' = to @_ @(NetBytes d 'B n) x
+        y' = to y
      in normalize $ x' - y'
   x * y =
-    let x' = toR @_ @(NetBytes d 'B n) x
-        y' = toR y
+    let x' = to @_ @(NetBytes d 'B n) x
+        y' = to y
      in normalize $ x' * y'
   abs (MkAnyNetSize sz x) = MkAnyNetSize sz $ abs x
   signum (MkAnyNetSize sz x) = MkAnyNetSize sz $ signum x
   fromInteger n = MkAnyNetSize SB $ fromInteger n
 
 instance (Div n, Num n, SingByteSize s) => Isomorphism (AnyNetSize d n) (NetBytes d s n) where
-  toR (MkAnyNetSize sz x) = case (singByteSize @s) of
+  to (MkAnyNetSize sz x) = case (singByteSize @s) of
     SB ->
       case sz of
         SB -> toB x
@@ -268,7 +269,7 @@ instance (Div n, Num n, SingByteSize s) => Isomorphism (AnyNetSize d n) (NetByte
         STB -> toPB x
         SPB -> toPB x
 
-  toL bytes = MkAnyNetSize (netToSByteSize bytes) bytes
+  from bytes = MkAnyNetSize (netToSByteSize bytes) bytes
 
 instance (Div n, Num n) => Conversion (AnyNetSize d n) where
   type Converted _ (AnyNetSize d n) = AnyNetSize d n

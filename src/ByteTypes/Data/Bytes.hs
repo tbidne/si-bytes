@@ -27,6 +27,7 @@ module ByteTypes.Data.Bytes
   )
 where
 
+import Control.Applicative (liftA2)
 import ByteTypes.Class.Div (Div (..))
 import ByteTypes.Class.Isomorphism (Isomorphism (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
@@ -80,12 +81,12 @@ instance Ord n => Ord (Bytes s n) where
   MkBytes x <= MkBytes y = x <= y
 
 instance Num n => Num (Bytes s n) where
-  MkBytes x + MkBytes y = MkBytes $ x + y
-  MkBytes x - MkBytes y = MkBytes $ x - y
-  MkBytes x * MkBytes y = MkBytes $ x * y
-  abs (MkBytes x) = MkBytes $ abs x
-  signum (MkBytes x) = MkBytes $ signum x
-  fromInteger i = MkBytes $ fromInteger i
+  (+) = liftA2 (+)
+  (-) = liftA2 (-)
+  (*) = liftA2 (*)
+  abs = fmap abs
+  signum = fmap signum
+  fromInteger = pure . fromInteger
 
 type instance Scalar (Bytes s n) = n
 
@@ -272,16 +273,16 @@ instance Ord n => Ord (AnySize n) where
 
 instance (Div n, Num n, Ord n) => Num (AnySize n) where
   x + y =
-    let x' = toR @_ @(Bytes 'B n) x
-        y' = toR y
+    let x' = to @_ @(Bytes 'B n) x
+        y' = to y
      in normalize $ x' + y'
   x - y =
-    let x' = toR @_ @(Bytes 'B n) x
-        y' = toR y
+    let x' = to @_ @(Bytes 'B n) x
+        y' = to y
      in normalize $ x' - y'
   x * y =
-    let x' = toR @_ @(Bytes 'B n) x
-        y' = toR y
+    let x' = to @_ @(Bytes 'B n) x
+        y' = to y
      in normalize $ x' * y'
   abs (MkAnySize sz x) = MkAnySize sz $ abs x
   signum (MkAnySize sz x) = MkAnySize sz $ signum x
@@ -296,7 +297,7 @@ instance Ord n => ScalarOrd (AnySize n) where
   MkAnySize _ x .<= k = unBytes x <= k
 
 instance forall s n. (Div n, Num n, SingByteSize s) => Isomorphism (AnySize n) (Bytes s n) where
-  toR (MkAnySize sz b) = case (singByteSize @s) of
+  to (MkAnySize sz b) = case (singByteSize @s) of
     SB ->
       case sz of
         SB -> toB b
@@ -346,7 +347,7 @@ instance forall s n. (Div n, Num n, SingByteSize s) => Isomorphism (AnySize n) (
         STB -> toPB b
         SPB -> toPB b
 
-  toL bytes = MkAnySize (bytesToSByteSize bytes) bytes
+  from bytes = MkAnySize (bytesToSByteSize bytes) bytes
 
 instance (Div n, Num n) => Conversion (AnySize n) where
   type Converted _ (AnySize n) = AnySize n
