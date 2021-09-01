@@ -1,8 +1,8 @@
--- | Property tests for 'Size'.
-module Props.Data.Size (props) where
+-- | Property tests for 'Conversion'.
+module Props.Class.Conversion (props) where
 
+import ByteTypes.Class.Conversion qualified as Conv
 import ByteTypes.Data.Size (ByteSize (..))
-import ByteTypes.Data.Size qualified as S
 import GHC.Real (Ratio (..))
 import Hedgehog (Gen)
 import Hedgehog qualified as H
@@ -15,7 +15,7 @@ import Test.Tasty.Hedgehog qualified as TH
 
 -- | 'TestTree' of properties.
 props :: TestTree
-props = T.testGroup "Bytes.Data.Size" [convertProps]
+props = T.testGroup "ByteTypes.Class.Conversion" [convertProps]
 
 convertProps :: TestTree
 convertProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -24,7 +24,7 @@ convertProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         (s1, s2, n) <- H.forAll genConvertInput
         let expected = n * sizesToMult s1 s2
-            result = S.convert s1 s2 n
+            result = Conv.convert s1 s2 n
         H.footnote $ "expected: " <> show expected
         H.footnote $ "result: " <> show result
         PropUtils.rationalEq result expected

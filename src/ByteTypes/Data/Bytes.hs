@@ -25,6 +25,8 @@ module ByteTypes.Data.Bytes
   )
 where
 
+import ByteTypes.Class.Conversion (Conversion (..), DecByteSize (..), IncByteSize (..))
+import ByteTypes.Class.Conversion qualified as Conv
 import ByteTypes.Class.Math (Isomorphism (..), NumLiteral (..))
 import ByteTypes.Class.Math.Algebra
   ( Field (..),
@@ -41,16 +43,12 @@ import ByteTypes.Class.Math.Scalar
   )
 import ByteTypes.Data.Size
   ( ByteSize (..),
-    Conversion (..),
-    DecByteSize (..),
-    IncByteSize (..),
     NextUnit,
     Normalize (..),
     PrevUnit,
     SByteSize (..),
     SingByteSize (..),
   )
-import ByteTypes.Data.Size qualified as Size
 import Control.Applicative (liftA2)
 import Data.Kind (Type)
 
@@ -120,45 +118,45 @@ instance (Field n, NumLiteral n, SingByteSize s) => Conversion (Bytes s n) where
 
   toB b@(MkBytes x) = case bytesToSByteSize b of
     SB -> b
-    SKB -> MkBytes $ Size.convert KB B x
-    SMB -> MkBytes $ Size.convert MB B x
-    SGB -> MkBytes $ Size.convert GB B x
-    STB -> MkBytes $ Size.convert TB B x
-    SPB -> MkBytes $ Size.convert PB B x
+    SKB -> MkBytes $ Conv.convert KB B x
+    SMB -> MkBytes $ Conv.convert MB B x
+    SGB -> MkBytes $ Conv.convert GB B x
+    STB -> MkBytes $ Conv.convert TB B x
+    SPB -> MkBytes $ Conv.convert PB B x
   toKB b@(MkBytes x) = case bytesToSByteSize b of
-    SB -> MkBytes $ Size.convert B KB x
+    SB -> MkBytes $ Conv.convert B KB x
     SKB -> b
-    SMB -> MkBytes $ Size.convert MB KB x
-    SGB -> MkBytes $ Size.convert GB KB x
-    STB -> MkBytes $ Size.convert TB KB x
-    SPB -> MkBytes $ Size.convert PB KB x
+    SMB -> MkBytes $ Conv.convert MB KB x
+    SGB -> MkBytes $ Conv.convert GB KB x
+    STB -> MkBytes $ Conv.convert TB KB x
+    SPB -> MkBytes $ Conv.convert PB KB x
   toMB b@(MkBytes x) = case bytesToSByteSize b of
-    SB -> MkBytes $ Size.convert B MB x
-    SKB -> MkBytes $ Size.convert KB MB x
+    SB -> MkBytes $ Conv.convert B MB x
+    SKB -> MkBytes $ Conv.convert KB MB x
     SMB -> b
-    SGB -> MkBytes $ Size.convert GB MB x
-    STB -> MkBytes $ Size.convert TB MB x
-    SPB -> MkBytes $ Size.convert PB MB x
+    SGB -> MkBytes $ Conv.convert GB MB x
+    STB -> MkBytes $ Conv.convert TB MB x
+    SPB -> MkBytes $ Conv.convert PB MB x
   toGB b@(MkBytes x) = case bytesToSByteSize b of
-    SB -> MkBytes $ Size.convert B GB x
-    SKB -> MkBytes $ Size.convert KB GB x
-    SMB -> MkBytes $ Size.convert MB GB x
+    SB -> MkBytes $ Conv.convert B GB x
+    SKB -> MkBytes $ Conv.convert KB GB x
+    SMB -> MkBytes $ Conv.convert MB GB x
     SGB -> b
-    STB -> MkBytes $ Size.convert TB GB x
-    SPB -> MkBytes $ Size.convert PB GB x
+    STB -> MkBytes $ Conv.convert TB GB x
+    SPB -> MkBytes $ Conv.convert PB GB x
   toTB b@(MkBytes x) = case bytesToSByteSize b of
-    SB -> MkBytes $ Size.convert B TB x
-    SKB -> MkBytes $ Size.convert KB TB x
-    SMB -> MkBytes $ Size.convert MB TB x
-    SGB -> MkBytes $ Size.convert GB TB x
+    SB -> MkBytes $ Conv.convert B TB x
+    SKB -> MkBytes $ Conv.convert KB TB x
+    SMB -> MkBytes $ Conv.convert MB TB x
+    SGB -> MkBytes $ Conv.convert GB TB x
     STB -> b
-    SPB -> MkBytes $ Size.convert PB TB x
+    SPB -> MkBytes $ Conv.convert PB TB x
   toPB b@(MkBytes x) = case bytesToSByteSize b of
-    SB -> MkBytes $ Size.convert B PB x
-    SKB -> MkBytes $ Size.convert KB PB x
-    SMB -> MkBytes $ Size.convert MB PB x
-    SGB -> MkBytes $ Size.convert GB PB x
-    STB -> MkBytes $ Size.convert TB PB x
+    SB -> MkBytes $ Conv.convert B PB x
+    SKB -> MkBytes $ Conv.convert KB PB x
+    SMB -> MkBytes $ Conv.convert MB PB x
+    SGB -> MkBytes $ Conv.convert GB PB x
+    STB -> MkBytes $ Conv.convert TB PB x
     SPB -> b
 
 instance (Field n, NumLiteral n, SingByteSize s) => IncByteSize (Bytes s n) where

@@ -2,9 +2,9 @@
 module Main (main) where
 
 import Data.Proxy (Proxy (..))
+import Props.Class.Conversion qualified as PConv
 import Props.Data.Bytes qualified as PBytes
 import Props.Data.Network qualified as PNet
-import Props.Data.Size qualified as PSize
 import Props.MaxRuns (MaxRuns)
 import Test.Tasty qualified as T
 import Test.Tasty.Options (OptionDescription (..))
@@ -17,7 +17,7 @@ main = do
   T.defaultMainWithIngredients ingredients $
     T.testGroup
       "Property tests"
-      [ PSize.props,
+      [ PConv.props,
         PBytes.props,
         PNet.props
       ]

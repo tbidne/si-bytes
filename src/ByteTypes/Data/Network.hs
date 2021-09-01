@@ -37,6 +37,7 @@ module ByteTypes.Data.Network
   )
 where
 
+import ByteTypes.Class.Conversion (Conversion (..), DecByteSize (..), IncByteSize (..))
 import ByteTypes.Class.Math (Isomorphism (..), NumLiteral (..))
 import ByteTypes.Class.Math.Algebra
   ( Field (..),
@@ -60,9 +61,6 @@ import ByteTypes.Data.Direction
   )
 import ByteTypes.Data.Size
   ( ByteSize (..),
-    Conversion (..),
-    DecByteSize (..),
-    IncByteSize (..),
     NextUnit,
     Normalize (..),
     PrevUnit,

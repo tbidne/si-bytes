@@ -50,6 +50,7 @@ common common-exts
 library
   import:           common-exts
   exposed-modules:
+    ByteTypes.Class.Conversion
     ByteTypes.Class.Math
     ByteTypes.Class.Math.Algebra
     ByteTypes.Class.Math.Algebra.Field
@@ -78,11 +79,11 @@ test-suite unit
   type:             exitcode-stdio-1.0
   main-is:          Main.hs
   other-modules:
+    Props.Class.Conversion
     Props.Data.Bytes
     Props.Data.Bytes.Generators
     Props.Data.Network
     Props.Data.Network.Generators
-    Props.Data.Size
     Props.Data.Size.Generators
     Props.MaxRuns
     Props.Utils
