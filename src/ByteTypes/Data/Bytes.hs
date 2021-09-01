@@ -27,7 +27,6 @@ module ByteTypes.Data.Bytes
   )
 where
 
-import Control.Applicative (liftA2)
 import ByteTypes.Class.Div (Div (..))
 import ByteTypes.Class.Isomorphism (Isomorphism (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
@@ -44,6 +43,7 @@ import ByteTypes.Data.Size
     SingByteSize (..),
   )
 import ByteTypes.Data.Size qualified as Size
+import Control.Applicative (liftA2)
 import Data.Kind (Type)
 import Text.Printf (PrintfArg (..))
 import Text.Printf qualified as Pf
