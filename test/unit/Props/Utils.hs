@@ -14,7 +14,7 @@ module Props.Utils
   )
 where
 
-import ByteTypes.Class.Math.Algebra (Group (..))
+import ByteTypes.Class.Math (Group (..), NumLiteral (..))
 import ByteTypes.Class.Math.Scalar
   ( Scalar,
     ScalarEq (..),
@@ -85,19 +85,19 @@ numLaws x y z = do
 
 -- | Verifies that the parameter 'BytesOrd' is normalized, taking care
 -- to account for special 'B' and 'PB' rules.
-isNormalized :: (Group n, Show n, ScalarOrd n, Num (Scalar n)) => ByteSize -> n -> PropertyT IO ()
+isNormalized :: (Group n, Show n, ScalarOrd n, NumLiteral (Scalar n)) => ByteSize -> n -> PropertyT IO ()
 isNormalized B x = do
   H.footnoteShow x
-  H.assert $ gabs x .< 1_000
+  H.assert $ gabs x .< fromLit 1_000
 isNormalized PB x = do
   H.footnoteShow x
-  H.assert $ gabs x .>= 1
+  H.assert $ gabs x .>= fromLit 1
 isNormalized _ x
-  | x .= 0 = pure ()
+  | x .= fromLit 0 = pure ()
   | otherwise = do
     H.footnoteShow x
-    H.assert $ gabs x .>= 1
-    H.assert $ gabs x .< 1_000
+    H.assert $ gabs x .>= fromLit 1
+    H.assert $ gabs x .< fromLit 1_000
 
 -- | Checks equality after 'reduce'ing.
 rationalEq :: (Integral q, Show q) => Ratio q -> Ratio q -> PropertyT IO ()

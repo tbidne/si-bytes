@@ -3,6 +3,7 @@
 -- | Property tests for 'Bytes'.
 module Props.Data.Bytes (props) where
 
+import ByteTypes.Class.Math (NumLiteral (..))
 import ByteTypes.Class.Math.Algebra (Field (..), Group (..), Ring (..))
 import ByteTypes.Data.Bytes
   ( AnySize (..),
@@ -313,7 +314,7 @@ bytesNumAnyNormProps = T.askOption $ \(MkMaxRuns limit) -> do
 
 --anyNormalized anyScaled
 
-anyNormalized :: (Field n, Num n, Ord n, Show n) => AnySize n -> PropertyT IO ()
+anyNormalized :: (Field n, NumLiteral n, Ord n, Show n) => AnySize n -> PropertyT IO ()
 anyNormalized anySize = do
   let label = anySizeToLabel anySize
   H.footnoteShow anySize

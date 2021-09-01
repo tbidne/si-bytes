@@ -50,6 +50,7 @@ common common-exts
 library
   import:           common-exts
   exposed-modules:
+    ByteTypes.Class.Math
     ByteTypes.Class.Math.Algebra
     ByteTypes.Class.Math.Algebra.Field
     ByteTypes.Class.Math.Algebra.Group
@@ -57,6 +58,7 @@ library
     ByteTypes.Class.Math.Algebra.Ring
     ByteTypes.Class.Math.Algebra.VectorSpace
     ByteTypes.Class.Math.Isomorphism
+    ByteTypes.Class.Math.Literal
     ByteTypes.Class.Math.Scalar
     ByteTypes.Class.Math.Scalar.Num
     ByteTypes.Class.Math.Scalar.Ord
