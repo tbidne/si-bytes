@@ -64,6 +64,7 @@ library
     ByteTypes.Class.Math.Scalar.Num
     ByteTypes.Class.Math.Scalar.Ord
     ByteTypes.Class.Math.Scalar.Scalar
+    ByteTypes.Class.Normalize
     ByteTypes.Class.PrettyPrint
     ByteTypes.Data.Bytes
     ByteTypes.Data.Direction

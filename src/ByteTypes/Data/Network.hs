@@ -52,6 +52,7 @@ import ByteTypes.Class.Math.Scalar
     ScalarNum (..),
     ScalarOrd (..),
   )
+import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Direction
@@ -62,7 +63,6 @@ import ByteTypes.Data.Direction
 import ByteTypes.Data.Size
   ( ByteSize (..),
     NextUnit,
-    Normalize (..),
     PrevUnit,
     SByteSize (..),
     SingByteSize (..),

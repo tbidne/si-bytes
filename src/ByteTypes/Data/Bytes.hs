@@ -41,10 +41,10 @@ import ByteTypes.Class.Math.Scalar
     ScalarNum (..),
     ScalarOrd (..),
   )
+import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Size
   ( ByteSize (..),
     NextUnit,
-    Normalize (..),
     PrevUnit,
     SByteSize (..),
     SingByteSize (..),
