@@ -1,22 +1,26 @@
 -- | Utilities for property tests.
 module Props.Utils
-  ( -- * Logical operators
+  ( -- .*. Logical operators
     (==>),
     (<=>),
-
-    -- * Verifying laws
+    -- .*. Verifying laws
     eqLaws,
     ordLaws,
     numLaws,
-
-    -- * Miscellaneous
+    -- .*. Miscellaneous
     isNormalized,
     rationalEq,
     reduce,
   )
 where
 
-import ByteTypes.Class.ScalarOrd (Scalar, ScalarOrd (..))
+import ByteTypes.Class.Math.Algebra (Group (..))
+import ByteTypes.Class.Math.Scalar
+  ( Scalar,
+    ScalarEq (..),
+    ScalarNum (..),
+    ScalarOrd (..),
+  )
 import ByteTypes.Data.Size (ByteSize (..))
 import GHC.Real (Ratio (..))
 import Hedgehog (PropertyT, (===))
@@ -65,45 +69,35 @@ ordLaws x y z = do
   H.assert $ x < y <=> y > x
 
 -- | Verify 'Num' laws for 'BytesNum'.
-numLaws :: (Eq a, Num a, Show a) => a -> a -> a -> PropertyT IO ()
+numLaws :: (Eq a, ScalarNum a, Show a) => a -> a -> a -> PropertyT IO ()
 numLaws x y z = do
   H.annotateShow x
   H.annotateShow y
   H.annotateShow z
 
   -- associativity, commutativity, distributivity
-  H.annotateShow (x + y, (x + y) + z)
-  H.annotateShow (y + z, x + (y + z))
-  H.assert $ (x + y) + z == x + (y + z)
+  H.annotateShow (x .+. y, (x .+. y) .+. z)
+  H.annotateShow (y .+. z, x .+. (y .+. z))
+  H.assert $ (x .+. y) .+. z == x .+. (y .+. z)
 
-  H.annotateShow (x + y, y + x)
-  H.assert $ x + y == y + x
-
-  H.annotateShow (x * y, (x * y) * z)
-  H.annotateShow (y * z, x * (y * z))
-  H.assert $ (x * y) * z == x * (y * z)
-
-  H.annotateShow (x * y, y * x)
-  H.assert $ x * y == y * x
-
-  H.annotateShow (z * (x + y), z * x, z * y, (z * x) + (z * y))
-  H.assert $ z * (x + y) == (z * x) + (z * y)
+  H.annotateShow (x .+. y, y .+. x)
+  H.assert $ x .+. y == y .+. x
 
 -- | Verifies that the parameter 'BytesOrd' is normalized, taking care
 -- to account for special 'B' and 'PB' rules.
-isNormalized :: (Ord n, Num n, Show n, ScalarOrd n, Num (Scalar n)) => ByteSize -> n -> PropertyT IO ()
+isNormalized :: (Group n, Show n, ScalarOrd n, Num (Scalar n)) => ByteSize -> n -> PropertyT IO ()
 isNormalized B x = do
   H.footnoteShow x
-  H.assert $ abs x .< 1_000
+  H.assert $ gabs x .< 1_000
 isNormalized PB x = do
   H.footnoteShow x
-  H.assert $ abs x .>= 1
+  H.assert $ gabs x .>= 1
 isNormalized _ x
-  | x == 0 = pure ()
+  | x .= 0 = pure ()
   | otherwise = do
     H.footnoteShow x
-    H.assert $ abs x .>= 1
-    H.assert $ abs x .< 1_000
+    H.assert $ gabs x .>= 1
+    H.assert $ gabs x .< 1_000
 
 -- | Checks equality after 'reduce'ing.
 rationalEq :: (Integral q, Show q) => Ratio q -> Ratio q -> PropertyT IO ()

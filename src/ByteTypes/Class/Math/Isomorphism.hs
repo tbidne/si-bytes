@@ -1,5 +1,5 @@
 -- | Provides the 'Isomorphism' typeclass.
-module ByteTypes.Class.Isomorphism
+module ByteTypes.Class.Math.Isomorphism
   ( Isomorphism (..),
     liftFrom,
     liftFrom2,

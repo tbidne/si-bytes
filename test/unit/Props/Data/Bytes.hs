@@ -3,7 +3,7 @@
 -- | Property tests for 'Bytes'.
 module Props.Data.Bytes (props) where
 
-import ByteTypes.Class.Div (Div (..))
+import ByteTypes.Class.Math.Algebra (Field (..), Group (..), Ring (..))
 import ByteTypes.Data.Bytes
   ( AnySize (..),
     ByteSize (..),
@@ -63,11 +63,11 @@ convertBProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'B)
         let bExp = x
-            kExp = x % 1_000
-            mExp = x % 1_000_000
-            gExp = x % 1_000_000_000
-            tExp = x % 1_000_000_000_000
-            pExp = x % 1_000_000_000_000_000
+            kExp = x .%. 1_000
+            mExp = x .%. 1_000_000
+            gExp = x .%. 1_000_000_000
+            tExp = x .%. 1_000_000_000_000
+            pExp = x .%. 1_000_000_000_000_000
         convert MkExpectedConvs {..} bytes
 
 convertKBProps :: TestTree
@@ -76,12 +76,12 @@ convertKBProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'KB)
-        let bExp = x * 1_000
+        let bExp = x .*. 1_000
             kExp = x
-            mExp = x % 1_000
-            gExp = x % 1_000_000
-            tExp = x % 1_000_000_000
-            pExp = x % 1_000_000_000_000
+            mExp = x .%. 1_000
+            gExp = x .%. 1_000_000
+            tExp = x .%. 1_000_000_000
+            pExp = x .%. 1_000_000_000_000
         convert MkExpectedConvs {..} bytes
 
 convertMBProps :: TestTree
@@ -90,12 +90,12 @@ convertMBProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'MB)
-        let bExp = x * 1_000_000
-            kExp = x * 1_000
+        let bExp = x .*. 1_000_000
+            kExp = x .*. 1_000
             mExp = x
-            gExp = x % 1_000
-            tExp = x % 1_000_000
-            pExp = x % 1_000_000_000
+            gExp = x .%. 1_000
+            tExp = x .%. 1_000_000
+            pExp = x .%. 1_000_000_000
         convert MkExpectedConvs {..} bytes
 
 convertGBProps :: TestTree
@@ -104,12 +104,12 @@ convertGBProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'GB)
-        let bExp = x * 1_000_000_000
-            kExp = x * 1_000_000
-            mExp = x * 1_000
+        let bExp = x .*. 1_000_000_000
+            kExp = x .*. 1_000_000
+            mExp = x .*. 1_000
             gExp = x
-            tExp = x % 1_000
-            pExp = x % 1_000_000
+            tExp = x .%. 1_000
+            pExp = x .%. 1_000_000
         convert MkExpectedConvs {..} bytes
 
 convertTBProps :: TestTree
@@ -118,12 +118,12 @@ convertTBProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'TB)
-        let bExp = x * 1_000_000_000_000
-            kExp = x * 1_000_000_000
-            mExp = x * 1_000_000
-            gExp = x * 1_000
+        let bExp = x .*. 1_000_000_000_000
+            kExp = x .*. 1_000_000_000
+            mExp = x .*. 1_000_000
+            gExp = x .*. 1_000
             tExp = x
-            pExp = x % 1_000
+            pExp = x .%. 1_000
         convert MkExpectedConvs {..} bytes
 
 convertPBProps :: TestTree
@@ -132,11 +132,11 @@ convertPBProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'PB)
-        let bExp = x * 1_000_000_000_000_000
-            kExp = x * 1_000_000_000_000
-            mExp = x * 1_000_000_000
-            gExp = x * 1_000_000
-            tExp = x * 1_000
+        let bExp = x .*. 1_000_000_000_000_000
+            kExp = x .*. 1_000_000_000_000
+            mExp = x .*. 1_000_000_000
+            gExp = x .*. 1_000_000
+            tExp = x .*. 1_000
             pExp = x
         convert MkExpectedConvs {..} bytes
 
@@ -170,11 +170,11 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
               SPB -> (x, Bytes.unBytes (next bytes))
-              SB -> (x % 1_000, Bytes.unBytes (next bytes))
-              SKB -> (x % 1_000, Bytes.unBytes (next bytes))
-              SMB -> (x % 1_000, Bytes.unBytes (next bytes))
-              SGB -> (x % 1_000, Bytes.unBytes (next bytes))
-              STB -> (x % 1_000, Bytes.unBytes (next bytes))
+              SB -> (x .%. 1_000, Bytes.unBytes (next bytes))
+              SKB -> (x .%. 1_000, Bytes.unBytes (next bytes))
+              SMB -> (x .%. 1_000, Bytes.unBytes (next bytes))
+              SGB -> (x .%. 1_000, Bytes.unBytes (next bytes))
+              STB -> (x .%. 1_000, Bytes.unBytes (next bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -187,11 +187,11 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
               SB -> (x, Bytes.unBytes (prev bytes))
-              SKB -> (x * 1_000, Bytes.unBytes (prev bytes))
-              SMB -> (x * 1_000, Bytes.unBytes (prev bytes))
-              SGB -> (x * 1_000, Bytes.unBytes (prev bytes))
-              STB -> (x * 1_000, Bytes.unBytes (prev bytes))
-              SPB -> (x * 1_000, Bytes.unBytes (prev bytes))
+              SKB -> (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SMB -> (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SGB -> (x .*. 1_000, Bytes.unBytes (prev bytes))
+              STB -> (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SPB -> (x .*. 1_000, Bytes.unBytes (prev bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -305,14 +305,15 @@ bytesNumAnyNormProps = T.askOption $ \(MkMaxRuns limit) -> do
     H.withTests limit $
       H.property $ do
         (anyOne, anyTwo) <- H.forAll genAny2
-        let anySum = anyOne + anyTwo
-            anyDiff = anyOne - anyTwo
-            anyScaled = anyOne * anyTwo
+        let anySum = anyOne .+. anyTwo
+            anyDiff = anyOne .-. anyTwo
+        --anyScaled = anyOne .* (5 :: Rational) --anyTwo TODO Scalar
         anyNormalized anySum
         anyNormalized anyDiff
-        anyNormalized anyScaled
 
-anyNormalized :: (Div n, Num n, Ord n, Show n) => AnySize n -> PropertyT IO ()
+--anyNormalized anyScaled
+
+anyNormalized :: (Field n, Num n, Ord n, Show n) => AnySize n -> PropertyT IO ()
 anyNormalized anySize = do
   let label = anySizeToLabel anySize
   H.footnoteShow anySize

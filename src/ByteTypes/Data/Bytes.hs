@@ -24,9 +24,20 @@ module ByteTypes.Data.Bytes
   )
 where
 
-import ByteTypes.Class.Div (Div (..))
-import ByteTypes.Class.Isomorphism (Isomorphism (..))
-import ByteTypes.Class.ScalarOrd (Scalar, ScalarEq (..), ScalarOrd (..))
+import ByteTypes.Class.Math.Algebra
+  ( Field (..),
+    Group (..),
+    Module (..),
+    Ring (..),
+    VectorSpace (..),
+  )
+import ByteTypes.Class.Math.Isomorphism (Isomorphism (..))
+import ByteTypes.Class.Math.Scalar
+  ( Scalar,
+    ScalarEq (..),
+    ScalarNum (..),
+    ScalarOrd (..),
+  )
 import ByteTypes.Data.Size
   ( ByteSize (..),
     Conversion (..),
@@ -74,14 +85,6 @@ instance Eq n => Eq (Bytes s n) where
 instance Ord n => Ord (Bytes s n) where
   MkBytes x <= MkBytes y = x <= y
 
-instance Num n => Num (Bytes s n) where
-  (+) = liftA2 (+)
-  (-) = liftA2 (-)
-  (*) = liftA2 (*)
-  abs = fmap abs
-  signum = fmap signum
-  fromInteger = pure . fromInteger
-
 type instance Scalar (Bytes s n) = n
 
 instance Eq n => ScalarEq (Bytes s n) where
@@ -90,7 +93,23 @@ instance Eq n => ScalarEq (Bytes s n) where
 instance Ord n => ScalarOrd (Bytes s n) where
   MkBytes x .<= k = x <= k
 
-instance (Div n, Num n, SingByteSize s) => Conversion (Bytes s n) where
+instance Ring n => ScalarNum (Bytes s n) where
+  MkBytes x .+ k = MkBytes $ x .+. k
+
+instance Group n => Group (Bytes s n) where
+  (.+.) = liftA2 (.+.)
+  (.-.) = liftA2 (.-.)
+  gid = MkBytes gid
+  ginv = fmap ginv
+  gabs = fmap gabs
+
+instance Ring n => Module (Bytes s n) n where
+  MkBytes x .* k = MkBytes $ x .*. k
+
+instance Field n => VectorSpace (Bytes s n) n where
+  MkBytes x .% k = MkBytes $ x .%. k
+
+instance (Field n, Num n, SingByteSize s) => Conversion (Bytes s n) where
   type Converted 'B (Bytes s n) = Bytes 'B n
   type Converted 'KB (Bytes s n) = Bytes 'KB n
   type Converted 'MB (Bytes s n) = Bytes 'MB n
@@ -141,14 +160,14 @@ instance (Div n, Num n, SingByteSize s) => Conversion (Bytes s n) where
     STB -> MkBytes $ Size.convert TB PB x
     SPB -> b
 
-instance (Div n, Num n, SingByteSize s) => IncByteSize (Bytes s n) where
+instance (Field n, Num n, SingByteSize s) => IncByteSize (Bytes s n) where
   type Next (Bytes s n) = Bytes (NextUnit s) n
   next b@(MkBytes x) = case bytesToSByteSize b of
-    SB -> MkBytes $ x % 1_000
-    SKB -> MkBytes $ x % 1_000
-    SMB -> MkBytes $ x % 1_000
-    SGB -> MkBytes $ x % 1_000
-    STB -> MkBytes $ x % 1_000
+    SB -> MkBytes $ x .%. 1_000
+    SKB -> MkBytes $ x .%. 1_000
+    SMB -> MkBytes $ x .%. 1_000
+    SGB -> MkBytes $ x .%. 1_000
+    STB -> MkBytes $ x .%. 1_000
     SPB -> b
 
 instance (Num n, SingByteSize s) => DecByteSize (Bytes s n) where
@@ -161,7 +180,7 @@ instance (Num n, SingByteSize s) => DecByteSize (Bytes s n) where
     STB -> MkBytes $ x * 1_000
     SPB -> MkBytes $ x * 1_000
 
-instance forall n s. (Div n, Num n, Ord n, SingByteSize s) => Normalize (Bytes s n) where
+instance forall n s. (Field n, Num n, Ord n, SingByteSize s) => Normalize (Bytes s n) where
   type Norm (Bytes s n) = AnySize n
 
   normalize bytes =
@@ -176,7 +195,7 @@ instance forall n s. (Div n, Num n, Ord n, SingByteSize s) => Normalize (Bytes s
       SPB -> normGeneral
     where
       sz = bytesToSByteSize bytes
-      absBytes = abs bytes
+      absBytes = fmap abs bytes
 
       normGeneral ::
         ( SingByteSize (NextUnit s),
@@ -256,32 +275,39 @@ instance Ord n => Ord (AnySize n) where
       (SPB, STB) -> False
       (SPB, SPB) -> x <= y
 
-instance (Div n, Num n, Ord n) => Num (AnySize n) where
-  x + y =
-    let x' = to @_ @(Bytes 'B n) x
-        y' = to y
-     in normalize $ x' + y'
-  x - y =
-    let x' = to @_ @(Bytes 'B n) x
-        y' = to y
-     in normalize $ x' - y'
-  x * y =
-    let x' = to @_ @(Bytes 'B n) x
-        y' = to y
-     in normalize $ x' * y'
-  abs (MkAnySize sz x) = MkAnySize sz $ abs x
-  signum (MkAnySize sz x) = MkAnySize sz $ signum x
-  fromInteger n = MkAnySize SB $ fromInteger n
-
 type instance Scalar (AnySize n) = n
 
 instance Eq n => ScalarEq (AnySize n) where
-  MkAnySize _ x .= k = unBytes x == k
+  MkAnySize _ x .= k = x .= k
 
 instance Ord n => ScalarOrd (AnySize n) where
-  MkAnySize _ x .<= k = unBytes x <= k
+  MkAnySize _ x .<= k = x .<= k
 
-instance forall s n. (Div n, Num n, SingByteSize s) => Isomorphism (AnySize n) (Bytes s n) where
+instance (Field n, Num n, Ord n, Ring n) => ScalarNum (AnySize n) where
+  MkAnySize sz x .+ k = MkAnySize sz $ x .+ k
+
+instance (Field n, Group n, Num n, Ord n) => Group (AnySize n) where
+  x .+. y =
+    let x' = to @_ @(Bytes 'B n) x
+        y' = to y
+     in normalize $ x' .+. y'
+
+  x .-. y =
+    let x' = to @_ @(Bytes 'B n) x
+        y' = to y
+     in normalize $ x' .-. y'
+
+  gid = MkAnySize SB gid
+  ginv = fmap ginv
+  gabs = fmap gabs
+
+instance (Field n, Num n, Ord n, Ring n) => Module (AnySize n) n where
+  MkAnySize sz x .* k = MkAnySize sz $ x .* k
+
+instance (Field n, Num n, Ord n, Ring n) => VectorSpace (AnySize n) n where
+  MkAnySize sz x .% k = MkAnySize sz $ x .% k
+
+instance forall s n. (Field n, Num n, SingByteSize s) => Isomorphism (AnySize n) (Bytes s n) where
   to (MkAnySize sz b) = case (singByteSize @s) of
     SB ->
       case sz of
@@ -334,7 +360,7 @@ instance forall s n. (Div n, Num n, SingByteSize s) => Isomorphism (AnySize n) (
 
   from bytes = MkAnySize (bytesToSByteSize bytes) bytes
 
-instance (Div n, Num n) => Conversion (AnySize n) where
+instance (Field n, Num n) => Conversion (AnySize n) where
   type Converted _ (AnySize n) = AnySize n
 
   toB (MkAnySize sz x) = case sz of
@@ -380,7 +406,7 @@ instance (Div n, Num n) => Conversion (AnySize n) where
     STB -> let x' = toPB x in MkAnySize SPB x'
     SPB -> let x' = toPB x in MkAnySize SPB x'
 
-instance (Div n, Num n, Ord n) => Normalize (AnySize n) where
+instance (Field n, Num n, Ord n) => Normalize (AnySize n) where
   type Norm (AnySize n) = AnySize n
   normalize (MkAnySize sz x) = case sz of
     SB -> normalize x

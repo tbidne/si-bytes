@@ -1,16 +1,11 @@
--- | Provides typeclasses for comparing types with scalars.
-module ByteTypes.Class.ScalarOrd
-  ( Scalar,
-    ScalarEq (..),
+-- | Provides typeclasses for scalar comparisons.
+module ByteTypes.Class.Math.Scalar.Ord
+  ( ScalarEq (..),
     ScalarOrd (..),
   )
 where
 
-import Data.Kind (Type)
-
--- | Type family for use with 'ScalarEq' and 'ScalarOrd'.
-type Scalar :: Type -> Type
-type family Scalar a
+import ByteTypes.Class.Math.Scalar.Scalar (Scalar)
 
 -- | 'Eq' class for 'Scalar' comparisons. This is an alternative to
 -- the normal 'Eq' class. See 'ScalarOrd' for motivation.

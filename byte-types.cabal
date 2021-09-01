@@ -50,10 +50,18 @@ common common-exts
 library
   import:           common-exts
   exposed-modules:
-    ByteTypes.Class.Div
-    ByteTypes.Class.Isomorphism
+    ByteTypes.Class.Math.Algebra
+    ByteTypes.Class.Math.Algebra.Field
+    ByteTypes.Class.Math.Algebra.Group
+    ByteTypes.Class.Math.Algebra.Module
+    ByteTypes.Class.Math.Algebra.Ring
+    ByteTypes.Class.Math.Algebra.VectorSpace
+    ByteTypes.Class.Math.Isomorphism
+    ByteTypes.Class.Math.Scalar
+    ByteTypes.Class.Math.Scalar.Num
+    ByteTypes.Class.Math.Scalar.Ord
+    ByteTypes.Class.Math.Scalar.Scalar
     ByteTypes.Class.PrettyPrint
-    ByteTypes.Class.ScalarOrd
     ByteTypes.Data.Bytes
     ByteTypes.Data.Direction
     ByteTypes.Data.Network

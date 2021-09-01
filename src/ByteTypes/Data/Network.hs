@@ -34,9 +34,20 @@ module ByteTypes.Data.Network
   )
 where
 
-import ByteTypes.Class.Div (Div (..))
-import ByteTypes.Class.Isomorphism (Isomorphism (..))
-import ByteTypes.Class.ScalarOrd (Scalar, ScalarEq (..), ScalarOrd (..))
+import ByteTypes.Class.Math.Algebra
+  ( Field (..),
+    Group (..),
+    Module (..),
+    Ring (..),
+    VectorSpace (..),
+  )
+import ByteTypes.Class.Math.Isomorphism (Isomorphism (..))
+import ByteTypes.Class.Math.Scalar
+  ( Scalar,
+    ScalarEq (..),
+    ScalarNum (..),
+    ScalarOrd (..),
+  )
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Direction
@@ -84,14 +95,6 @@ instance Eq n => Eq (NetBytes d s n) where
 instance Ord n => Ord (NetBytes d s n) where
   MkNetBytes x <= MkNetBytes y = x <= y
 
-instance Num n => Num (NetBytes d s n) where
-  (+) = liftA2 (+)
-  (-) = liftA2 (-)
-  (*) = liftA2 (*)
-  abs = fmap abs
-  signum = fmap signum
-  fromInteger = pure . fromInteger
-
 type instance Scalar (NetBytes d s n) = n
 
 instance Eq n => ScalarEq (NetBytes d s n) where
@@ -100,11 +103,27 @@ instance Eq n => ScalarEq (NetBytes d s n) where
 instance Ord n => ScalarOrd (NetBytes d s n) where
   MkNetBytes x .<= k = x .<= k
 
+instance Ring n => ScalarNum (NetBytes d s n) where
+  MkNetBytes x .+ k = MkNetBytes $ x .+ k
+
+instance Group n => Group (NetBytes d s n) where
+  (.+.) = liftA2 (.+.)
+  (.-.) = liftA2 (.-.)
+  gid = MkNetBytes gid
+  ginv = fmap ginv
+  gabs = fmap gabs
+
+instance Ring n => Module (NetBytes d s n) n where
+  MkNetBytes x .* k = MkNetBytes $ x .* k
+
+instance Field n => VectorSpace (NetBytes d s n) n where
+  MkNetBytes x .% k = MkNetBytes $ x .% k
+
 instance Isomorphism (NetBytes d s n) (Bytes s n) where
   to = unNetBytes
   from = MkNetBytes
 
-instance (Div n, Num n, SingByteSize s) => Conversion (NetBytes d s n) where
+instance (Field n, Num n, SingByteSize s) => Conversion (NetBytes d s n) where
   type Converted 'B (NetBytes d s n) = NetBytes d 'B n
   type Converted 'KB (NetBytes d s n) = NetBytes d 'KB n
   type Converted 'MB (NetBytes d s n) = NetBytes d 'MB n
@@ -119,7 +138,7 @@ instance (Div n, Num n, SingByteSize s) => Conversion (NetBytes d s n) where
   toTB (MkNetBytes b) = MkNetBytes $ toTB b
   toPB (MkNetBytes b) = MkNetBytes $ toPB b
 
-instance (Div n, Num n, SingByteSize s) => IncByteSize (NetBytes d s n) where
+instance (Field n, Num n, SingByteSize s) => IncByteSize (NetBytes d s n) where
   type Next (NetBytes d s n) = NetBytes d (NextUnit s) n
   next (MkNetBytes x) = MkNetBytes $ next x
 
@@ -127,7 +146,7 @@ instance (Num n, SingByteSize s) => DecByteSize (NetBytes d s n) where
   type Prev (NetBytes d s n) = NetBytes d (PrevUnit s) n
   prev (MkNetBytes x) = MkNetBytes $ prev x
 
-instance (Div n, Num n, Ord n, SingByteSize s) => Normalize (NetBytes d s n) where
+instance (Field n, Num n, Ord n, SingByteSize s) => Normalize (NetBytes d s n) where
   type Norm (NetBytes d s n) = AnyNetSize d n
 
   normalize (MkNetBytes bytes) = case normalize bytes of
@@ -204,23 +223,6 @@ instance Ord n => Ord (AnyNetSize d n) where
       (SPB, STB) -> False
       (SPB, SPB) -> x <= y
 
-instance (Div n, Num n, Ord n) => Num (AnyNetSize d n) where
-  x + y =
-    let x' = to @_ @(NetBytes d 'B n) x
-        y' = to y
-     in normalize $ x' + y'
-  x - y =
-    let x' = to @_ @(NetBytes d 'B n) x
-        y' = to y
-     in normalize $ x' - y'
-  x * y =
-    let x' = to @_ @(NetBytes d 'B n) x
-        y' = to y
-     in normalize $ x' * y'
-  abs (MkAnyNetSize sz x) = MkAnyNetSize sz $ abs x
-  signum (MkAnyNetSize sz x) = MkAnyNetSize sz $ signum x
-  fromInteger n = MkAnyNetSize SB $ fromInteger n
-
 type instance Scalar (AnyNetSize d n) = n
 
 instance Eq n => ScalarEq (AnyNetSize d n) where
@@ -229,7 +231,31 @@ instance Eq n => ScalarEq (AnyNetSize d n) where
 instance Ord n => ScalarOrd (AnyNetSize d n) where
   MkAnyNetSize _ x .<= k = x .<= k
 
-instance (Div n, Num n, SingByteSize s) => Isomorphism (AnyNetSize d n) (NetBytes d s n) where
+instance (Field n, Num n, Ord n, Ring n) => ScalarNum (AnyNetSize d n) where
+  MkAnyNetSize sz x .+ k = MkAnyNetSize sz $ x .+ k
+
+instance (Field n, Group n, Num n, Ord n) => Group (AnyNetSize d n) where
+  x .+. y =
+    let x' = to @_ @(NetBytes d 'B n) x
+        y' = to y
+     in normalize $ x' .+. y'
+
+  x .-. y =
+    let x' = to @_ @(NetBytes d 'B n) x
+        y' = to y
+     in normalize $ x' .-. y'
+
+  gid = MkAnyNetSize SB gid
+  ginv = fmap ginv
+  gabs = fmap gabs
+
+instance (Field n, Num n, Ord n, Ring n) => Module (AnyNetSize d n) n where
+  MkAnyNetSize sz x .* k = MkAnyNetSize sz $ x .* k
+
+instance (Field n, Num n, Ord n, Ring n) => VectorSpace (AnyNetSize d n) n where
+  MkAnyNetSize sz x .% k = MkAnyNetSize sz $ x .% k
+
+instance (Field n, Num n, SingByteSize s) => Isomorphism (AnyNetSize d n) (NetBytes d s n) where
   to (MkAnyNetSize sz x) = case (singByteSize @s) of
     SB ->
       case sz of
@@ -282,7 +308,7 @@ instance (Div n, Num n, SingByteSize s) => Isomorphism (AnyNetSize d n) (NetByte
 
   from bytes = MkAnyNetSize (netToSByteSize bytes) bytes
 
-instance (Div n, Num n) => Conversion (AnyNetSize d n) where
+instance (Field n, Num n) => Conversion (AnyNetSize d n) where
   type Converted _ (AnyNetSize d n) = AnyNetSize d n
 
   toB (MkAnyNetSize sz x) = case sz of
@@ -328,7 +354,7 @@ instance (Div n, Num n) => Conversion (AnyNetSize d n) where
     STB -> let x' = toPB x in MkAnyNetSize SPB x'
     SPB -> let x' = toPB x in MkAnyNetSize SPB x'
 
-instance (Div n, Num n, Ord n) => Normalize (AnyNetSize d n) where
+instance (Field n, Num n, Ord n) => Normalize (AnyNetSize d n) where
   type Norm (AnyNetSize d n) = AnyNetSize d n
   normalize (MkAnyNetSize sz x) = case sz of
     SB -> normalize x
@@ -377,7 +403,7 @@ instance Eq n => ScalarEq (AnyNet n) where
 instance Ord n => ScalarOrd (AnyNet n) where
   MkAnyNet _ x .<= k = x .<= k
 
-instance (Div n, Num n) => Conversion (AnyNet n) where
+instance (Field n, Num n) => Conversion (AnyNet n) where
   type Converted _ (AnyNet n) = AnyNet n
 
   toB (MkAnyNet dir x) = MkAnyNet dir $ toB x
@@ -387,6 +413,6 @@ instance (Div n, Num n) => Conversion (AnyNet n) where
   toTB (MkAnyNet dir x) = MkAnyNet dir $ toTB x
   toPB (MkAnyNet dir x) = MkAnyNet dir $ toPB x
 
-instance (Div n, Num n, Ord n) => Normalize (AnyNet n) where
+instance (Field n, Num n, Ord n) => Normalize (AnyNet n) where
   type Norm (AnyNet n) = AnyNet n
   normalize (MkAnyNet dir x) = MkAnyNet dir $ normalize x
