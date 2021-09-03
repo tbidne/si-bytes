@@ -1,4 +1,4 @@
--- | Re-exports all 'Math' submodules.
+-- | Re-exports all Math submodules.
 module ByteTypes.Class.Math
   ( module M,
   )

@@ -1,16 +1,21 @@
--- | Provides typeclasses for converting between byte sizes.
+{-# LANGUAGE AllowAmbiguousTypes #-}
+
+-- | Provides typeclasses for convert between byte sizes.
 module ByteTypes.Class.Conversion
   ( DecByteSize (..),
     IncByteSize (..),
     Conversion (..),
     convert,
+    convertWitness,
   )
 where
 
-import ByteTypes.Class.Math (Field (..), NumLiteral (..), Ring (..))
-import ByteTypes.Data.Size (ByteSize (..))
+import ByteTypes.Class.Math.Algebra.Field (Field (..))
+import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
+import ByteTypes.Class.Math.Literal (NumLiteral (..))
+import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
 
--- | Typeclass for decreasing bytes to the previous units.
+-- | -- | Typeclass for decrementing bytes to the next units.
 class DecByteSize a where
   -- | Prev should involve 'ByteTypes.Data.Size.PrevUnit'.
   type Prev a
@@ -34,12 +39,30 @@ class Conversion a where
   toTB :: a -> Converted 'TB a
   toPB :: a -> Converted 'PB a
 
+-- | Low level function for converting a numeric literal /from/ the inferred
+-- 'SingByteSize' /to/ the parameter 'ByteSize'. For instance,
+-- @
+-- convertWitness @SKB 'MB 5_000 == 5
+-- @
+--
+-- This is slightly more principled than 'convert', but the higher level
+-- byte types and functions should still be preferred
+-- (e.g. 'ByteTypes.Data.Bytes', 'ByteTypes.Class.Normalize').
+convertWitness :: forall s n. (Field n, NumLiteral n, SingByteSize s) => ByteSize -> n -> n
+convertWitness toUnits n = case singByteSize @s of
+  SB -> convert B toUnits n
+  SKB -> convert KB toUnits n
+  SMB -> convert MB toUnits n
+  SGB -> convert GB toUnits n
+  STB -> convert TB toUnits n
+  SPB -> convert PB toUnits n
+
 -- | Low level function for converting a numeric literal between
 -- byte sizes. @convert b1 b2@ converts /from/ @b1@ /to/ @b2@,
 -- e.g. @convert GB KB = \\n -> n * 1_000_000@. The higher level
 -- byte types and functions should be preferred
--- (e.g. 'ByteTypes.Data.Bytes', 'Normalize'), but this is here
--- when it is needed.
+-- (e.g. 'ByteTypes.Data.Bytes', 'ByteTypes.Class.Normalize'), but this is
+-- herewhen it is needed.
 convert :: (Field n, NumLiteral n) => ByteSize -> ByteSize -> n -> n
 convert B B n = n
 convert B KB n = n .%. fromLit 1_000

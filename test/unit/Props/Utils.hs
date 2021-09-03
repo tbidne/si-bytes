@@ -18,7 +18,6 @@ import ByteTypes.Class.Math (Group (..), NumLiteral (..))
 import ByteTypes.Class.Math.Scalar
   ( Scalar,
     ScalarEq (..),
-    ScalarNum (..),
     ScalarOrd (..),
   )
 import ByteTypes.Data.Size (ByteSize (..))
@@ -69,7 +68,7 @@ ordLaws x y z = do
   H.assert $ x < y <=> y > x
 
 -- | Verify 'Num' laws for 'BytesNum'.
-numLaws :: (Eq a, ScalarNum a, Show a) => a -> a -> a -> PropertyT IO ()
+numLaws :: (Eq a, Group a, Show a) => a -> a -> a -> PropertyT IO ()
 numLaws x y z = do
   H.annotateShow x
   H.annotateShow y

@@ -11,7 +11,7 @@ import ByteTypes.Class.Math.Algebra.Module (Module (..))
 -- not need to include any functions. The only difference between a 'Module'
 -- and a 'VectorSpace' is that the former is over a
 -- 'ByteTypes.Class.Math.Algebra.Ring' and the latter a 'Field', so we get
--- scalar \"division\" for free simply by reusing multiplication with
+-- scalar \"division\" for free simply by reusing multiplicative
 -- inverses. Sadly, this cannot be trusted in the real world, so we provide
 -- the above as a default implementation that can be overridden. This default
 -- is sensible for:

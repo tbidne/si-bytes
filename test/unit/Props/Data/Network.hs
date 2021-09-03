@@ -1,13 +1,10 @@
 -- | Property tests for 'Bytes'.
 module Props.Data.Network (props) where
 
+import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Data.Bytes qualified as Bytes
-import ByteTypes.Data.Network
-  ( AnyNetSize (..),
-    ByteDirection (..),
-    Conversion (..),
-    NetBytes (..),
-  )
+import ByteTypes.Data.Direction (ByteDirection (..))
+import ByteTypes.Data.Network (AnyNetSize (..), NetBytes (..))
 import ByteTypes.Data.Network qualified as NetBytes
 import ByteTypes.Data.Size (SByteSize (..), SingByteSize (..))
 import Hedgehog (PropertyT, (===))
@@ -49,7 +46,7 @@ convertAndTestAny ::
   forall n d t.
   (Ord n, Show n) =>
   AnyNetSize d n ->
-  (AnyNetSize d n -> AnyNetSize d n) ->
+  (AnyNetSize d n -> NetBytes d t n) ->
   (forall s. SingByteSize s => NetBytes d s n -> NetBytes d t n) ->
   PropertyT IO ()
 convertAndTestAny anySize@(MkAnyNetSize sz bytes) anyToX toX = do
@@ -66,11 +63,10 @@ convertAndTestAny anySize@(MkAnyNetSize sz bytes) anyToX toX = do
 
 anyMatchesBytes ::
   (Ord n, Show n) =>
-  AnyNetSize d n ->
+  NetBytes d s n ->
   NetBytes d s n ->
   PropertyT IO ()
 anyMatchesBytes anySize bytes = do
-  let anyBytes = case anySize of
-        MkAnyNetSize _ b -> Bytes.unBytes $ NetBytes.unNetBytes b
+  let anyBytes = Bytes.unBytes $ NetBytes.unNetBytes anySize
       bytes' = Bytes.unBytes $ NetBytes.unNetBytes bytes
   anyBytes === bytes'

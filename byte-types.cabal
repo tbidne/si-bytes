@@ -46,6 +46,7 @@ common common-exts
     StandaloneKindSignatures
     TypeApplications
     TypeFamilies
+    TypeOperators
 
 library
   import:           common-exts
@@ -69,6 +70,8 @@ library
     ByteTypes.Data.Bytes
     ByteTypes.Data.Direction
     ByteTypes.Data.Network
+    ByteTypes.Data.Network.AnyNetDir
+    ByteTypes.Data.Network.NetBytes
     ByteTypes.Data.Size
 
   build-depends:    base ^>=4.14.1.0

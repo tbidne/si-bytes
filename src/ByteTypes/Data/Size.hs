@@ -5,6 +5,7 @@ module ByteTypes.Data.Size
     ByteSize (..),
     SByteSize (..),
     SingByteSize (..),
+    withSingByteSize,
 
     -- * Type Families for Relating Tags
     NextUnit,
@@ -13,6 +14,7 @@ module ByteTypes.Data.Size
 where
 
 import Data.Kind (Type)
+import Data.Type.Equality (TestEquality (..), (:~:) (..))
 
 -- | Byte units.
 data ByteSize
@@ -34,6 +36,16 @@ data SByteSize s where
   STB :: SByteSize 'TB
   SPB :: SByteSize 'PB
 
+instance TestEquality SByteSize where
+  testEquality x y = case (x, y) of
+    (SB, SB) -> Just Refl
+    (SKB, SKB) -> Just Refl
+    (SMB, SMB) -> Just Refl
+    (SGB, SGB) -> Just Refl
+    (STB, STB) -> Just Refl
+    (SPB, SPB) -> Just Refl
+    _ -> Nothing
+
 deriving instance Show (SByteSize s)
 
 -- | Typeclass for recovering the 'ByteSize' at runtime.
@@ -51,6 +63,18 @@ instance SingByteSize 'GB where singByteSize = SGB
 instance SingByteSize 'TB where singByteSize = STB
 
 instance SingByteSize 'PB where singByteSize = SPB
+
+-- | Singleton \"with\"-style convenience function. Allows us to run a
+-- computation @SingByteSize d => r@ without explicitly pattern-matching
+-- every time.
+withSingByteSize :: SByteSize s -> (SingByteSize s => r) -> r
+withSingByteSize s x = case s of
+  SB -> x
+  SKB -> x
+  SMB -> x
+  SGB -> x
+  STB -> x
+  SPB -> x
 
 -- | Closed type family that relates units to the next larger one.
 type NextUnit :: ByteSize -> ByteSize

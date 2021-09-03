@@ -6,11 +6,8 @@ module Props.Data.Network.Generators
   )
 where
 
-import ByteTypes.Data.Network
-  ( AnyNetSize (..),
-    ByteDirection (..),
-    NetBytes (..),
-  )
+import ByteTypes.Data.Direction (ByteDirection (..))
+import ByteTypes.Data.Network (AnyNetSize (..), NetBytes (..))
 import ByteTypes.Data.Size (SByteSize (..))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen

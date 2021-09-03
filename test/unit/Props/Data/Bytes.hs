@@ -3,19 +3,20 @@
 -- | Property tests for 'Bytes'.
 module Props.Data.Bytes (props) where
 
-import ByteTypes.Class.Math (NumLiteral (..))
-import ByteTypes.Class.Math.Algebra (Field (..), Group (..), Ring (..))
-import ByteTypes.Data.Bytes
-  ( AnySize (..),
-    ByteSize (..),
-    Bytes (..),
-    Conversion (..),
+import ByteTypes.Class.Conversion
+  ( Conversion (..),
     DecByteSize (..),
     IncByteSize (..),
-    Normalize (..),
+  )
+import ByteTypes.Class.Math (NumLiteral (..))
+import ByteTypes.Class.Math.Algebra (Field (..), Group (..), Ring (..))
+import ByteTypes.Class.Normalize (Normalize (..))
+import ByteTypes.Data.Bytes
+  ( AnySize (..),
+    Bytes (..),
   )
 import ByteTypes.Data.Bytes qualified as Bytes
-import ByteTypes.Data.Size (SByteSize (..), SingByteSize (..))
+import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
 import Hedgehog (Gen, PropertyT, (===))
 import Hedgehog qualified as H
 import Props.Data.Bytes.Generators qualified as Gens
@@ -268,7 +269,7 @@ convertAndTestAny ::
   forall n t.
   (Ord n, Show n) =>
   AnySize n ->
-  (AnySize n -> AnySize n) ->
+  (AnySize n -> Bytes t n) ->
   (forall s. SingByteSize s => Bytes s n -> Bytes t n) ->
   PropertyT IO ()
 convertAndTestAny anySize@(MkAnySize sz bytes) anyToX toX =
@@ -283,10 +284,9 @@ convertAndTestAny anySize@(MkAnySize sz bytes) anyToX toX =
         SPB -> toX bytes
    in anyMatchesBytes anyConv bytesConv
 
-anyMatchesBytes :: (Ord n, Show n) => AnySize n -> Bytes s n -> PropertyT IO ()
+anyMatchesBytes :: (Ord n, Show n) => Bytes s n -> Bytes s n -> PropertyT IO ()
 anyMatchesBytes anySize bytes = do
-  let anyBytes = case anySize of
-        MkAnySize _ b -> Bytes.unBytes b
+  let anyBytes = Bytes.unBytes anySize
       bytes' = Bytes.unBytes bytes
   anyBytes === bytes'
 
