@@ -10,12 +10,10 @@ where
 import ByteTypes.Data.Bytes (AnySize (..))
 import ByteTypes.Data.Direction (ByteDirection (..))
 import ByteTypes.Data.Network.NetBytes (AnyNetSize (..), NetBytes (..))
-import ByteTypes.Data.Size (ByteSize (..), SByteSize (..))
+import ByteTypes.Data.Size (SByteSize (..))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
-import Hedgehog.Range qualified as HRange
 import Props.Data.Bytes.Generators qualified as BGens
-import Props.Data.Size.Generators qualified as SGens
 
 -- | Generates 'NetBytes' 'Down' over 'BGens.genBytes'.
 genNet :: Gen (NetBytes d s Rational)

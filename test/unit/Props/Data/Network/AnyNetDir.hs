@@ -1,5 +1,5 @@
 -- | Property tests for 'AnyNetDir'.
-module Props.Data.Network.AnyNetDir where
+module Props.Data.Network.AnyNetDir (props) where
 
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T

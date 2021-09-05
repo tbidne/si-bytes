@@ -15,7 +15,7 @@ import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
 import ByteTypes.Data.Size qualified as Size
-import Hedgehog (Gen, PropertyT, (===))
+import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
 import Props.Data.Bytes.Generators qualified as Gens
 import Props.Data.Size.Generators qualified as SGens
