@@ -14,18 +14,21 @@ module ByteTypes.Data.Bytes
 where
 
 import ByteTypes.Class.Conversion
+  ( Conversion (..),
+    DecByteSize (..),
+    IncByteSize (..),
+  )
 import ByteTypes.Class.Conversion qualified as Conv
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
 import ByteTypes.Class.Math.Algebra.Group (Group (..))
 import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
-import ByteTypes.Class.Math.Isomorphism (Isomorphism (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
 import ByteTypes.Class.Math.Scalar.Num (ScalarNum (..))
 import ByteTypes.Class.Math.Scalar.Ord (ScalarEq (..), ScalarOrd (..))
 import ByteTypes.Class.Math.Scalar.Scalar (Scalar)
-import ByteTypes.Class.Normalize
+import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Size
   ( ByteSize (..),
@@ -269,21 +272,6 @@ instance (Field n, NumLiteral n, Ord n) => Module (AnySize n) n where
 instance (Field n, NumLiteral n, Ord n) => VectorSpace (AnySize n) n where
   MkAnySize sz x .% k = MkAnySize sz $ x .% k
 
-instance
-  forall s n.
-  (Field n, NumLiteral n, SingByteSize s) =>
-  Isomorphism (AnySize n) (Bytes s n)
-  where
-  to (MkAnySize sz x) = case (singByteSize @s) of
-    SB -> Size.withSingByteSize sz $ toB x
-    SKB -> Size.withSingByteSize sz $ toKB x
-    SMB -> Size.withSingByteSize sz $ toMB x
-    SGB -> Size.withSingByteSize sz $ toGB x
-    STB -> Size.withSingByteSize sz $ toTB x
-    SPB -> Size.withSingByteSize sz $ toPB x
-
-  from bytes = MkAnySize (bytesToSByteSize bytes) bytes
-
 instance (Field n, NumLiteral n) => Conversion (AnySize n) where
   type Converted 'B (AnySize n) = Bytes 'B n
   type Converted 'KB (AnySize n) = Bytes 'KB n
@@ -304,10 +292,4 @@ instance (Field n, NumLiteral n, Ord n) => Normalize (AnySize n) where
   normalize (MkAnySize sz x) = Size.withSingByteSize sz $ normalize x
 
 instance PrintfArg n => PrettyPrint (AnySize n) where
-  pretty (MkAnySize sz b) = case sz of
-    SB -> pretty b
-    SKB -> pretty b
-    SMB -> pretty b
-    SGB -> pretty b
-    STB -> pretty b
-    SPB -> pretty b
+  pretty (MkAnySize sz b) = Size.withSingByteSize sz $ pretty b

@@ -19,7 +19,6 @@ import ByteTypes.Class.Math.Algebra.Group (Group (..))
 import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
-import ByteTypes.Class.Math.Isomorphism (Isomorphism (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
 import ByteTypes.Class.Math.Scalar.Num (ScalarNum (..))
 import ByteTypes.Class.Math.Scalar.Ord (ScalarEq (..), ScalarOrd (..))
@@ -102,10 +101,6 @@ instance Ring n => Module (NetBytes d s n) n where
 
 instance Field n => VectorSpace (NetBytes d s n) n where
   MkNetBytes x .% k = MkNetBytes $ x .% k
-
-instance Isomorphism (NetBytes d s n) (Bytes s n) where
-  to = unNetBytes
-  from = MkNetBytes
 
 instance (Field n, NumLiteral n, SingByteSize s) => Conversion (NetBytes d s n) where
   type Converted 'B (NetBytes d s n) = NetBytes d 'B n
@@ -197,17 +192,6 @@ instance (Field n, NumLiteral n, Ord n) => Module (AnyNetSize d n) n where
 
 instance (Field n, NumLiteral n, Ord n) => VectorSpace (AnyNetSize d n) n where
   MkAnyNetSize sz x .% k = MkAnyNetSize sz $ x .% k
-
-instance (Field n, NumLiteral n, SingByteSize s) => Isomorphism (AnyNetSize d n) (NetBytes d s n) where
-  to (MkAnyNetSize sz x) = case (singByteSize @s) of
-    SB -> Size.withSingByteSize sz $ toB x
-    SKB -> Size.withSingByteSize sz $ toKB x
-    SMB -> Size.withSingByteSize sz $ toMB x
-    SGB -> Size.withSingByteSize sz $ toGB x
-    STB -> Size.withSingByteSize sz $ toTB x
-    SPB -> Size.withSingByteSize sz $ toPB x
-
-  from bytes = MkAnyNetSize (netToSByteSize bytes) bytes
 
 instance (Field n, NumLiteral n) => Conversion (AnyNetSize d n) where
   type Converted 'B (AnyNetSize d n) = NetBytes d 'B n

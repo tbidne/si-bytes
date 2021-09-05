@@ -59,7 +59,6 @@ library
     ByteTypes.Class.Math.Algebra.Module
     ByteTypes.Class.Math.Algebra.Ring
     ByteTypes.Class.Math.Algebra.VectorSpace
-    ByteTypes.Class.Math.Isomorphism
     ByteTypes.Class.Math.Literal
     ByteTypes.Class.Math.Scalar
     ByteTypes.Class.Math.Scalar.Num
@@ -86,8 +85,9 @@ test-suite unit
     Props.Class.Conversion
     Props.Data.Bytes
     Props.Data.Bytes.Generators
-    Props.Data.Network
+    Props.Data.Network.AnyNetDir
     Props.Data.Network.Generators
+    Props.Data.Network.NetBytes
     Props.Data.Size.Generators
     Props.MaxRuns
     Props.Utils

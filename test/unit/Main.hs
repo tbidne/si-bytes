@@ -4,7 +4,8 @@ module Main (main) where
 import Data.Proxy (Proxy (..))
 import Props.Class.Conversion qualified as PConv
 import Props.Data.Bytes qualified as PBytes
-import Props.Data.Network qualified as PNet
+import Props.Data.Network.AnyNetDir qualified as PAnyNetDir
+import Props.Data.Network.NetBytes qualified as PNetBytes
 import Props.MaxRuns (MaxRuns)
 import Test.Tasty qualified as T
 import Test.Tasty.Options (OptionDescription (..))
@@ -19,5 +20,6 @@ main = do
       "Property tests"
       [ PConv.props,
         PBytes.props,
-        PNet.props
+        PNetBytes.props,
+        PAnyNetDir.props
       ]
