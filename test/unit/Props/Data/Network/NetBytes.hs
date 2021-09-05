@@ -150,8 +150,12 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         (MkAnyNetSize sz bytes@(MkNetBytes (MkBytes x))) <- H.forAll NGens.genNormalizedNetBytes
         let (expected, result) :: (Rational, Rational) = case sz of
-              SPB -> (x, netToNum (next bytes))
-              _ -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
+              SPB -> (x, netToNum bytes)
+              SB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
+              SKB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
+              SMB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
+              SGB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
+              STB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -163,8 +167,12 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         (MkAnyNetSize sz bytes@(MkNetBytes (MkBytes x))) <- H.forAll NGens.genNormalizedNetBytes
         let (expected, result) :: (Rational, Rational) = case sz of
-              SB -> (x, netToNum (prev bytes))
-              _ -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
+              SB -> (x, netToNum bytes)
+              SKB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
+              SMB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
+              SGB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
+              STB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
+              SPB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected

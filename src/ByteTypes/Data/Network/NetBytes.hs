@@ -117,12 +117,44 @@ instance (Field n, NumLiteral n, SingByteSize s) => Conversion (NetBytes d s n) 
   toTB (MkNetBytes b) = MkNetBytes $ toTB b
   toPB (MkNetBytes b) = MkNetBytes $ toPB b
 
-instance (Field n, NumLiteral n, SingByteSize s) => IncByteSize (NetBytes d s n) where
-  type Next (NetBytes d s n) = NetBytes d (NextUnit s) n
+instance (Field n, NumLiteral n) => IncByteSize (NetBytes d 'B n) where
+  type Next (NetBytes d 'B n) = NetBytes d (NextUnit 'B) n
   next (MkNetBytes x) = MkNetBytes $ next x
 
-instance (NumLiteral n, Ring n, SingByteSize s) => DecByteSize (NetBytes d s n) where
-  type Prev (NetBytes d s n) = NetBytes d (PrevUnit s) n
+instance (Field n, NumLiteral n) => IncByteSize (NetBytes d 'KB n) where
+  type Next (NetBytes d 'KB n) = NetBytes d (NextUnit 'KB) n
+  next (MkNetBytes x) = MkNetBytes $ next x
+
+instance (Field n, NumLiteral n) => IncByteSize (NetBytes d 'MB n) where
+  type Next (NetBytes d 'MB n) = NetBytes d (NextUnit 'MB) n
+  next (MkNetBytes x) = MkNetBytes $ next x
+
+instance (Field n, NumLiteral n) => IncByteSize (NetBytes d 'GB n) where
+  type Next (NetBytes d 'GB n) = NetBytes d (NextUnit 'GB) n
+  next (MkNetBytes x) = MkNetBytes $ next x
+
+instance (Field n, NumLiteral n) => IncByteSize (NetBytes d 'TB n) where
+  type Next (NetBytes d 'TB n) = NetBytes d (NextUnit 'TB) n
+  next (MkNetBytes x) = MkNetBytes $ next x
+
+instance (NumLiteral n, Ring n) => DecByteSize (NetBytes d 'KB n) where
+  type Prev (NetBytes d 'KB n) = NetBytes d (PrevUnit 'KB) n
+  prev (MkNetBytes x) = MkNetBytes $ prev x
+
+instance (NumLiteral n, Ring n) => DecByteSize (NetBytes d 'MB n) where
+  type Prev (NetBytes d 'MB n) = NetBytes d (PrevUnit 'MB) n
+  prev (MkNetBytes x) = MkNetBytes $ prev x
+
+instance (NumLiteral n, Ring n) => DecByteSize (NetBytes d 'GB n) where
+  type Prev (NetBytes d 'GB n) = NetBytes d (PrevUnit 'GB) n
+  prev (MkNetBytes x) = MkNetBytes $ prev x
+
+instance (NumLiteral n, Ring n) => DecByteSize (NetBytes d 'TB n) where
+  type Prev (NetBytes d 'TB n) = NetBytes d (PrevUnit 'TB) n
+  prev (MkNetBytes x) = MkNetBytes $ prev x
+
+instance (NumLiteral n, Ring n) => DecByteSize (NetBytes d 'PB n) where
+  type Prev (NetBytes d 'PB n) = NetBytes d (PrevUnit 'PB) n
   prev (MkNetBytes x) = MkNetBytes $ prev x
 
 instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (NetBytes d s n) where

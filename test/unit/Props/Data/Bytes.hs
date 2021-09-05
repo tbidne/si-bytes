@@ -171,8 +171,12 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
-              SPB -> (x, Bytes.unBytes (next bytes))
-              _ -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SPB -> (x, Bytes.unBytes bytes)
+              SB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SKB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SMB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SGB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              STB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -184,8 +188,12 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
-              SB -> (x, Bytes.unBytes (prev bytes))
-              _ -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SB -> (x, Bytes.unBytes bytes)
+              SKB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SMB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SGB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              STB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SPB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected

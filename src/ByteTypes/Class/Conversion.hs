@@ -15,23 +15,24 @@ import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
 import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
 
--- | -- | Typeclass for decrementing bytes to the next units.
+-- | Typeclass for decrementing bytes to the next units.
 class DecByteSize a where
   -- | Prev should involve 'ByteTypes.Data.Size.PrevUnit'.
-  type Prev a
+  type Prev a = r | r -> a
 
   prev :: a -> Prev a
 
 -- | Typeclass for increasing bytes to the next units.
 class IncByteSize a where
   -- | Next should involve 'ByteTypes.Data.Size.NextUnit'.
-  type Next a
+  type Next a = r | r -> a
 
   next :: a -> Next a
 
 -- | Provides a common interface for converting between byte sizes.
 class Conversion a where
-  type Converted (b :: ByteSize) a
+  type Converted (b :: ByteSize) a = r | r -> b
+
   toB :: a -> Converted 'B a
   toKB :: a -> Converted 'KB a
   toMB :: a -> Converted 'MB a

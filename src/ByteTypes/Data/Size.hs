@@ -78,18 +78,16 @@ withSingByteSize s x = case s of
 
 -- | Closed type family that relates units to the next larger one.
 type NextUnit :: ByteSize -> ByteSize
-type family NextUnit a where
+type family NextUnit a = r | r -> a where
   NextUnit 'B = 'KB
   NextUnit 'KB = 'MB
   NextUnit 'MB = 'GB
   NextUnit 'GB = 'TB
   NextUnit 'TB = 'PB
-  NextUnit 'PB = 'PB
 
 -- | Closed type family that relates units to the previous smaller one.
 type PrevUnit :: ByteSize -> ByteSize
-type family PrevUnit a where
-  PrevUnit 'B = 'B
+type family PrevUnit a = r | r -> a where
   PrevUnit 'KB = 'B
   PrevUnit 'MB = 'KB
   PrevUnit 'GB = 'MB
