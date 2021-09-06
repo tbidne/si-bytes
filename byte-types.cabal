@@ -70,8 +70,8 @@ library
     ByteTypes.Data.Bytes
     ByteTypes.Data.Direction
     ByteTypes.Data.Network
-    ByteTypes.Data.Network.AnyNetDir
     ByteTypes.Data.Network.NetBytes
+    ByteTypes.Data.Network.SomeNetDir
     ByteTypes.Data.Size
 
   build-depends:    base ^>=4.14.1.0
@@ -86,9 +86,9 @@ test-suite unit
     Props.Class.Conversion
     Props.Data.Bytes
     Props.Data.Bytes.Generators
-    Props.Data.Network.AnyNetDir
     Props.Data.Network.Generators
     Props.Data.Network.NetBytes
+    Props.Data.Network.SomeNetDir
     Props.Data.Size.Generators
     Props.MaxRuns
     Props.Utils

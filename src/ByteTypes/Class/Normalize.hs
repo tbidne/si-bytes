@@ -16,7 +16,7 @@ where
 --
 -- However, because the normalized units varies with the value, @normalize@
 -- always returns a type that existentially quantifies the size
--- (e.g. 'BytesTypes.Data.Bytes.AnySize'). 'Eq' for these types is defined in
+-- (e.g. 'BytesTypes.Data.Bytes.SomeSize'). 'Eq' for these types is defined in
 -- terms of an equivalence class that takes units into account, e.g.,
 -- @1 P = 1,000 T = 1,000,000 G ...@. Viewed this way, @normalize@ is actually
 -- an /isomorphism/, as it is essentially a no-op, never leaving the

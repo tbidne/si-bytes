@@ -8,8 +8,8 @@ module ByteTypes.Data.Network.NetBytes
     netToSDirection,
 
     -- * Unknown Size
-    AnyNetSize (..),
-    anyNetSizeToSDirection,
+    SomeNetSize (..),
+    someNetSizeToSDirection,
   )
 where
 
@@ -25,7 +25,7 @@ import ByteTypes.Class.Math.Scalar.Ord (ScalarEq (..), ScalarOrd (..))
 import ByteTypes.Class.Math.Scalar.Scalar (Scalar)
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
-import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
+import ByteTypes.Data.Bytes (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Direction
   ( Direction (..),
     SDirection (..),
@@ -112,10 +112,10 @@ instance (Field n, NumLiteral n, SingSize s) => Conversion (NetBytes d s n) wher
   toP (MkNetBytes b) = MkNetBytes $ toP b
 
 instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (NetBytes d s n) where
-  type Norm (NetBytes d s n) = AnyNetSize d n
+  type Norm (NetBytes d s n) = SomeNetSize d n
 
   normalize (MkNetBytes bytes) = case normalize bytes of
-    MkAnySize sz bytes' -> MkAnyNetSize sz $ MkNetBytes bytes'
+    MkSomeSize sz bytes' -> MkSomeNetSize sz $ MkNetBytes bytes'
 
 instance
   forall d s n.
@@ -130,34 +130,34 @@ instance
 -- when a function does not know a priori what size it should return, e.g.,
 --
 -- @
---   getUpTraffic :: IO (AnyNetSize Up Float)
+--   getUpTraffic :: IO (SomeNetSize Up Float)
 --   getUpTraffic = do
 --     (bytes, units) <- getUpTrafficRaw
 --     case units of
---       "B" -> MkAnyNetSize SUp $ MkBytes \@B bytes
---       "K" -> MkAnyNetSize SUp $ MkBytes \@K bytes
+--       "B" -> MkSomeNetSize SUp $ MkBytes \@B bytes
+--       "K" -> MkSomeNetSize SUp $ MkBytes \@K bytes
 --       ...
 -- @
 --
--- 'AnyNetSize' carries along an 'SSize' runtime witness for when we
+-- 'SomeNetSize' carries along an 'SSize' runtime witness for when we
 -- need the size. Its 'Group' functions are 'normalize'd.
 --
--- N.B. 'AnyNetSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord',
+-- N.B. 'SomeNetSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord',
 -- 'Group') are themselves lawful w.r.t. the notion of equivalence defined
 -- in its 'Eq' instance.
-type AnyNetSize :: Direction -> Type -> Type
-data AnyNetSize d n where
-  MkAnyNetSize :: SSize s -> NetBytes d s n -> AnyNetSize d n
+type SomeNetSize :: Direction -> Type -> Type
+data SomeNetSize d n where
+  MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 
-deriving instance Show n => Show (AnyNetSize d n)
+deriving instance Show n => Show (SomeNetSize d n)
 
-deriving instance Functor (AnyNetSize d)
+deriving instance Functor (SomeNetSize d)
 
--- | Note: This instance defines an equivalence relation on 'AnyNetSize' that
+-- | Note: This instance defines an equivalence relation on 'SomeNetSize' that
 -- takes units into account. For instance,
 --
 -- @
--- MkAnyNetSize SK (MkBytes 1000) == MkAnyNetSize SM (MkBytes 1).
+-- MkSomeNetSize SK (MkBytes 1000) == MkSomeNetSize SM (MkBytes 1).
 -- @
 --
 -- Because we expose the underlying @NetBytes@ in several ways (e.g. 'Show',
@@ -171,8 +171,8 @@ deriving instance Functor (AnyNetSize d)
 -- For instance:
 --
 -- @
--- let x = MkAnyMkAnyNetSizeSize SK (MkBytes 1000)
--- let y = MkAnyNetSize SM (MkBytes 1)
+-- let x = MkSomeNetSize SK (MkBytes 1000)
+-- let y = MkSomeNetSize SM (MkBytes 1)
 -- x == y
 -- isK x /= isK y
 -- @
@@ -180,46 +180,46 @@ deriving instance Functor (AnyNetSize d)
 -- With apologies to Leibniz, such comparisons are too useful to ignore
 -- and enable us to implement other lawful classes (e.g. 'Group') that respect
 -- this notion of equivalence.
-instance (Eq n, Field n, NumLiteral n) => Eq (AnyNetSize d n) where
+instance (Eq n, Field n, NumLiteral n) => Eq (SomeNetSize d n) where
   x == y = toB x == toB y
 
-instance (Field n, NumLiteral n, Ord n) => Ord (AnyNetSize d n) where
+instance (Field n, NumLiteral n, Ord n) => Ord (SomeNetSize d n) where
   x <= y = toB x <= toB y
 
-instance (Field n, NumLiteral n, Ord n) => Group (AnyNetSize d n) where
+instance (Field n, NumLiteral n, Ord n) => Group (SomeNetSize d n) where
   x .+. y = normalize $ toB x .+. toB y
   x .-. y = normalize $ toB x .-. toB y
-  gid = MkAnyNetSize SB gid
+  gid = MkSomeNetSize SB gid
   ginv = fmap ginv
   gabs = fmap gabs
 
-instance (Field n, NumLiteral n, Ord n) => Module (AnyNetSize d n) n where
-  MkAnyNetSize sz x .* k = MkAnyNetSize sz $ x .* k
+instance (Field n, NumLiteral n, Ord n) => Module (SomeNetSize d n) n where
+  MkSomeNetSize sz x .* k = MkSomeNetSize sz $ x .* k
 
-instance (Field n, NumLiteral n, Ord n) => VectorSpace (AnyNetSize d n) n where
-  MkAnyNetSize sz x .% k = MkAnyNetSize sz $ x .% k
+instance (Field n, NumLiteral n, Ord n) => VectorSpace (SomeNetSize d n) n where
+  MkSomeNetSize sz x .% k = MkSomeNetSize sz $ x .% k
 
-instance (Field n, NumLiteral n) => Conversion (AnyNetSize d n) where
-  type Converted 'B (AnyNetSize d n) = NetBytes d 'B n
-  type Converted 'K (AnyNetSize d n) = NetBytes d 'K n
-  type Converted 'M (AnyNetSize d n) = NetBytes d 'M n
-  type Converted 'G (AnyNetSize d n) = NetBytes d 'G n
-  type Converted 'T (AnyNetSize d n) = NetBytes d 'T n
-  type Converted 'P (AnyNetSize d n) = NetBytes d 'P n
+instance (Field n, NumLiteral n) => Conversion (SomeNetSize d n) where
+  type Converted 'B (SomeNetSize d n) = NetBytes d 'B n
+  type Converted 'K (SomeNetSize d n) = NetBytes d 'K n
+  type Converted 'M (SomeNetSize d n) = NetBytes d 'M n
+  type Converted 'G (SomeNetSize d n) = NetBytes d 'G n
+  type Converted 'T (SomeNetSize d n) = NetBytes d 'T n
+  type Converted 'P (SomeNetSize d n) = NetBytes d 'P n
 
-  toB (MkAnyNetSize sz x) = Size.withSingSize sz $ toB x
-  toK (MkAnyNetSize sz x) = Size.withSingSize sz $ toK x
-  toM (MkAnyNetSize sz x) = Size.withSingSize sz $ toM x
-  toG (MkAnyNetSize sz x) = Size.withSingSize sz $ toG x
-  toT (MkAnyNetSize sz x) = Size.withSingSize sz $ toT x
-  toP (MkAnyNetSize sz x) = Size.withSingSize sz $ toP x
+  toB (MkSomeNetSize sz x) = Size.withSingSize sz $ toB x
+  toK (MkSomeNetSize sz x) = Size.withSingSize sz $ toK x
+  toM (MkSomeNetSize sz x) = Size.withSingSize sz $ toM x
+  toG (MkSomeNetSize sz x) = Size.withSingSize sz $ toG x
+  toT (MkSomeNetSize sz x) = Size.withSingSize sz $ toT x
+  toP (MkSomeNetSize sz x) = Size.withSingSize sz $ toP x
 
-instance (Field n, NumLiteral n, Ord n) => Normalize (AnyNetSize d n) where
-  type Norm (AnyNetSize d n) = AnyNetSize d n
-  normalize (MkAnyNetSize sz x) = Size.withSingSize sz $ normalize x
+instance (Field n, NumLiteral n, Ord n) => Normalize (SomeNetSize d n) where
+  type Norm (SomeNetSize d n) = SomeNetSize d n
+  normalize (MkSomeNetSize sz x) = Size.withSingSize sz $ normalize x
 
-instance (PrintfArg n, SingDirection d) => PrettyPrint (AnyNetSize d n) where
-  pretty (MkAnyNetSize sz b) = case sz of
+instance (PrintfArg n, SingDirection d) => PrettyPrint (SomeNetSize d n) where
+  pretty (MkSomeNetSize sz b) = case sz of
     SB -> pretty b
     SK -> pretty b
     SM -> pretty b
@@ -228,5 +228,5 @@ instance (PrintfArg n, SingDirection d) => PrettyPrint (AnyNetSize d n) where
     SP -> pretty b
 
 -- | Retrieves the 'SingDirection' witness.
-anyNetSizeToSDirection :: SingDirection d => AnyNetSize d n -> SDirection d
-anyNetSizeToSDirection _ = singDirection
+someNetSizeToSDirection :: SingDirection d => SomeNetSize d n -> SDirection d
+someNetSizeToSDirection _ = singDirection

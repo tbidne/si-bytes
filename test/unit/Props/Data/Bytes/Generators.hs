@@ -6,7 +6,7 @@ module Props.Data.Bytes.Generators
   )
 where
 
-import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
+import ByteTypes.Data.Bytes (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Size (SSize (..), Size (..))
 import Data.Ratio ((%))
 import Hedgehog (Gen)
@@ -19,30 +19,30 @@ genBytes :: Gen (Bytes s Rational)
 genBytes = MkBytes <$> Gens.genBNum
 
 -- | Chooses one from [B, K, M, ...]
-genSomeBytes :: Gen (AnySize Rational)
+genSomeBytes :: Gen (SomeSize Rational)
 genSomeBytes = do
   HGen.choice
-    [ MkAnySize SB <$> genBytes,
-      MkAnySize SK <$> genBytes,
-      MkAnySize SM <$> genBytes,
-      MkAnySize SG <$> genBytes,
-      MkAnySize ST <$> genBytes,
-      MkAnySize SP <$> genBytes
+    [ MkSomeSize SB <$> genBytes,
+      MkSomeSize SK <$> genBytes,
+      MkSomeSize SM <$> genBytes,
+      MkSomeSize SG <$> genBytes,
+      MkSomeSize ST <$> genBytes,
+      MkSomeSize SP <$> genBytes
     ]
 
 -- | Generates a normalized 'Bytes', i.e., the numeric value
 -- is \[ 0 \le x < 1,000 \].
-genNormalizedBytes :: Gen (AnySize Rational)
+genNormalizedBytes :: Gen (SomeSize Rational)
 genNormalizedBytes = do
   sz <- Gens.genSize
   num <- gen_1_000
   pure $ case sz of
-    B -> MkAnySize SB $ MkBytes num
-    K -> MkAnySize SK $ MkBytes num
-    M -> MkAnySize SM $ MkBytes num
-    G -> MkAnySize SG $ MkBytes num
-    T -> MkAnySize ST $ MkBytes num
-    P -> MkAnySize SP $ MkBytes num
+    B -> MkSomeSize SB $ MkBytes num
+    K -> MkSomeSize SK $ MkBytes num
+    M -> MkSomeSize SM $ MkBytes num
+    G -> MkSomeSize SG $ MkBytes num
+    T -> MkSomeSize ST $ MkBytes num
+    P -> MkSomeSize SP $ MkBytes num
 
 gen_1_000 :: Gen Rational
 gen_1_000 = (% 1) <$> HGen.integral (HRange.linearFrom 500 0 1_000)

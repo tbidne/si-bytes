@@ -1,5 +1,5 @@
--- | Property tests for 'AnyNetDir'.
-module Props.Data.Network.AnyNetDir (props) where
+-- | Property tests for 'SomeNetDir'.
+module Props.Data.Network.SomeNetDir (props) where
 
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
@@ -8,5 +8,5 @@ import Test.Tasty qualified as T
 props :: TestTree
 props =
   T.testGroup
-    "Bytes.Data.Network.AnyNetDir"
+    "Bytes.Data.Network.SomeNetDir"
     []

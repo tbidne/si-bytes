@@ -6,9 +6,9 @@ module ByteTypes.Data.Network
     module ByteTypes.Data.Network.NetBytes,
 
     -- * Direction Existentials
-    module ByteTypes.Data.Network.AnyNetDir,
+    module ByteTypes.Data.Network.SomeNetDir,
   )
 where
 
-import ByteTypes.Data.Network.AnyNetDir
 import ByteTypes.Data.Network.NetBytes
+import ByteTypes.Data.Network.SomeNetDir

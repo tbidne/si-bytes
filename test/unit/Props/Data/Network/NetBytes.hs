@@ -8,7 +8,7 @@ import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Bytes (Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Direction (Direction (..))
-import ByteTypes.Data.Network.NetBytes (AnyNetSize (..), NetBytes (..))
+import ByteTypes.Data.Network.NetBytes (NetBytes (..), SomeNetSize (..))
 import ByteTypes.Data.Network.NetBytes qualified as NetBytes
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
@@ -30,7 +30,7 @@ props :: TestTree
 props =
   T.testGroup
     "Bytes.Data.Network.NetBytes"
-    $ netBytesProps <> anyNetSizeProps
+    $ netBytesProps <> someNetSizeProps
 
 netBytesProps :: [TestTree]
 netBytesProps =
@@ -42,13 +42,13 @@ netBytesProps =
     netBytesVectorSpaceProps
   ]
 
-anyNetSizeProps :: [TestTree]
-anyNetSizeProps =
-  [ anyNetSizeEqProps,
-    anyNetSizeOrdProps,
-    anyNetSizeGroupProps,
-    anyNetSizeVectorSpaceProps,
-    anyNetSizeNormalizeProps
+someNetSizeProps :: [TestTree]
+someNetSizeProps =
+  [ someNetSizeEqProps,
+    someNetSizeOrdProps,
+    someNetSizeGroupProps,
+    someNetSizeVectorSpaceProps,
+    someNetSizeNormalizeProps
   ]
 
 convertProps :: TestTree
@@ -89,10 +89,10 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "NetBytes normalizes" $
     H.withTests limit $
       H.property $ do
-        (MkAnyNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
-        let normalized@(MkAnyNetSize _ (MkNetBytes (MkBytes x))) =
+        (MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
+        let normalized@(MkSomeNetSize _ (MkNetBytes (MkBytes x))) =
               Size.withSingSize sz $ normalize bytes
-            label = anySizeToLabel normalized
+            label = someSizeToLabel normalized
         H.footnote $ "original: " <> show bytes
         H.footnote $ "normalized: " <> show normalized
         VNormalize.isNormalized label x
@@ -138,9 +138,9 @@ netBytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genD
         VAlgebra.vectorSpaceLaws x y k l
 
-anyNetSizeEqProps :: TestTree
-anyNetSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnyNetSize Eq laws" $
+someNetSizeEqProps :: TestTree
+someNetSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeNetSize Eq laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll NGens.genSomeNetSizeUp
@@ -148,9 +148,9 @@ anyNetSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
         z <- H.forAll NGens.genSomeNetSizeUp
         VAlgebra.eqLaws x y z
 
-anyNetSizeOrdProps :: TestTree
-anyNetSizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnyNetSize Ord laws" $
+someNetSizeOrdProps :: TestTree
+someNetSizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeNetSize Ord laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll NGens.genSomeNetSizeUp
@@ -158,9 +158,9 @@ anyNetSizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
         z <- H.forAll NGens.genSomeNetSizeUp
         VAlgebra.ordLaws x y z
 
-anyNetSizeGroupProps :: TestTree
-anyNetSizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnyNetSize Group laws" $
+someNetSizeGroupProps :: TestTree
+someNetSizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeNetSize Group laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll NGens.genSomeNetSizeUp
@@ -168,9 +168,9 @@ anyNetSizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
         z <- H.forAll NGens.genSomeNetSizeUp
         VAlgebra.groupLaws x y z
 
-anyNetSizeVectorSpaceProps :: TestTree
-anyNetSizeVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnyNetSize Vector Space laws" $
+someNetSizeVectorSpaceProps :: TestTree
+someNetSizeVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeNetSize Vector Space laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll NGens.genSomeNetSizeUp
@@ -179,9 +179,9 @@ anyNetSizeVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genD
         VAlgebra.vectorSpaceLaws x y k l
 
-anyNetSizeNormalizeProps :: TestTree
-anyNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnyNetSize normalization laws" $
+someNetSizeNormalizeProps :: TestTree
+someNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeNetSize normalization laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll NGens.genSomeNetSizeUp
@@ -189,8 +189,8 @@ anyNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         k <- H.forAll SGens.genD
         VNormalize.normalizeLaws x y k
 
-anySizeToLabel :: AnyNetSize d n -> Size
-anySizeToLabel (MkAnyNetSize sz _) = case sz of
+someSizeToLabel :: SomeNetSize d n -> Size
+someSizeToLabel (MkSomeNetSize sz _) = case sz of
   SB -> B
   SK -> K
   SM -> M

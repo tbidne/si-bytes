@@ -11,7 +11,7 @@ import ByteTypes.Class.Conversion
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Normalize (Normalize (..))
-import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
+import ByteTypes.Data.Bytes (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
@@ -33,7 +33,7 @@ props :: TestTree
 props =
   T.testGroup
     "Bytes.Data.Bytes"
-    $ bytesProps <> anySizeProps
+    $ bytesProps <> someSizeProps
 
 bytesProps :: [TestTree]
 bytesProps =
@@ -47,13 +47,13 @@ bytesProps =
     bytesVectorSpaceProps
   ]
 
-anySizeProps :: [TestTree]
-anySizeProps =
-  [ anySizeEqProps,
-    anySizeOrdProps,
-    anySizeGroupProps,
-    anyVectorSpaceProps,
-    anyNormalizeProps
+someSizeProps :: [TestTree]
+someSizeProps =
+  [ someSizeEqProps,
+    someSizeOrdProps,
+    someSizeGroupProps,
+    someVectorSpaceProps,
+    someNormalizeProps
   ]
 
 convertProps :: TestTree
@@ -94,7 +94,7 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "Bytes increasing label reduces size by 1,000" $
     H.withTests limit $
       H.property $ do
-        (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
+        (MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
               SP -> (x, Bytes.unBytes bytes)
               SB -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
@@ -111,7 +111,7 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "Bytes decreasing label multiplies size by 1,000" $
     H.withTests limit $
       H.property $ do
-        (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
+        (MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
               SB -> (x, Bytes.unBytes bytes)
               SK -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
@@ -128,9 +128,9 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "Bytes normalizes" $
     H.withTests limit $
       H.property $ do
-        (MkAnySize sz bytes) <- H.forAll Gens.genSomeBytes
-        let normalized@(MkAnySize _ (MkBytes x)) = Size.withSingSize sz $ normalize bytes
-            label = anySizeToLabel normalized
+        (MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
+        let normalized@(MkSomeSize _ (MkBytes x)) = Size.withSingSize sz $ normalize bytes
+            label = someSizeToLabel normalized
         H.footnote $ "original: " <> show bytes
         H.footnote $ "normalized: " <> show normalized
         VNormalize.isNormalized label x
@@ -176,8 +176,8 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genD
         VAlgebra.vectorSpaceLaws x y k l
 
-anySizeToLabel :: AnySize n -> Size
-anySizeToLabel (MkAnySize sz _) = case sz of
+someSizeToLabel :: SomeSize n -> Size
+someSizeToLabel (MkSomeSize sz _) = case sz of
   SB -> B
   SK -> K
   SM -> M
@@ -185,9 +185,9 @@ anySizeToLabel (MkAnySize sz _) = case sz of
   ST -> T
   SP -> P
 
-anySizeEqProps :: TestTree
-anySizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnySize Eq laws" $
+someSizeEqProps :: TestTree
+someSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeSize Eq laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll Gens.genSomeBytes
@@ -195,9 +195,9 @@ anySizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
         z <- H.forAll Gens.genSomeBytes
         VAlgebra.eqLaws x y z
 
-anySizeOrdProps :: TestTree
-anySizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnySize Ord laws" $
+someSizeOrdProps :: TestTree
+someSizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeSize Ord laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll Gens.genSomeBytes
@@ -205,9 +205,9 @@ anySizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
         z <- H.forAll Gens.genSomeBytes
         VAlgebra.ordLaws x y z
 
-anySizeGroupProps :: TestTree
-anySizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnySize Group laws" $
+someSizeGroupProps :: TestTree
+someSizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeSize Group laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll Gens.genSomeBytes
@@ -215,9 +215,9 @@ anySizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
         z <- H.forAll Gens.genSomeBytes
         VAlgebra.groupLaws x y z
 
-anyVectorSpaceProps :: TestTree
-anyVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnySize Vector Space laws" $
+someVectorSpaceProps :: TestTree
+someVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeSize Vector Space laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll Gens.genSomeBytes
@@ -226,9 +226,9 @@ anyVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genD
         VAlgebra.vectorSpaceLaws x y k l
 
-anyNormalizeProps :: TestTree
-anyNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnySize normalization laws" $
+someNormalizeProps :: TestTree
+someNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeSize normalization laws" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll Gens.genSomeBytes

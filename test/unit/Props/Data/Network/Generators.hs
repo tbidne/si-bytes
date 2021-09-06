@@ -7,9 +7,9 @@ module Props.Data.Network.Generators
   )
 where
 
-import ByteTypes.Data.Bytes (AnySize (..))
+import ByteTypes.Data.Bytes (SomeSize (..))
 import ByteTypes.Data.Direction (Direction (..))
-import ByteTypes.Data.Network.NetBytes (AnyNetSize (..), NetBytes (..))
+import ByteTypes.Data.Network.NetBytes (NetBytes (..), SomeNetSize (..))
 import ByteTypes.Data.Size (SSize (..))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
@@ -19,39 +19,39 @@ import Props.Data.Bytes.Generators qualified as BGens
 genNet :: Gen (NetBytes d s Rational)
 genNet = MkNetBytes <$> BGens.genBytes
 
--- | Generates 'AnyNetSize' 'Down' over 'BGens.genNet'.
-genSomeNetSizeDown :: Gen (AnyNetSize 'Down Rational)
+-- | Generates 'SomeNetSize' 'Down' over 'BGens.genNet'.
+genSomeNetSizeDown :: Gen (SomeNetSize 'Down Rational)
 genSomeNetSizeDown =
   HGen.choice
-    [ MkAnyNetSize SB <$> genNet,
-      MkAnyNetSize SK <$> genNet,
-      MkAnyNetSize SM <$> genNet,
-      MkAnyNetSize SG <$> genNet,
-      MkAnyNetSize ST <$> genNet,
-      MkAnyNetSize SP <$> genNet
+    [ MkSomeNetSize SB <$> genNet,
+      MkSomeNetSize SK <$> genNet,
+      MkSomeNetSize SM <$> genNet,
+      MkSomeNetSize SG <$> genNet,
+      MkSomeNetSize ST <$> genNet,
+      MkSomeNetSize SP <$> genNet
     ]
 
--- | Generates 'AnyNetSize' 'Up' over 'BGens.genNet'.
-genSomeNetSizeUp :: Gen (AnyNetSize 'Up Rational)
+-- | Generates 'SomeNetSize' 'Up' over 'BGens.genNet'.
+genSomeNetSizeUp :: Gen (SomeNetSize 'Up Rational)
 genSomeNetSizeUp =
   HGen.choice
-    [ MkAnyNetSize SB <$> genNet,
-      MkAnyNetSize SK <$> genNet,
-      MkAnyNetSize SM <$> genNet,
-      MkAnyNetSize SG <$> genNet,
-      MkAnyNetSize ST <$> genNet,
-      MkAnyNetSize SP <$> genNet
+    [ MkSomeNetSize SB <$> genNet,
+      MkSomeNetSize SK <$> genNet,
+      MkSomeNetSize SM <$> genNet,
+      MkSomeNetSize SG <$> genNet,
+      MkSomeNetSize ST <$> genNet,
+      MkSomeNetSize SP <$> genNet
     ]
 
 -- | Generates a normalized 'Bytes', i.e., the numeric value
 -- is \[ 0 \le x < 1,000 \].
-genNormalizedNetBytes :: Gen (AnyNetSize 'Up Rational)
+genNormalizedNetBytes :: Gen (SomeNetSize 'Up Rational)
 genNormalizedNetBytes = do
-  (MkAnySize sz x) <- BGens.genNormalizedBytes
+  (MkSomeSize sz x) <- BGens.genNormalizedBytes
   pure $ case sz of
-    SB -> MkAnyNetSize SB $ MkNetBytes x
-    SK -> MkAnyNetSize SK $ MkNetBytes x
-    SM -> MkAnyNetSize SM $ MkNetBytes x
-    SG -> MkAnyNetSize SG $ MkNetBytes x
-    ST -> MkAnyNetSize ST $ MkNetBytes x
-    SP -> MkAnyNetSize SP $ MkNetBytes x
+    SB -> MkSomeNetSize SB $ MkNetBytes x
+    SK -> MkSomeNetSize SK $ MkNetBytes x
+    SM -> MkSomeNetSize SM $ MkNetBytes x
+    SG -> MkSomeNetSize SG $ MkNetBytes x
+    ST -> MkSomeNetSize ST $ MkNetBytes x
+    SP -> MkSomeNetSize SP $ MkNetBytes x

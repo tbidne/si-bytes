@@ -9,7 +9,7 @@ module ByteTypes.Data.Bytes
     bytesToSSize,
 
     -- * Unknown Size
-    AnySize (..),
+    SomeSize (..),
   )
 where
 
@@ -174,32 +174,32 @@ instance (NumLiteral n, Ring n) => DecSize (Bytes 'P n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
 instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (Bytes s n) where
-  type Norm (Bytes s n) = AnySize n
+  type Norm (Bytes s n) = SomeSize n
 
   normalize bytes =
     case bytesToSSize bytes of
       SB
-        | absBytes .< fromLit 1_000 -> MkAnySize SB bytes
+        | absBytes .< fromLit 1_000 -> MkSomeSize SB bytes
         | otherwise -> normalize $ next bytes
       SP
-        | absBytes .>= fromLit 1 -> MkAnySize SP bytes
+        | absBytes .>= fromLit 1 -> MkSomeSize SP bytes
         | otherwise -> normalize $ prev bytes
       SK
         | absBytes .< fromLit 1 -> normalize $ prev bytes
         | absBytes .>= fromLit 1_000 -> normalize $ next bytes
-        | otherwise -> MkAnySize sz bytes
+        | otherwise -> MkSomeSize sz bytes
       SM
         | absBytes .< fromLit 1 -> normalize $ prev bytes
         | absBytes .>= fromLit 1_000 -> normalize $ next bytes
-        | otherwise -> MkAnySize sz bytes
+        | otherwise -> MkSomeSize sz bytes
       SG
         | absBytes .< fromLit 1 -> normalize $ prev bytes
         | absBytes .>= fromLit 1_000 -> normalize $ next bytes
-        | otherwise -> MkAnySize sz bytes
+        | otherwise -> MkSomeSize sz bytes
       ST
         | absBytes .< fromLit 1 -> normalize $ prev bytes
         | absBytes .>= fromLit 1_000 -> normalize $ next bytes
-        | otherwise -> MkAnySize sz bytes
+        | otherwise -> MkSomeSize sz bytes
     where
       sz = bytesToSSize bytes
       absBytes = gabs bytes
@@ -217,34 +217,34 @@ instance (PrintfArg n, SingSize s) => PrettyPrint (Bytes s n) where
 -- when a function does not know a priori what size it should return, e.g.,
 --
 -- @
---   getFileSize :: IO (AnySize Float)
+--   getFileSize :: IO (SomeSize Float)
 --   getFileSize path = do
 --     (bytes, units) <- getRawFileSize path
 --     case units of
---       "B" -> MkAnySize SB $ MkB bytes
---       "K" -> MkAnySize SK $ MkK bytes
+--       "B" -> MkSomeSize SB $ MkB bytes
+--       "K" -> MkSomeSize SK $ MkK bytes
 --       ...
 -- @
 --
--- 'AnySize' carries along an 'SSize' runtime witness for when we
+-- 'SomeSize' carries along an 'SSize' runtime witness for when we
 -- need the size. Its 'Group' functions are 'normalize'd.
 --
--- N.B. 'AnySize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord',
+-- N.B. 'SomeSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord',
 -- 'Group') are themselves lawful w.r.t. the notion of equivalence defined
 -- in its 'Eq' instance.
-type AnySize :: Type -> Type
-data AnySize n where
-  MkAnySize :: SSize s -> Bytes s n -> AnySize n
+type SomeSize :: Type -> Type
+data SomeSize n where
+  MkSomeSize :: SSize s -> Bytes s n -> SomeSize n
 
-deriving instance Show n => Show (AnySize n)
+deriving instance Show n => Show (SomeSize n)
 
-deriving instance Functor AnySize
+deriving instance Functor SomeSize
 
--- | Note: This instance defines an equivalence relation on 'AnySize' that
+-- | Note: This instance defines an equivalence relation on 'SomeSize' that
 -- takes units into account. For instance,
 --
 -- @
--- MkAnySize SK (MkBytes 1000) == MkAnySize SM (MkBytes 1).
+-- MkSomeSize SK (MkBytes 1000) == MkSomeSize SM (MkBytes 1).
 -- @
 --
 -- Because we expose the underlying @Bytes@ in several ways (e.g. 'Show',
@@ -258,8 +258,8 @@ deriving instance Functor AnySize
 -- For instance:
 --
 -- @
--- let x = MkAnySize SK (MkBytes 1000)
--- let y = MkAnySize SM (MkBytes 1)
+-- let x = MkSomeSize SK (MkBytes 1000)
+-- let y = MkSomeSize SM (MkBytes 1)
 -- x == y
 -- isK x /= isK y
 -- @
@@ -267,50 +267,50 @@ deriving instance Functor AnySize
 -- With apologies to Leibniz, such comparisons are too useful to ignore
 -- and enable us to implement other lawful classes (e.g. 'Group') that respect
 -- this notion of equivalence.
-instance (Eq n, Field n, NumLiteral n) => Eq (AnySize n) where
+instance (Eq n, Field n, NumLiteral n) => Eq (SomeSize n) where
   x == y = toB x == toB y
 
 -- | Like the 'Eq' instance, this instance compares both the numeric value
 -- __and__ label, so that, e.g.,
 --
 -- @
--- MkAnySize SK (MkBytes 5_000) <= MkAnySize SM (MkBytes 8)
--- MkAnySize SM (MkBytes 2) <= MkAnySize SK (MkBytes 5_000)
+-- MkSomeSize SK (MkBytes 5_000) <= MkSomeSize SM (MkBytes 8)
+-- MkSomeSize SM (MkBytes 2) <= MkSomeSize SK (MkBytes 5_000)
 -- @
-instance (Field n, NumLiteral n, Ord n) => Ord (AnySize n) where
+instance (Field n, NumLiteral n, Ord n) => Ord (SomeSize n) where
   x <= y = toB x <= toB y
 
-instance (Field n, NumLiteral n, Ord n) => Group (AnySize n) where
+instance (Field n, NumLiteral n, Ord n) => Group (SomeSize n) where
   x .+. y = normalize $ toB x .+. toB y
   x .-. y = normalize $ toB x .-. toB y
-  gid = MkAnySize SB gid
+  gid = MkSomeSize SB gid
   ginv = fmap ginv
   gabs = fmap gabs
 
-instance (Field n, NumLiteral n, Ord n) => Module (AnySize n) n where
-  MkAnySize sz x .* k = MkAnySize sz $ x .* k
+instance (Field n, NumLiteral n, Ord n) => Module (SomeSize n) n where
+  MkSomeSize sz x .* k = MkSomeSize sz $ x .* k
 
-instance (Field n, NumLiteral n, Ord n) => VectorSpace (AnySize n) n where
-  MkAnySize sz x .% k = MkAnySize sz $ x .% k
+instance (Field n, NumLiteral n, Ord n) => VectorSpace (SomeSize n) n where
+  MkSomeSize sz x .% k = MkSomeSize sz $ x .% k
 
-instance (Field n, NumLiteral n) => Conversion (AnySize n) where
-  type Converted 'B (AnySize n) = Bytes 'B n
-  type Converted 'K (AnySize n) = Bytes 'K n
-  type Converted 'M (AnySize n) = Bytes 'M n
-  type Converted 'G (AnySize n) = Bytes 'G n
-  type Converted 'T (AnySize n) = Bytes 'T n
-  type Converted 'P (AnySize n) = Bytes 'P n
+instance (Field n, NumLiteral n) => Conversion (SomeSize n) where
+  type Converted 'B (SomeSize n) = Bytes 'B n
+  type Converted 'K (SomeSize n) = Bytes 'K n
+  type Converted 'M (SomeSize n) = Bytes 'M n
+  type Converted 'G (SomeSize n) = Bytes 'G n
+  type Converted 'T (SomeSize n) = Bytes 'T n
+  type Converted 'P (SomeSize n) = Bytes 'P n
 
-  toB (MkAnySize sz x) = Size.withSingSize sz $ toB x
-  toK (MkAnySize sz x) = Size.withSingSize sz $ toK x
-  toM (MkAnySize sz x) = Size.withSingSize sz $ toM x
-  toG (MkAnySize sz x) = Size.withSingSize sz $ toG x
-  toT (MkAnySize sz x) = Size.withSingSize sz $ toT x
-  toP (MkAnySize sz x) = Size.withSingSize sz $ toP x
+  toB (MkSomeSize sz x) = Size.withSingSize sz $ toB x
+  toK (MkSomeSize sz x) = Size.withSingSize sz $ toK x
+  toM (MkSomeSize sz x) = Size.withSingSize sz $ toM x
+  toG (MkSomeSize sz x) = Size.withSingSize sz $ toG x
+  toT (MkSomeSize sz x) = Size.withSingSize sz $ toT x
+  toP (MkSomeSize sz x) = Size.withSingSize sz $ toP x
 
-instance (Field n, NumLiteral n, Ord n) => Normalize (AnySize n) where
-  type Norm (AnySize n) = AnySize n
-  normalize (MkAnySize sz x) = Size.withSingSize sz $ normalize x
+instance (Field n, NumLiteral n, Ord n) => Normalize (SomeSize n) where
+  type Norm (SomeSize n) = SomeSize n
+  normalize (MkSomeSize sz x) = Size.withSingSize sz $ normalize x
 
-instance PrintfArg n => PrettyPrint (AnySize n) where
-  pretty (MkAnySize sz b) = Size.withSingSize sz $ pretty b
+instance PrintfArg n => PrettyPrint (SomeSize n) where
+  pretty (MkSomeSize sz b) = Size.withSingSize sz $ pretty b
