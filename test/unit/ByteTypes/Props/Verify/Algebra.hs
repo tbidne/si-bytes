@@ -18,7 +18,7 @@ import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
-import ByteTypes.Props.Utils ((<=>), (==>))
+import ByteTypes.Utils ((<=>), (==>))
 
 -- | Verifies 'Eq' laws for 'BytesEq'.
 eqLaws :: (Eq a, Show a) => a -> a -> a -> PropertyT IO ()

@@ -1,5 +1,5 @@
 -- | Utilities for property tests.
-module ByteTypes.Props.Utils
+module ByteTypes.Utils
   ( -- * Logical operators
     (==>),
     (<=>),

@@ -3,7 +3,7 @@ module Main (main) where
 
 import Data.Proxy (Proxy (..))
 import ByteTypes.Props.Class.Conversion qualified as PConv
-import ByteTypes.Props.Data.Bytes qualified as Pytes
+import ByteTypes.Props.Data.Bytes qualified as PBytes
 import ByteTypes.Props.Data.Network.NetBytes qualified as PNetBytes
 import ByteTypes.Props.Data.Network.SomeNetDir qualified as PSomeNetDir
 import ByteTypes.Props.MaxRuns (MaxRuns)
@@ -19,7 +19,7 @@ main = do
     T.testGroup
       "Property tests"
       [ PConv.props,
-        Pytes.props,
+        PBytes.props,
         PNetBytes.props,
         PSomeNetDir.props
       ]
