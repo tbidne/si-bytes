@@ -185,7 +185,12 @@ instance
 --       ...
 -- @
 --
--- 'AnyNetSize'\'s 'Num' functions are 'normalize'd.
+-- 'AnyNetSize' carries along an 'SByteSize' runtime witness for when we
+-- need the size. Its 'Group' functions are 'normalize'd.
+--
+-- N.B. 'AnyNetSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord',
+-- 'Group') are themselves lawful w.r.t. the notion of equivalence defined
+-- in its 'Eq' instance.
 type AnyNetSize :: ByteDirection -> Type -> Type
 data AnyNetSize d n where
   MkAnyNetSize :: SByteSize s -> NetBytes d s n -> AnyNetSize d n
@@ -194,23 +199,38 @@ deriving instance Show n => Show (AnyNetSize d n)
 
 deriving instance Functor (AnyNetSize d)
 
+-- | Note: This instance defines an equivalence relation on 'AnyNetSize' that
+-- takes units into account. For instance,
+--
+-- @
+-- MkAnyNetSize SKB (MkBytes 1000) == MkAnyNetSize SMB (MkBytes 1).
+-- @
+--
+-- Because we expose the underlying @NetBytes@ in several ways (e.g. 'Show',
+-- the 'SByteSize' witness), this is technically unlawful for equality
+-- as it breaks the substitutivity law:
+--
+-- \[
+-- x = y \implies f(x) = f(y).
+-- \]
+--
+-- For instance:
+--
+-- @
+-- let x = MkAnyMkAnyNetSizeSize SKB (MkBytes 1000)
+-- let y = MkAnyNetSize SMB (MkBytes 1)
+-- x == y
+-- isKB x /= isKB y
+-- @
+--
+-- With apologies to Leibniz, such comparisons are too useful to ignore
+-- and enable us to implement other lawful classes (e.g. 'Group') that respect
+-- this notion of equivalence.
 instance (Eq n, Field n, NumLiteral n) => Eq (AnyNetSize d n) where
   x == y = toB x == toB y
 
 instance (Field n, NumLiteral n, Ord n) => Ord (AnyNetSize d n) where
   x <= y = toB x <= toB y
-
-type instance Scalar (AnyNetSize d n) = n
-
-instance Eq n => ScalarEq (AnyNetSize d n) where
-  MkAnyNetSize _ x .= k = x .= k
-
-instance Ord n => ScalarOrd (AnyNetSize d n) where
-  MkAnyNetSize _ x .<= k = x .<= k
-
-instance Ring n => ScalarNum (AnyNetSize d n) where
-  MkAnyNetSize sz x .+ k = MkAnyNetSize sz $ x .+ k
-  MkAnyNetSize sz x .- k = MkAnyNetSize sz $ x .- k
 
 instance (Field n, NumLiteral n, Ord n) => Group (AnyNetSize d n) where
   x .+. y = normalize $ toB x .+. toB y

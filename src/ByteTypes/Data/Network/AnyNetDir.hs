@@ -11,8 +11,7 @@
 -- While the witnesses allows us to recover the types at will (and we can
 -- \"forget\" the direction tag by dropping to 'ByteTypes.Data.Bytes'),
 -- we are much more limited in what we can do. For example, we lose instances
--- like 'Applicative', 'ByteTypes.Class.Math.Algebra.Group',
--- 'ByteTypes.Class.Math.Isomorphism', etc.
+-- like 'Applicative', 'ByteTypes.Class.Math.Algebra.Group'.
 module ByteTypes.Data.Network.AnyNetDir
   ( AnyNetDir (..),
     AnyNet (..),
@@ -63,8 +62,7 @@ import Text.Printf (PrintfArg (..))
 --
 -- We deliberately do not provide instances for any classes that could be
 -- used to combine arbitrary 'AnyNetDir's (e.g. 'Applicative',
--- 'ByteTypes.Class.Math.Algebra.Group',
--- 'ByteTypes.Class.Math.Isomorphism'), as that would defeat the purpose of
+-- 'ByteTypes.Class.Math.Algebra.Group'), as that would defeat the purpose of
 -- enforcing the distinction between upload and downloaded bytes.
 type AnyNetDir :: ByteSize -> Type -> Type
 data AnyNetDir s n where
@@ -75,7 +73,7 @@ deriving instance Show n => Show (AnyNetDir s n)
 deriving instance Functor (AnyNetDir s)
 
 -- | Returns true when the two @AnyNetDir@ have the same @ByteDirection@
--- /and/ the underlying @NetBytes@ has the same __converted__ value.
+-- /and/ the underlying @NetBytes@ has the same value.
 --
 -- @
 -- MkAnyNetDir SKB (MkNetBytes @Up (MkBytes 1000)) == MkAnyNetDir SMB (MkNetBytes @Up (MkBytes 1))
@@ -83,12 +81,12 @@ deriving instance Functor (AnyNetDir s)
 -- @
 --
 -- Notice no 'Ord' instance is provided, as we provide no ordering for
--- 'ByteTypes.Data.Direction.ByteDirection.ByteDirection'.
+-- 'ByteTypes.Data.Direction.ByteDirection'.
 instance (Eq n, Field n, NumLiteral n, SingByteSize s) => Eq (AnyNetDir s n) where
   MkAnyNetDir dx x == MkAnyNetDir dy y =
     case (dx, dy) of
-      (SDown, SDown) -> toB x == toB y
-      (SUp, SUp) -> toB x == toB y
+      (SDown, SDown) -> x == y
+      (SUp, SUp) -> x == y
       _ -> False
 
 type instance Scalar (AnyNetDir s n) = n
@@ -170,7 +168,7 @@ instance (PrintfArg n, SingByteSize s) => PrettyPrint (AnyNetDir s n) where
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size /and/
 -- direction. This is useful when a function does not know a priori what
--- direction it should return,
+-- size or direction it should return,
 -- e.g.,
 --
 -- @
@@ -179,14 +177,17 @@ instance (PrintfArg n, SingByteSize s) => PrettyPrint (AnyNetDir s n) where
 --     (bytes, direction, size) <- getMaxTrafficRaw
 --     case (direction, size) of
 --       ("Down", "KB" -> MkAnyNet SDown SKB $ MkBytes bytes
---       ("Up", "MB") -> MkAnyNet SDown SMB $ MkBytes bytes
+--       ("Up", "MB") -> MkAnyNet SUp SMB $ MkBytes bytes
 --       ...
 -- @
 --
--- 'AnyNet'\'s 'Num' functions are 'normalize'd. We deliberately
--- do not provide instances for 'ByteTypes.Class.Math.Isomorphism' as combining
--- arbitrary 'AnyNet's would defeat the type's purpose of keeping
--- different directions separate.
+-- 'AnyNet' carries along 'SByteDirection' and 'SByteSize' runtime witnesses
+-- for recovering the 'ByteTypes.Data.Direction.ByteDirection'
+-- and 'ByteSize', respectively.
+--
+-- N.B. 'AnyNetSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord')
+-- are themselves lawful w.r.t. the notion of equivalence defined
+-- in its 'Eq' instance.
 type AnyNet :: Type -> Type
 data AnyNet n where
   MkAnyNet :: SByteDirection d -> SByteSize s -> NetBytes d s n -> AnyNet n
@@ -195,6 +196,14 @@ deriving instance Show n => Show (AnyNet n)
 
 deriving instance Functor AnyNet
 
+-- | Note: This instance uses the same equivalence relation from 'AnyNetSize'
+-- w.r.t the size, and also includes an equality check on the direction.
+-- Thus we have, for instance,
+--
+-- @
+-- MkAnyNet 'Up 'KB (MkNetBytes 1_000) == MkAnyNet 'Up 'MB (MkNetBytes 1)
+-- MkAnyNet 'Up 'KB (MkNetBytes 1_000) /= MkAnyNet 'Down 'MB (MkNetBytes 1)
+-- @
 instance (Eq n, Field n, NumLiteral n) => Eq (AnyNet n) where
   MkAnyNet dx szx x == MkAnyNet dy szy y =
     Size.withSingByteSize szx $
@@ -203,18 +212,6 @@ instance (Eq n, Field n, NumLiteral n) => Eq (AnyNet n) where
           (SDown, SDown) -> toB x == toB y
           (SUp, SUp) -> toB x == toB y
           _ -> False
-
-type instance Scalar (AnyNet n) = n
-
-instance Eq n => ScalarEq (AnyNet n) where
-  MkAnyNet _ _ x .= k = x .= k
-
-instance Ord n => ScalarOrd (AnyNet n) where
-  MkAnyNet _ _ x .<= k = x .<= k
-
-instance Ring n => ScalarNum (AnyNet n) where
-  MkAnyNet sz dir x .+ k = MkAnyNet sz dir $ x .+ k
-  MkAnyNet sz dir x .- k = MkAnyNet sz dir $ x .- k
 
 instance (Field n, NumLiteral n) => Conversion (AnyNet n) where
   type Converted 'B (AnyNet n) = AnyNetDir 'B n

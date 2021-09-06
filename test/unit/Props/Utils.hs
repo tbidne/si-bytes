@@ -25,9 +25,6 @@ import ByteTypes.Class.Math.Algebra.Group (Group (..))
 import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
-import ByteTypes.Class.Math.Literal (NumLiteral (..))
-import ByteTypes.Class.Math.Scalar.Ord (ScalarEq (..), ScalarOrd (..))
-import ByteTypes.Class.Math.Scalar.Scalar (Scalar)
 import ByteTypes.Data.Size (ByteSize (..))
 import GHC.Real (Ratio (..))
 import Hedgehog (PropertyT, (===))
@@ -139,19 +136,23 @@ vectorSpaceLaws x y k l = do
 
 -- | Verifies that the parameter 'BytesOrd' is normalized, taking care
 -- to account for special 'B' and 'PB' rules.
-isNormalized :: (Group n, Show n, ScalarOrd n, NumLiteral (Scalar n)) => ByteSize -> n -> PropertyT IO ()
+isNormalized ::
+  (Num n, Ord n, Show n) =>
+  ByteSize ->
+  n ->
+  PropertyT IO ()
 isNormalized B x = do
   H.footnoteShow x
-  H.assert $ gabs x .< fromLit 1_000
+  H.assert $ x < 1_000
 isNormalized PB x = do
   H.footnoteShow x
-  H.assert $ gabs x .>= fromLit 1
+  H.assert $ x >= 1
 isNormalized _ x
-  | x .= fromLit 0 = pure ()
+  | x == 0 = pure ()
   | otherwise = do
     H.footnoteShow x
-    H.assert $ gabs x .>= fromLit 1
-    H.assert $ gabs x .< fromLit 1_000
+    H.assert $ x >= 1
+    H.assert $ x < 1_000
 
 -- | Checks equality after 'reduce'ing.
 rationalEq :: (Integral q, Show q) => Ratio q -> Ratio q -> PropertyT IO ()

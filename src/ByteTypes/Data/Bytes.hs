@@ -217,13 +217,11 @@ instance (PrintfArg n, SingByteSize s) => PrettyPrint (Bytes s n) where
 -- @
 --
 -- 'AnySize' carries along an 'SByteSize' runtime witness for when we
--- need to the size. Its 'Num' functions are 'normalize'd.
+-- need the size. Its 'Group' functions are 'normalize'd.
 --
 -- N.B. 'AnySize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord',
--- 'Group') are themselves lawful as long as we ignore type differences
--- in the underlying 'Bytes' type. This type difference allows us to break
--- the substitutivity law for 'Eq', but if we ignore that then the rest are
--- sensible.
+-- 'Group') are themselves lawful w.r.t. the notion of equivalence defined
+-- in its 'Eq' instance.
 type AnySize :: Type -> Type
 data AnySize n where
   MkAnySize :: SByteSize s -> Bytes s n -> AnySize n
@@ -232,18 +230,19 @@ deriving instance Show n => Show (AnySize n)
 
 deriving instance Functor AnySize
 
--- | Note: This instance performs comparisons based on numeric value
--- /and/ units, e.g.,
+-- | Note: This instance defines an equivalence relation on 'AnySize' that
+-- takes units into account. For instance,
 --
 -- @
 -- MkAnySize SKB (MkBytes 1000) == MkAnySize SMB (MkBytes 1).
 -- @
 --
--- Because we can distinguish the underlying @Bytes@ types, this is
--- technically unlawful as it breaks the substitutivity law:
+-- Because we expose the underlying @Bytes@ in several ways (e.g. 'Show',
+-- the 'SByteSize' witness), this is technically unlawful for equality
+-- as it breaks the substitutivity law:
 --
 -- \[
--- x = y \implies f x = f y.
+-- x = y \implies f(x) = f(y).
 -- \]
 --
 -- For instance:
@@ -257,12 +256,12 @@ deriving instance Functor AnySize
 --
 -- With apologies to Leibniz, such comparisons are too useful to ignore
 -- and enable us to implement other lawful classes (e.g. 'Group') that respect
--- this notion of equality.
+-- this notion of equivalence.
 instance (Eq n, Field n, NumLiteral n) => Eq (AnySize n) where
   x == y = toB x == toB y
 
 -- | Like the 'Eq' instance, this instance compares both the numeric value
--- _and_ label, so that, e.g.,
+-- __and__ label, so that, e.g.,
 --
 -- @
 -- MkAnySize SKB (MkBytes 5_000) <= MkAnySize SMB (MkBytes 8)
@@ -270,18 +269,6 @@ instance (Eq n, Field n, NumLiteral n) => Eq (AnySize n) where
 -- @
 instance (Field n, NumLiteral n, Ord n) => Ord (AnySize n) where
   x <= y = toB x <= toB y
-
-type instance Scalar (AnySize n) = n
-
-instance Eq n => ScalarEq (AnySize n) where
-  MkAnySize _ x .= k = x .= k
-
-instance Ord n => ScalarOrd (AnySize n) where
-  MkAnySize _ x .<= k = x .<= k
-
-instance Ring n => ScalarNum (AnySize n) where
-  MkAnySize sz x .+ k = MkAnySize sz $ x .+ k
-  MkAnySize sz x .- k = MkAnySize sz $ x .- k
 
 instance (Field n, NumLiteral n, Ord n) => Group (AnySize n) where
   x .+. y = normalize $ toB x .+. toB y

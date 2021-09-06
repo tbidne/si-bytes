@@ -204,12 +204,11 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         (MkAnySize sz bytes) <- H.forAll Gens.genSomeBytes
-        let normalized :: AnySize Rational
-            normalized = Size.withSingByteSize sz $ normalize bytes
+        let normalized@(MkAnySize _ (MkBytes x)) = Size.withSingByteSize sz $ normalize bytes
             label = anySizeToLabel normalized
         H.footnote $ "original: " <> show bytes
         H.footnote $ "normalized: " <> show normalized
-        PropUtils.isNormalized label normalized
+        PropUtils.isNormalized label x
 
 bytesEqProps :: TestTree
 bytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -301,9 +300,9 @@ normalizeAnySizeProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         anySize <- H.forAll Gens.genSomeBytes
-        let anyNorm = normalize anySize
+        let anyNorm@(MkAnySize _ (MkBytes x)) = normalize anySize
             label = anySizeToLabel anyNorm
-        PropUtils.isNormalized label anySize
+        PropUtils.isNormalized label x
 
 anySizeToLabel :: AnySize n -> ByteSize
 anySizeToLabel (MkAnySize sz _) = case sz of

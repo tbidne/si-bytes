@@ -7,47 +7,39 @@ where
 -- | Used for normalizing bytes @b@ such that
 --
 -- \[
---    1 \le \text{normalize}(b) < 1000 \iff 1\text{ B} \le b < 1000\text{ PB}.
+--  1 \le \text{normalize}(b) < 1000 \iff 1\text{ B} \le b < 1000\text{ PB}.
 -- \]
 --
--- If we view @normalize@ as single function taking in a type and a value,
--- then the only law is idempotence:
+-- In the strictest sense, \(\textrm{normalize} : \mathcal{C} \rightarrow \mathcal{C}\)
+-- is not a homomorphism, as the combination of two normalized values may
+-- itself not be normalized.
 --
--- \[
---   \textrm{normalize} \circ \textrm{normalize} = \textrm{normalize}.
--- \]
+-- However, because the normalized units varies with the value, @normalize@
+-- always returns a type that existentially quantifies the size
+-- (e.g. 'BytesTypes.Data.Bytes.AnySize'). 'Eq' for these types is defined in
+-- terms of an equivalence class that takes units into account, e.g.,
+-- @1 PB = 1,000 TB = 1,000,000 GB ...@. Viewed this way, @normalize@ is actually
+-- an /isomorphism/, as it is essentially a no-op, never leaving the
+-- equivalence class.
 --
--- Restricting @normalize@ to a single type (i.e. one instance) also yields
--- injectivity:
+-- This means we can happily mix normalization with different functions
+-- without worrying about the order. The only requirement we have is that
+-- such functions respect substitution:
 --
--- \[
---   \textrm{normalize}(x) = \textrm{normalize}(y) \implies x = y.
--- \]
+-- \[ x = y \implies f(x) = f(y). \]
 --
--- N.B. Notice that \(\textrm{normalize} : \mathcal{C} \rightarrow \mathcal{C}\) does __not__ define a homomorpism.
--- That is, the law
+-- This is certainly true for all the usual mathematical operations we would
+-- normally use, e.g., 'ByteTypes.Class.Math.Algebra.Group' addition,
+-- 'ByteTypes.Class.Algebra.Module' scalar multiplication. On
+-- the other hand, any functions that inspect the underlying numeric value or
+-- Bytes types could easily break this law. As such they should be treated
+-- with suspicion.
 --
--- \[
---   \textrm{normalize}(f(x, y)) = f(\textrm{normalize}(x), \textrm{normalize}(y))
--- \]
---
--- cannot possibly hold. For one, it is possible the result of @f@ will not be
--- normalized regardless of its arguments. Even if we had such @f@, being
--- homomorphic would require following the /field/ distributive law,
---
--- \[ k (x + y) = k x + k y, \]
---
--- which most 'Num' instances violate. For instance, even 'Integer' violates
--- this when accounting for division, as the action induced by division is
--- not free. In other words, it violates
---
--- \[
---   \forall n \in \mathbb{Z},\;\; d_1, d_2, \in \mathbb{Z}^\times,\quad \frac{n}{d_1} = \frac{n}{d_2} \implies d_1 = d_2.
--- \]
---
--- The moral of this story is that normalization should typically be the
--- /last/ operation performed, most likely used for display purposes.
--- There is usually no need to normalize multiple times.
+-- The other consideration we must keep in mind is that the final result of a
+-- series of computations may not be normalized. If this is desired, then
+-- @normalize@ should be the /last/ operation performed. Using @normalize@ in
+-- the middle would not cause any harm (other than, perhaps, impacting
+-- efficiency), but it would not guarantee the final result is normalized.
 class Normalize a where
   type Norm a
   normalize :: a -> Norm a
