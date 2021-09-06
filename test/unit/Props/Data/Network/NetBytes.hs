@@ -57,17 +57,17 @@ convertProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         b <- H.forAll (NGens.genNet @'Up @'B)
-        k <- H.forAll (NGens.genNet @'Up @'KB)
-        m <- H.forAll (NGens.genNet @'Up @'MB)
-        g <- H.forAll (NGens.genNet @'Up @'GB)
-        t <- H.forAll (NGens.genNet @'Up @'TB)
-        p <- H.forAll (NGens.genNet @'Up @'PB)
+        k <- H.forAll (NGens.genNet @'Up @'K)
+        m <- H.forAll (NGens.genNet @'Up @'M)
+        g <- H.forAll (NGens.genNet @'Up @'G)
+        t <- H.forAll (NGens.genNet @'Up @'T)
+        p <- H.forAll (NGens.genNet @'Up @'P)
         convert b VConversion.convertB
-        convert k VConversion.convertKB
-        convert m VConversion.convertMB
-        convert g VConversion.convertGB
-        convert t VConversion.convertTB
-        convert p VConversion.convertPB
+        convert k VConversion.convertK
+        convert m VConversion.convertM
+        convert g VConversion.convertG
+        convert t VConversion.convertT
+        convert p VConversion.convertP
 
 convert ::
   SingByteSize s =>
@@ -77,11 +77,11 @@ convert ::
 convert bytes@(MkNetBytes (MkBytes x)) convertAndTestFn = do
   let original = x
       bRes = Bytes.unBytes $ NetBytes.unNetBytes $ toB bytes
-      kRes = Bytes.unBytes $ NetBytes.unNetBytes $ toKB bytes
-      mRes = Bytes.unBytes $ NetBytes.unNetBytes $ toMB bytes
-      gRes = Bytes.unBytes $ NetBytes.unNetBytes $ toGB bytes
-      tRes = Bytes.unBytes $ NetBytes.unNetBytes $ toTB bytes
-      pRes = Bytes.unBytes $ NetBytes.unNetBytes $ toPB bytes
+      kRes = Bytes.unBytes $ NetBytes.unNetBytes $ toK bytes
+      mRes = Bytes.unBytes $ NetBytes.unNetBytes $ toM bytes
+      gRes = Bytes.unBytes $ NetBytes.unNetBytes $ toG bytes
+      tRes = Bytes.unBytes $ NetBytes.unNetBytes $ toT bytes
+      pRes = Bytes.unBytes $ NetBytes.unNetBytes $ toP bytes
   convertAndTestFn MkResultConvs {..}
 
 normalizeProps :: TestTree
@@ -102,9 +102,9 @@ netBytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "NetBytes Eq laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (NGens.genNet @'Up @'PB)
-        y <- H.forAll (NGens.genNet @'Up @'PB)
-        z <- H.forAll (NGens.genNet @'Up @'PB)
+        x <- H.forAll (NGens.genNet @'Up @'P)
+        y <- H.forAll (NGens.genNet @'Up @'P)
+        z <- H.forAll (NGens.genNet @'Up @'P)
         VAlgebra.eqLaws x y z
 
 netBytesOrdProps :: TestTree
@@ -112,9 +112,9 @@ netBytesOrdProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "NetBytes Ord laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (NGens.genNet @'Up @'PB)
-        y <- H.forAll (NGens.genNet @'Up @'PB)
-        z <- H.forAll (NGens.genNet @'Up @'PB)
+        x <- H.forAll (NGens.genNet @'Up @'P)
+        y <- H.forAll (NGens.genNet @'Up @'P)
+        z <- H.forAll (NGens.genNet @'Up @'P)
         VAlgebra.ordLaws x y z
 
 netBytesGroupProps :: TestTree
@@ -122,9 +122,9 @@ netBytesGroupProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "NetBytes Group laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (NGens.genNet @'Up @'PB)
-        y <- H.forAll (NGens.genNet @'Up @'PB)
-        z <- H.forAll (NGens.genNet @'Up @'PB)
+        x <- H.forAll (NGens.genNet @'Up @'P)
+        y <- H.forAll (NGens.genNet @'Up @'P)
+        z <- H.forAll (NGens.genNet @'Up @'P)
         VAlgebra.groupLaws x y z
 
 netBytesVectorSpaceProps :: TestTree
@@ -132,8 +132,8 @@ netBytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "NetBytes Vector Space laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (NGens.genNet @'Up @'PB)
-        y <- H.forAll (NGens.genNet @'Up @'PB)
+        x <- H.forAll (NGens.genNet @'Up @'P)
+        y <- H.forAll (NGens.genNet @'Up @'P)
         k <- H.forAll SGens.genD
         l <- H.forAll SGens.genD
         VAlgebra.vectorSpaceLaws x y k l
@@ -192,8 +192,8 @@ anyNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
 anySizeToLabel :: AnyNetSize d n -> ByteSize
 anySizeToLabel (MkAnyNetSize sz _) = case sz of
   SB -> B
-  SKB -> KB
-  SMB -> MB
-  SGB -> GB
-  STB -> TB
-  SPB -> PB
+  SK -> K
+  SM -> M
+  SG -> G
+  ST -> T
+  SP -> P

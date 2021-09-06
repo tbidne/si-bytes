@@ -18,16 +18,16 @@ import Props.Data.Size.Generators qualified as Gens
 genBytes :: Gen (Bytes s Rational)
 genBytes = MkBytes <$> Gens.genBNum
 
--- | Chooses one from [B, KB, MB, ...]
+-- | Chooses one from [B, K, M, ...]
 genSomeBytes :: Gen (AnySize Rational)
 genSomeBytes = do
   HGen.choice
     [ MkAnySize SB <$> genBytes,
-      MkAnySize SKB <$> genBytes,
-      MkAnySize SMB <$> genBytes,
-      MkAnySize SGB <$> genBytes,
-      MkAnySize STB <$> genBytes,
-      MkAnySize SPB <$> genBytes
+      MkAnySize SK <$> genBytes,
+      MkAnySize SM <$> genBytes,
+      MkAnySize SG <$> genBytes,
+      MkAnySize ST <$> genBytes,
+      MkAnySize SP <$> genBytes
     ]
 
 -- | Generates a normalized 'Bytes', i.e., the numeric value
@@ -38,11 +38,11 @@ genNormalizedBytes = do
   num <- gen_1_000
   pure $ case sz of
     B -> MkAnySize SB $ MkBytes num
-    KB -> MkAnySize SKB $ MkBytes num
-    MB -> MkAnySize SMB $ MkBytes num
-    GB -> MkAnySize SGB $ MkBytes num
-    TB -> MkAnySize STB $ MkBytes num
-    PB -> MkAnySize SPB $ MkBytes num
+    K -> MkAnySize SK $ MkBytes num
+    M -> MkAnySize SM $ MkBytes num
+    G -> MkAnySize SG $ MkBytes num
+    T -> MkAnySize ST $ MkBytes num
+    P -> MkAnySize SP $ MkBytes num
 
 gen_1_000 :: Gen Rational
 gen_1_000 = (% 1) <$> HGen.integral (HRange.linearFrom 500 0 1_000)

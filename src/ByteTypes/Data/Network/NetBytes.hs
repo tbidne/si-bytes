@@ -98,18 +98,18 @@ instance Field n => VectorSpace (NetBytes d s n) n where
 
 instance (Field n, NumLiteral n, SingByteSize s) => Conversion (NetBytes d s n) where
   type Converted 'B (NetBytes d s n) = NetBytes d 'B n
-  type Converted 'KB (NetBytes d s n) = NetBytes d 'KB n
-  type Converted 'MB (NetBytes d s n) = NetBytes d 'MB n
-  type Converted 'GB (NetBytes d s n) = NetBytes d 'GB n
-  type Converted 'TB (NetBytes d s n) = NetBytes d 'TB n
-  type Converted 'PB (NetBytes d s n) = NetBytes d 'PB n
+  type Converted 'K (NetBytes d s n) = NetBytes d 'K n
+  type Converted 'M (NetBytes d s n) = NetBytes d 'M n
+  type Converted 'G (NetBytes d s n) = NetBytes d 'G n
+  type Converted 'T (NetBytes d s n) = NetBytes d 'T n
+  type Converted 'P (NetBytes d s n) = NetBytes d 'P n
 
   toB (MkNetBytes b) = MkNetBytes $ toB b
-  toKB (MkNetBytes b) = MkNetBytes $ toKB b
-  toMB (MkNetBytes b) = MkNetBytes $ toMB b
-  toGB (MkNetBytes b) = MkNetBytes $ toGB b
-  toTB (MkNetBytes b) = MkNetBytes $ toTB b
-  toPB (MkNetBytes b) = MkNetBytes $ toPB b
+  toK (MkNetBytes b) = MkNetBytes $ toK b
+  toM (MkNetBytes b) = MkNetBytes $ toM b
+  toG (MkNetBytes b) = MkNetBytes $ toG b
+  toT (MkNetBytes b) = MkNetBytes $ toT b
+  toP (MkNetBytes b) = MkNetBytes $ toP b
 
 instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (NetBytes d s n) where
   type Norm (NetBytes d s n) = AnyNetSize d n
@@ -135,7 +135,7 @@ instance
 --     (bytes, units) <- getUpTrafficRaw
 --     case units of
 --       "B" -> MkAnyNetSize SUp $ MkBytes \@B bytes
---       "KB" -> MkAnyNetSize SUp $ MkBytes \@KB bytes
+--       "K" -> MkAnyNetSize SUp $ MkBytes \@K bytes
 --       ...
 -- @
 --
@@ -157,7 +157,7 @@ deriving instance Functor (AnyNetSize d)
 -- takes units into account. For instance,
 --
 -- @
--- MkAnyNetSize SKB (MkBytes 1000) == MkAnyNetSize SMB (MkBytes 1).
+-- MkAnyNetSize SK (MkBytes 1000) == MkAnyNetSize SM (MkBytes 1).
 -- @
 --
 -- Because we expose the underlying @NetBytes@ in several ways (e.g. 'Show',
@@ -171,10 +171,10 @@ deriving instance Functor (AnyNetSize d)
 -- For instance:
 --
 -- @
--- let x = MkAnyMkAnyNetSizeSize SKB (MkBytes 1000)
--- let y = MkAnyNetSize SMB (MkBytes 1)
+-- let x = MkAnyMkAnyNetSizeSize SK (MkBytes 1000)
+-- let y = MkAnyNetSize SM (MkBytes 1)
 -- x == y
--- isKB x /= isKB y
+-- isK x /= isK y
 -- @
 --
 -- With apologies to Leibniz, such comparisons are too useful to ignore
@@ -201,18 +201,18 @@ instance (Field n, NumLiteral n, Ord n) => VectorSpace (AnyNetSize d n) n where
 
 instance (Field n, NumLiteral n) => Conversion (AnyNetSize d n) where
   type Converted 'B (AnyNetSize d n) = NetBytes d 'B n
-  type Converted 'KB (AnyNetSize d n) = NetBytes d 'KB n
-  type Converted 'MB (AnyNetSize d n) = NetBytes d 'MB n
-  type Converted 'GB (AnyNetSize d n) = NetBytes d 'GB n
-  type Converted 'TB (AnyNetSize d n) = NetBytes d 'TB n
-  type Converted 'PB (AnyNetSize d n) = NetBytes d 'PB n
+  type Converted 'K (AnyNetSize d n) = NetBytes d 'K n
+  type Converted 'M (AnyNetSize d n) = NetBytes d 'M n
+  type Converted 'G (AnyNetSize d n) = NetBytes d 'G n
+  type Converted 'T (AnyNetSize d n) = NetBytes d 'T n
+  type Converted 'P (AnyNetSize d n) = NetBytes d 'P n
 
   toB (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toB x
-  toKB (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toKB x
-  toMB (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toMB x
-  toGB (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toGB x
-  toTB (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toTB x
-  toPB (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toPB x
+  toK (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toK x
+  toM (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toM x
+  toG (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toG x
+  toT (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toT x
+  toP (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toP x
 
 instance (Field n, NumLiteral n, Ord n) => Normalize (AnyNetSize d n) where
   type Norm (AnyNetSize d n) = AnyNetSize d n
@@ -221,11 +221,11 @@ instance (Field n, NumLiteral n, Ord n) => Normalize (AnyNetSize d n) where
 instance (PrintfArg n, SingByteDirection d) => PrettyPrint (AnyNetSize d n) where
   pretty (MkAnyNetSize sz b) = case sz of
     SB -> pretty b
-    SKB -> pretty b
-    SMB -> pretty b
-    SGB -> pretty b
-    STB -> pretty b
-    SPB -> pretty b
+    SK -> pretty b
+    SM -> pretty b
+    SG -> pretty b
+    ST -> pretty b
+    SP -> pretty b
 
 -- | Retrieves the 'SingByteDirection' witness.
 anyNetSizeToSByteDirection :: SingByteDirection d => AnyNetSize d n -> SByteDirection d

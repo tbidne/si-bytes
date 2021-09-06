@@ -4,11 +4,11 @@
 module Props.Verify.Conversion
   ( ResultConvs (..),
     convertB,
-    convertKB,
-    convertMB,
-    convertGB,
-    convertTB,
-    convertPB,
+    convertK,
+    convertM,
+    convertG,
+    convertT,
+    convertP,
   )
 where
 
@@ -52,8 +52,8 @@ convertB results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to kilobytes\" conversion matches expectations.
-convertKB :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
-convertKB results = do
+convertK :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertK results = do
   let bExp = (.*. fromLit 1_000)
       kExp = id
       mExp = (.%. fromLit 1_000)
@@ -64,8 +64,8 @@ convertKB results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to megabytes\" conversion matches expectations.
-convertMB :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
-convertMB results = do
+convertM :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertM results = do
   let bExp = (.*. fromLit 1_000_000)
       kExp = (.*. fromLit 1_000)
       mExp = id
@@ -76,8 +76,8 @@ convertMB results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to gigabytes\" conversion matches expectations.
-convertGB :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
-convertGB results = do
+convertG :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertG results = do
   let bExp = (.*. fromLit 1_000_000_000)
       kExp = (.*. fromLit 1_000_000)
       mExp = (.*. fromLit 1_000)
@@ -88,8 +88,8 @@ convertGB results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to terabytes\" conversion matches expectations.
-convertTB :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
-convertTB results = do
+convertT :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertT results = do
   let bExp = (.*. fromLit 1_000_000_000_000)
       kExp = (.*. fromLit 1_000_000_000)
       mExp = (.*. fromLit 1_000_000)
@@ -100,8 +100,8 @@ convertTB results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to petabytes\" conversion matches expectations.
-convertPB :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
-convertPB results = do
+convertP :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertP results = do
   let bExp = (.*. fromLit 1_000_000_000_000_000)
       kExp = (.*. fromLit 1_000_000_000_000)
       mExp = (.*. fromLit 1_000_000_000)
@@ -114,11 +114,11 @@ convertPB results = do
 convert :: (Eq n, Show n) => ExpectedConvs n -> ResultConvs n -> PropertyT IO ()
 convert MkExpectedConvs {..} MkResultConvs {..} = do
   convertAndTest bExp original bRes "B"
-  convertAndTest kExp original kRes "KB"
-  convertAndTest mExp original mRes "MB"
-  convertAndTest gExp original gRes "GB"
-  convertAndTest tExp original tRes "TB"
-  convertAndTest pExp original pRes "PB"
+  convertAndTest kExp original kRes "K"
+  convertAndTest mExp original mRes "M"
+  convertAndTest gExp original gRes "G"
+  convertAndTest tExp original tRes "T"
+  convertAndTest pExp original pRes "P"
 
 convertAndTest ::
   (Eq t, Show t) =>

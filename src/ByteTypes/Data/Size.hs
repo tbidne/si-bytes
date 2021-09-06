@@ -19,31 +19,31 @@ import Data.Type.Equality (TestEquality (..), (:~:) (..))
 -- | Byte units.
 data ByteSize
   = B
-  | KB
-  | MB
-  | GB
-  | TB
-  | PB
+  | K
+  | M
+  | G
+  | T
+  | P
   deriving (Eq, Ord, Show)
 
 -- | Singleton for 'ByteSize'.
 type SByteSize :: ByteSize -> Type
 data SByteSize s where
   SB :: SByteSize 'B
-  SKB :: SByteSize 'KB
-  SMB :: SByteSize 'MB
-  SGB :: SByteSize 'GB
-  STB :: SByteSize 'TB
-  SPB :: SByteSize 'PB
+  SK :: SByteSize 'K
+  SM :: SByteSize 'M
+  SG :: SByteSize 'G
+  ST :: SByteSize 'T
+  SP :: SByteSize 'P
 
 instance TestEquality SByteSize where
   testEquality x y = case (x, y) of
     (SB, SB) -> Just Refl
-    (SKB, SKB) -> Just Refl
-    (SMB, SMB) -> Just Refl
-    (SGB, SGB) -> Just Refl
-    (STB, STB) -> Just Refl
-    (SPB, SPB) -> Just Refl
+    (SK, SK) -> Just Refl
+    (SM, SM) -> Just Refl
+    (SG, SG) -> Just Refl
+    (ST, ST) -> Just Refl
+    (SP, SP) -> Just Refl
     _ -> Nothing
 
 deriving instance Show (SByteSize s)
@@ -54,15 +54,15 @@ class SingByteSize s where
 
 instance SingByteSize 'B where singByteSize = SB
 
-instance SingByteSize 'KB where singByteSize = SKB
+instance SingByteSize 'K where singByteSize = SK
 
-instance SingByteSize 'MB where singByteSize = SMB
+instance SingByteSize 'M where singByteSize = SM
 
-instance SingByteSize 'GB where singByteSize = SGB
+instance SingByteSize 'G where singByteSize = SG
 
-instance SingByteSize 'TB where singByteSize = STB
+instance SingByteSize 'T where singByteSize = ST
 
-instance SingByteSize 'PB where singByteSize = SPB
+instance SingByteSize 'P where singByteSize = SP
 
 -- | Singleton \"with\"-style convenience function. Allows us to run a
 -- computation @SingByteSize d => r@ without explicitly pattern-matching
@@ -70,36 +70,36 @@ instance SingByteSize 'PB where singByteSize = SPB
 withSingByteSize :: SByteSize s -> (SingByteSize s => r) -> r
 withSingByteSize s x = case s of
   SB -> x
-  SKB -> x
-  SMB -> x
-  SGB -> x
-  STB -> x
-  SPB -> x
+  SK -> x
+  SM -> x
+  SG -> x
+  ST -> x
+  SP -> x
 
 -- | Type family that relates units to the next larger one.
 type NextSize :: forall k. k -> k
 type family NextSize a = r | r -> a
 
-type instance NextSize 'B = 'KB
+type instance NextSize 'B = 'K
 
-type instance NextSize 'KB = 'MB
+type instance NextSize 'K = 'M
 
-type instance NextSize 'MB = 'GB
+type instance NextSize 'M = 'G
 
-type instance NextSize 'GB = 'TB
+type instance NextSize 'G = 'T
 
-type instance NextSize 'TB = 'PB
+type instance NextSize 'T = 'P
 
 -- | Type family that relates units to the previous smaller one.
 type PrevSize :: forall k. k -> k
 type family PrevSize a = r | r -> a
 
-type instance PrevSize 'KB = 'B
+type instance PrevSize 'K = 'B
 
-type instance PrevSize 'MB = 'KB
+type instance PrevSize 'M = 'K
 
-type instance PrevSize 'GB = 'MB
+type instance PrevSize 'G = 'M
 
-type instance PrevSize 'TB = 'GB
+type instance PrevSize 'T = 'G
 
-type instance PrevSize 'PB = 'TB
+type instance PrevSize 'P = 'T

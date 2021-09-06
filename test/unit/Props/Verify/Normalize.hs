@@ -15,7 +15,7 @@ import Hedgehog qualified as H
 import Props.Utils ((<=>))
 
 -- | Verifies that the parameter numberic value is normalized, taking care
--- to account for special 'B' and 'PB' rules.
+-- to account for special 'B' and 'P' rules.
 isNormalized ::
   (Num n, Ord n, Show n) =>
   ByteSize ->
@@ -24,7 +24,7 @@ isNormalized ::
 isNormalized B x = do
   H.footnoteShow x
   H.assert $ x < 1_000
-isNormalized PB x = do
+isNormalized P x = do
   H.footnoteShow x
   H.assert $ x >= 1
 isNormalized _ x

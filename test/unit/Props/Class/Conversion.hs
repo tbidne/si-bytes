@@ -34,11 +34,11 @@ genConvertInput =
 
 szToRank :: ByteSize -> Int
 szToRank B = 0
-szToRank KB = 1
-szToRank MB = 2
-szToRank GB = 3
-szToRank TB = 4
-szToRank PB = 5
+szToRank K = 1
+szToRank M = 2
+szToRank G = 3
+szToRank T = 4
+szToRank P = 5
 
 intToMult :: Int -> Rational
 intToMult n

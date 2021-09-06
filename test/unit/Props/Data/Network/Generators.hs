@@ -24,11 +24,11 @@ genSomeNetSizeDown :: Gen (AnyNetSize 'Down Rational)
 genSomeNetSizeDown =
   HGen.choice
     [ MkAnyNetSize SB <$> genNet,
-      MkAnyNetSize SKB <$> genNet,
-      MkAnyNetSize SMB <$> genNet,
-      MkAnyNetSize SGB <$> genNet,
-      MkAnyNetSize STB <$> genNet,
-      MkAnyNetSize SPB <$> genNet
+      MkAnyNetSize SK <$> genNet,
+      MkAnyNetSize SM <$> genNet,
+      MkAnyNetSize SG <$> genNet,
+      MkAnyNetSize ST <$> genNet,
+      MkAnyNetSize SP <$> genNet
     ]
 
 -- | Generates 'AnyNetSize' 'Up' over 'BGens.genNet'.
@@ -36,11 +36,11 @@ genSomeNetSizeUp :: Gen (AnyNetSize 'Up Rational)
 genSomeNetSizeUp =
   HGen.choice
     [ MkAnyNetSize SB <$> genNet,
-      MkAnyNetSize SKB <$> genNet,
-      MkAnyNetSize SMB <$> genNet,
-      MkAnyNetSize SGB <$> genNet,
-      MkAnyNetSize STB <$> genNet,
-      MkAnyNetSize SPB <$> genNet
+      MkAnyNetSize SK <$> genNet,
+      MkAnyNetSize SM <$> genNet,
+      MkAnyNetSize SG <$> genNet,
+      MkAnyNetSize ST <$> genNet,
+      MkAnyNetSize SP <$> genNet
     ]
 
 -- | Generates a normalized 'Bytes', i.e., the numeric value
@@ -50,8 +50,8 @@ genNormalizedNetBytes = do
   (MkAnySize sz x) <- BGens.genNormalizedBytes
   pure $ case sz of
     SB -> MkAnyNetSize SB $ MkNetBytes x
-    SKB -> MkAnyNetSize SKB $ MkNetBytes x
-    SMB -> MkAnyNetSize SMB $ MkNetBytes x
-    SGB -> MkAnyNetSize SGB $ MkNetBytes x
-    STB -> MkAnyNetSize STB $ MkNetBytes x
-    SPB -> MkAnyNetSize SPB $ MkNetBytes x
+    SK -> MkAnyNetSize SK $ MkNetBytes x
+    SM -> MkAnyNetSize SM $ MkNetBytes x
+    SG -> MkAnyNetSize SG $ MkNetBytes x
+    ST -> MkAnyNetSize ST $ MkNetBytes x
+    SP -> MkAnyNetSize SP $ MkNetBytes x

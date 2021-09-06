@@ -3,7 +3,7 @@
 --
 -- This paradigm differs from the previous size hiding
 -- 'ByteTypes.Data.Bytes.AnySize' and 'AnyNetSize' in that because we had
--- sensible ways to convert between sizes (e.g. KB -> GB), we could
+-- sensible ways to convert between sizes (e.g. K -> G), we could
 -- combine arbitrary byte types by first converting to a common type.
 --
 -- Here, there is no sensible way to convert between uploaded and downloaded
@@ -41,7 +41,7 @@ import Text.Printf (PrintfArg (..))
 -- e.g.,
 --
 -- @
---   getMaxTraffic :: IO (AnyNetDir KB Double)
+--   getMaxTraffic :: IO (AnyNetDir K Double)
 --   getMaxTraffic = do
 --     (bytes, direction) <- getMaxTrafficRaw
 --     case direction of
@@ -66,8 +66,8 @@ deriving instance Functor (AnyNetDir s)
 -- /and/ the underlying @NetBytes@ has the same value.
 --
 -- @
--- MkAnyNetDir SKB (MkNetBytes @Up (MkBytes 1000)) == MkAnyNetDir SMB (MkNetBytes @Up (MkBytes 1))
--- MkAnyNetDir SKB (MkNetBytes @Up (MkBytes 1000)) /= MkAnyNetDir SMB (MkNetBytes @Down (MkBytes 1))
+-- MkAnyNetDir SK (MkNetBytes @Up (MkBytes 1000)) == MkAnyNetDir SM (MkNetBytes @Up (MkBytes 1))
+-- MkAnyNetDir SK (MkNetBytes @Up (MkBytes 1000)) /= MkAnyNetDir SM (MkNetBytes @Down (MkBytes 1))
 -- @
 --
 -- Notice no 'Ord' instance is provided, as we provide no ordering for
@@ -93,18 +93,18 @@ instance Ring n => ScalarNum (AnyNetDir s n) where
 
 instance (Field n, NumLiteral n, SingByteSize s) => Conversion (AnyNetDir s n) where
   type Converted 'B (AnyNetDir s n) = AnyNetDir 'B n
-  type Converted 'KB (AnyNetDir s n) = AnyNetDir 'KB n
-  type Converted 'MB (AnyNetDir s n) = AnyNetDir 'MB n
-  type Converted 'GB (AnyNetDir s n) = AnyNetDir 'GB n
-  type Converted 'TB (AnyNetDir s n) = AnyNetDir 'TB n
-  type Converted 'PB (AnyNetDir s n) = AnyNetDir 'PB n
+  type Converted 'K (AnyNetDir s n) = AnyNetDir 'K n
+  type Converted 'M (AnyNetDir s n) = AnyNetDir 'M n
+  type Converted 'G (AnyNetDir s n) = AnyNetDir 'G n
+  type Converted 'T (AnyNetDir s n) = AnyNetDir 'T n
+  type Converted 'P (AnyNetDir s n) = AnyNetDir 'P n
 
   toB (MkAnyNetDir dir x) = MkAnyNetDir dir $ toB x
-  toKB (MkAnyNetDir dir x) = MkAnyNetDir dir $ toKB x
-  toMB (MkAnyNetDir dir x) = MkAnyNetDir dir $ toMB x
-  toGB (MkAnyNetDir dir x) = MkAnyNetDir dir $ toGB x
-  toTB (MkAnyNetDir dir x) = MkAnyNetDir dir $ toTB x
-  toPB (MkAnyNetDir dir x) = MkAnyNetDir dir $ toPB x
+  toK (MkAnyNetDir dir x) = MkAnyNetDir dir $ toK x
+  toM (MkAnyNetDir dir x) = MkAnyNetDir dir $ toM x
+  toG (MkAnyNetDir dir x) = MkAnyNetDir dir $ toG x
+  toT (MkAnyNetDir dir x) = MkAnyNetDir dir $ toT x
+  toP (MkAnyNetDir dir x) = MkAnyNetDir dir $ toP x
 
 instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (AnyNetDir s n) where
   type Norm (AnyNetDir s n) = AnyNet n
@@ -126,8 +126,8 @@ instance (PrintfArg n, SingByteSize s) => PrettyPrint (AnyNetDir s n) where
 --   getMaxTraffic = do
 --     (bytes, direction, size) <- getMaxTrafficRaw
 --     case (direction, size) of
---       ("Down", "KB" -> MkAnyNet SDown SKB $ MkBytes bytes
---       ("Up", "MB") -> MkAnyNet SUp SMB $ MkBytes bytes
+--       ("Down", "K" -> MkAnyNet SDown SK $ MkBytes bytes
+--       ("Up", "M") -> MkAnyNet SUp SM $ MkBytes bytes
 --       ...
 -- @
 --
@@ -151,8 +151,8 @@ deriving instance Functor AnyNet
 -- Thus we have, for instance,
 --
 -- @
--- MkAnyNet 'Up 'KB (MkNetBytes 1_000) == MkAnyNet 'Up 'MB (MkNetBytes 1)
--- MkAnyNet 'Up 'KB (MkNetBytes 1_000) /= MkAnyNet 'Down 'MB (MkNetBytes 1)
+-- MkAnyNet 'Up 'K (MkNetBytes 1_000) == MkAnyNet 'Up 'M (MkNetBytes 1)
+-- MkAnyNet 'Up 'K (MkNetBytes 1_000) /= MkAnyNet 'Down 'M (MkNetBytes 1)
 -- @
 instance (Eq n, Field n, NumLiteral n) => Eq (AnyNet n) where
   MkAnyNet dx szx x == MkAnyNet dy szy y =
@@ -165,18 +165,18 @@ instance (Eq n, Field n, NumLiteral n) => Eq (AnyNet n) where
 
 instance (Field n, NumLiteral n) => Conversion (AnyNet n) where
   type Converted 'B (AnyNet n) = AnyNetDir 'B n
-  type Converted 'KB (AnyNet n) = AnyNetDir 'KB n
-  type Converted 'MB (AnyNet n) = AnyNetDir 'MB n
-  type Converted 'GB (AnyNet n) = AnyNetDir 'GB n
-  type Converted 'TB (AnyNet n) = AnyNetDir 'TB n
-  type Converted 'PB (AnyNet n) = AnyNetDir 'PB n
+  type Converted 'K (AnyNet n) = AnyNetDir 'K n
+  type Converted 'M (AnyNet n) = AnyNetDir 'M n
+  type Converted 'G (AnyNet n) = AnyNetDir 'G n
+  type Converted 'T (AnyNet n) = AnyNetDir 'T n
+  type Converted 'P (AnyNet n) = AnyNetDir 'P n
 
   toB (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toB (MkAnyNetDir dir x)
-  toKB (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toKB (MkAnyNetDir dir x)
-  toMB (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toMB (MkAnyNetDir dir x)
-  toGB (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toGB (MkAnyNetDir dir x)
-  toTB (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toTB (MkAnyNetDir dir x)
-  toPB (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toPB (MkAnyNetDir dir x)
+  toK (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toK (MkAnyNetDir dir x)
+  toM (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toM (MkAnyNetDir dir x)
+  toG (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toG (MkAnyNetDir dir x)
+  toT (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toT (MkAnyNetDir dir x)
+  toP (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toP (MkAnyNetDir dir x)
 
 instance (Field n, NumLiteral n, Ord n) => Normalize (AnyNet n) where
   type Norm (AnyNet n) = AnyNet n

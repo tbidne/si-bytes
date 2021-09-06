@@ -62,17 +62,17 @@ convertProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         b <- H.forAll (Gens.genBytes @'B)
-        k <- H.forAll (Gens.genBytes @'KB)
-        m <- H.forAll (Gens.genBytes @'MB)
-        g <- H.forAll (Gens.genBytes @'GB)
-        t <- H.forAll (Gens.genBytes @'TB)
-        p <- H.forAll (Gens.genBytes @'PB)
+        k <- H.forAll (Gens.genBytes @'K)
+        m <- H.forAll (Gens.genBytes @'M)
+        g <- H.forAll (Gens.genBytes @'G)
+        t <- H.forAll (Gens.genBytes @'T)
+        p <- H.forAll (Gens.genBytes @'P)
         convert b VConversion.convertB
-        convert k VConversion.convertKB
-        convert m VConversion.convertMB
-        convert g VConversion.convertGB
-        convert t VConversion.convertTB
-        convert p VConversion.convertPB
+        convert k VConversion.convertK
+        convert m VConversion.convertM
+        convert g VConversion.convertG
+        convert t VConversion.convertT
+        convert p VConversion.convertP
 
 convert ::
   SingByteSize s =>
@@ -82,11 +82,11 @@ convert ::
 convert bytes@(MkBytes x) convertAndTestFn = do
   let original = x
       bRes = Bytes.unBytes $ toB bytes
-      kRes = Bytes.unBytes $ toKB bytes
-      mRes = Bytes.unBytes $ toMB bytes
-      gRes = Bytes.unBytes $ toGB bytes
-      tRes = Bytes.unBytes $ toTB bytes
-      pRes = Bytes.unBytes $ toPB bytes
+      kRes = Bytes.unBytes $ toK bytes
+      mRes = Bytes.unBytes $ toM bytes
+      gRes = Bytes.unBytes $ toG bytes
+      tRes = Bytes.unBytes $ toT bytes
+      pRes = Bytes.unBytes $ toP bytes
   convertAndTestFn MkResultConvs {..}
 
 incProps :: TestTree
@@ -96,12 +96,12 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
-              SPB -> (x, Bytes.unBytes bytes)
+              SP -> (x, Bytes.unBytes bytes)
               SB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              SKB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              SMB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              SGB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              STB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SK -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SM -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SG -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              ST -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -114,11 +114,11 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
               SB -> (x, Bytes.unBytes bytes)
-              SKB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SMB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SGB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              STB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SPB -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SK -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SM -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SG -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              ST -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SP -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -140,9 +140,9 @@ bytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "Bytes Eq laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (Gens.genBytes @'PB)
-        y <- H.forAll (Gens.genBytes @'PB)
-        z <- H.forAll (Gens.genBytes @'PB)
+        x <- H.forAll (Gens.genBytes @'P)
+        y <- H.forAll (Gens.genBytes @'P)
+        z <- H.forAll (Gens.genBytes @'P)
         VAlgebra.eqLaws x y z
 
 bytesOrdProps :: TestTree
@@ -150,9 +150,9 @@ bytesOrdProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "Bytes Ord laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (Gens.genBytes @'PB)
-        y <- H.forAll (Gens.genBytes @'PB)
-        z <- H.forAll (Gens.genBytes @'PB)
+        x <- H.forAll (Gens.genBytes @'P)
+        y <- H.forAll (Gens.genBytes @'P)
+        z <- H.forAll (Gens.genBytes @'P)
         VAlgebra.ordLaws x y z
 
 bytesGroupProps :: TestTree
@@ -160,9 +160,9 @@ bytesGroupProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "Bytes Group laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (Gens.genBytes @'PB)
-        y <- H.forAll (Gens.genBytes @'PB)
-        z <- H.forAll (Gens.genBytes @'PB)
+        x <- H.forAll (Gens.genBytes @'P)
+        y <- H.forAll (Gens.genBytes @'P)
+        z <- H.forAll (Gens.genBytes @'P)
         VAlgebra.groupLaws x y z
 
 bytesVectorSpaceProps :: TestTree
@@ -170,8 +170,8 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "Bytes Vector Space laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (Gens.genBytes @'PB)
-        y <- H.forAll (Gens.genBytes @'PB)
+        x <- H.forAll (Gens.genBytes @'P)
+        y <- H.forAll (Gens.genBytes @'P)
         k <- H.forAll SGens.genD
         l <- H.forAll SGens.genD
         VAlgebra.vectorSpaceLaws x y k l
@@ -179,11 +179,11 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
 anySizeToLabel :: AnySize n -> ByteSize
 anySizeToLabel (MkAnySize sz _) = case sz of
   SB -> B
-  SKB -> KB
-  SMB -> MB
-  SGB -> GB
-  STB -> TB
-  SPB -> PB
+  SK -> K
+  SM -> M
+  SG -> G
+  ST -> T
+  SP -> P
 
 anySizeEqProps :: TestTree
 anySizeEqProps = T.askOption $ \(MkMaxRuns limit) ->

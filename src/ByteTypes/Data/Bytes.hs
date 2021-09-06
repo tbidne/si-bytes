@@ -1,5 +1,5 @@
 -- | The main entry point to the library. Provides the types and classes for
--- working with different byte sizes (e.g. B, KB, MB ...). See
+-- working with different byte sizes (e.g. B, K, M ...). See
 -- 'ByteTypes.Data.Network' if there is a need to distinguish between
 -- downloaded and uploaded bytes.
 module ByteTypes.Data.Bytes
@@ -110,67 +110,67 @@ instance Field n => VectorSpace (Bytes s n) n where
 
 instance (Field n, NumLiteral n, SingByteSize s) => Conversion (Bytes s n) where
   type Converted 'B (Bytes s n) = Bytes 'B n
-  type Converted 'KB (Bytes s n) = Bytes 'KB n
-  type Converted 'MB (Bytes s n) = Bytes 'MB n
-  type Converted 'GB (Bytes s n) = Bytes 'GB n
-  type Converted 'TB (Bytes s n) = Bytes 'TB n
-  type Converted 'PB (Bytes s n) = Bytes 'PB n
+  type Converted 'K (Bytes s n) = Bytes 'K n
+  type Converted 'M (Bytes s n) = Bytes 'M n
+  type Converted 'G (Bytes s n) = Bytes 'G n
+  type Converted 'T (Bytes s n) = Bytes 'T n
+  type Converted 'P (Bytes s n) = Bytes 'P n
 
   toB (MkBytes x) = MkBytes $ Conv.convertWitness @s B x
-  toKB (MkBytes x) = MkBytes $ Conv.convertWitness @s KB x
-  toMB (MkBytes x) = MkBytes $ Conv.convertWitness @s MB x
-  toGB (MkBytes x) = MkBytes $ Conv.convertWitness @s GB x
-  toTB (MkBytes x) = MkBytes $ Conv.convertWitness @s TB x
-  toPB (MkBytes x) = MkBytes $ Conv.convertWitness @s PB x
+  toK (MkBytes x) = MkBytes $ Conv.convertWitness @s K x
+  toM (MkBytes x) = MkBytes $ Conv.convertWitness @s M x
+  toG (MkBytes x) = MkBytes $ Conv.convertWitness @s G x
+  toT (MkBytes x) = MkBytes $ Conv.convertWitness @s T x
+  toP (MkBytes x) = MkBytes $ Conv.convertWitness @s P x
 
-type instance NextSize (Bytes 'B n) = Bytes 'KB n
+type instance NextSize (Bytes 'B n) = Bytes 'K n
 
-type instance NextSize (Bytes 'KB n) = Bytes 'MB n
+type instance NextSize (Bytes 'K n) = Bytes 'M n
 
-type instance NextSize (Bytes 'MB n) = Bytes 'GB n
+type instance NextSize (Bytes 'M n) = Bytes 'G n
 
-type instance NextSize (Bytes 'GB n) = Bytes 'TB n
+type instance NextSize (Bytes 'G n) = Bytes 'T n
 
-type instance NextSize (Bytes 'TB n) = Bytes 'PB n
+type instance NextSize (Bytes 'T n) = Bytes 'P n
 
 instance (Field n, NumLiteral n) => IncByteSize (Bytes 'B n) where
   next x = resizeBytes $ x .% fromLit @n 1_000
 
-instance (Field n, NumLiteral n) => IncByteSize (Bytes 'KB n) where
+instance (Field n, NumLiteral n) => IncByteSize (Bytes 'K n) where
   next x = resizeBytes $ x .% fromLit @n 1_000
 
-instance (Field n, NumLiteral n) => IncByteSize (Bytes 'MB n) where
+instance (Field n, NumLiteral n) => IncByteSize (Bytes 'M n) where
   next x = resizeBytes $ x .% fromLit @n 1_000
 
-instance (Field n, NumLiteral n) => IncByteSize (Bytes 'GB n) where
+instance (Field n, NumLiteral n) => IncByteSize (Bytes 'G n) where
   next x = resizeBytes $ x .% fromLit @n 1_000
 
-instance (Field n, NumLiteral n) => IncByteSize (Bytes 'TB n) where
+instance (Field n, NumLiteral n) => IncByteSize (Bytes 'T n) where
   next x = resizeBytes $ x .% fromLit @n 1_000
 
-type instance PrevSize (Bytes 'KB n) = Bytes 'B n
+type instance PrevSize (Bytes 'K n) = Bytes 'B n
 
-type instance PrevSize (Bytes 'MB n) = Bytes 'KB n
+type instance PrevSize (Bytes 'M n) = Bytes 'K n
 
-type instance PrevSize (Bytes 'GB n) = Bytes 'MB n
+type instance PrevSize (Bytes 'G n) = Bytes 'M n
 
-type instance PrevSize (Bytes 'TB n) = Bytes 'GB n
+type instance PrevSize (Bytes 'T n) = Bytes 'G n
 
-type instance PrevSize (Bytes 'PB n) = Bytes 'TB n
+type instance PrevSize (Bytes 'P n) = Bytes 'T n
 
-instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'KB n) where
+instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'K n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
-instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'MB n) where
+instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'M n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
-instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'GB n) where
+instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'G n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
-instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'TB n) where
+instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'T n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
-instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'PB n) where
+instance (NumLiteral n, Ring n) => DecByteSize (Bytes 'P n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
 instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (Bytes s n) where
@@ -181,22 +181,22 @@ instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (Bytes s n)
       SB
         | absBytes .< fromLit 1_000 -> MkAnySize SB bytes
         | otherwise -> normalize $ next bytes
-      SPB
-        | absBytes .>= fromLit 1 -> MkAnySize SPB bytes
+      SP
+        | absBytes .>= fromLit 1 -> MkAnySize SP bytes
         | otherwise -> normalize $ prev bytes
-      SKB
+      SK
         | absBytes .< fromLit 1 -> normalize $ prev bytes
         | absBytes .>= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkAnySize sz bytes
-      SMB
+      SM
         | absBytes .< fromLit 1 -> normalize $ prev bytes
         | absBytes .>= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkAnySize sz bytes
-      SGB
+      SG
         | absBytes .< fromLit 1 -> normalize $ prev bytes
         | absBytes .>= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkAnySize sz bytes
-      STB
+      ST
         | absBytes .< fromLit 1 -> normalize $ prev bytes
         | absBytes .>= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkAnySize sz bytes
@@ -207,11 +207,11 @@ instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (Bytes s n)
 instance (PrintfArg n, SingByteSize s) => PrettyPrint (Bytes s n) where
   pretty (MkBytes x) = case singByteSize @s of
     SB -> Pf.printf "%.2f" x <> " B"
-    SKB -> Pf.printf "%.2f" x <> " KB"
-    SMB -> Pf.printf "%.2f" x <> " MB"
-    SGB -> Pf.printf "%.2f" x <> " GB"
-    STB -> Pf.printf "%.2f" x <> " TB"
-    SPB -> Pf.printf "%.2f" x <> " PB"
+    SK -> Pf.printf "%.2f" x <> " K"
+    SM -> Pf.printf "%.2f" x <> " M"
+    SG -> Pf.printf "%.2f" x <> " G"
+    ST -> Pf.printf "%.2f" x <> " T"
+    SP -> Pf.printf "%.2f" x <> " P"
 
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return, e.g.,
@@ -222,7 +222,7 @@ instance (PrintfArg n, SingByteSize s) => PrettyPrint (Bytes s n) where
 --     (bytes, units) <- getRawFileSize path
 --     case units of
 --       "B" -> MkAnySize SB $ MkB bytes
---       "KB" -> MkAnySize SKB $ MkKB bytes
+--       "K" -> MkAnySize SK $ MkK bytes
 --       ...
 -- @
 --
@@ -244,7 +244,7 @@ deriving instance Functor AnySize
 -- takes units into account. For instance,
 --
 -- @
--- MkAnySize SKB (MkBytes 1000) == MkAnySize SMB (MkBytes 1).
+-- MkAnySize SK (MkBytes 1000) == MkAnySize SM (MkBytes 1).
 -- @
 --
 -- Because we expose the underlying @Bytes@ in several ways (e.g. 'Show',
@@ -258,10 +258,10 @@ deriving instance Functor AnySize
 -- For instance:
 --
 -- @
--- let x = MkAnySize SKB (MkBytes 1000)
--- let y = MkAnySize SMB (MkBytes 1)
+-- let x = MkAnySize SK (MkBytes 1000)
+-- let y = MkAnySize SM (MkBytes 1)
 -- x == y
--- isKB x /= isKB y
+-- isK x /= isK y
 -- @
 --
 -- With apologies to Leibniz, such comparisons are too useful to ignore
@@ -274,8 +274,8 @@ instance (Eq n, Field n, NumLiteral n) => Eq (AnySize n) where
 -- __and__ label, so that, e.g.,
 --
 -- @
--- MkAnySize SKB (MkBytes 5_000) <= MkAnySize SMB (MkBytes 8)
--- MkAnySize SMB (MkBytes 2) <= MkAnySize SKB (MkBytes 5_000)
+-- MkAnySize SK (MkBytes 5_000) <= MkAnySize SM (MkBytes 8)
+-- MkAnySize SM (MkBytes 2) <= MkAnySize SK (MkBytes 5_000)
 -- @
 instance (Field n, NumLiteral n, Ord n) => Ord (AnySize n) where
   x <= y = toB x <= toB y
@@ -295,18 +295,18 @@ instance (Field n, NumLiteral n, Ord n) => VectorSpace (AnySize n) n where
 
 instance (Field n, NumLiteral n) => Conversion (AnySize n) where
   type Converted 'B (AnySize n) = Bytes 'B n
-  type Converted 'KB (AnySize n) = Bytes 'KB n
-  type Converted 'MB (AnySize n) = Bytes 'MB n
-  type Converted 'GB (AnySize n) = Bytes 'GB n
-  type Converted 'TB (AnySize n) = Bytes 'TB n
-  type Converted 'PB (AnySize n) = Bytes 'PB n
+  type Converted 'K (AnySize n) = Bytes 'K n
+  type Converted 'M (AnySize n) = Bytes 'M n
+  type Converted 'G (AnySize n) = Bytes 'G n
+  type Converted 'T (AnySize n) = Bytes 'T n
+  type Converted 'P (AnySize n) = Bytes 'P n
 
   toB (MkAnySize sz x) = Size.withSingByteSize sz $ toB x
-  toKB (MkAnySize sz x) = Size.withSingByteSize sz $ toKB x
-  toMB (MkAnySize sz x) = Size.withSingByteSize sz $ toMB x
-  toGB (MkAnySize sz x) = Size.withSingByteSize sz $ toGB x
-  toTB (MkAnySize sz x) = Size.withSingByteSize sz $ toTB x
-  toPB (MkAnySize sz x) = Size.withSingByteSize sz $ toPB x
+  toK (MkAnySize sz x) = Size.withSingByteSize sz $ toK x
+  toM (MkAnySize sz x) = Size.withSingByteSize sz $ toM x
+  toG (MkAnySize sz x) = Size.withSingByteSize sz $ toG x
+  toT (MkAnySize sz x) = Size.withSingByteSize sz $ toT x
+  toP (MkAnySize sz x) = Size.withSingByteSize sz $ toP x
 
 instance (Field n, NumLiteral n, Ord n) => Normalize (AnySize n) where
   type Norm (AnySize n) = AnySize n

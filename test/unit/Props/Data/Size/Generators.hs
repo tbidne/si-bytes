@@ -3,11 +3,11 @@ module Props.Data.Size.Generators
   ( genByteSize,
     genD,
     genBNum,
-    genKBNum,
-    genMBNum,
-    genGBNum,
-    genTBNum,
-    genPBNum,
+    genKNum,
+    genMNum,
+    genGNum,
+    genTNum,
+    genPNum,
   )
 where
 
@@ -19,7 +19,7 @@ import Hedgehog.Range qualified as HRange
 
 -- | Uniform distribution over 'ByteSize'.
 genByteSize :: Gen ByteSize
-genByteSize = HGen.element [B, KB, MB, GB, TB, PB]
+genByteSize = HGen.element [B, K, M, G, T, P]
 
 -- | Generates a linear distribution from 0 to 1,000,000,000,000,000.
 genD :: Gen Rational
@@ -39,45 +39,45 @@ genBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
     upper = 2_000_000_000_000_000_000
 
 -- | Generates a linear distribution from 0 to 2,000,000,000,000,000.
--- When used with 'KB', this covers the full range of (Bytes, PetaBytes).
-genKBNum :: Gen Rational
-genKBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
+-- When used with 'K', this covers the full range of (Bytes, PetaBytes).
+genKNum :: Gen Rational
+genKNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000_000_000_000_000
     lower = 0
     upper = 2_000_000_000_000_000
 
 -- | Generates a linear distribution from 0 to 2,000,000,000,000.
--- When used with 'MB', this covers the full range of (Bytes, PetaBytes).
-genMBNum :: Gen Rational
-genMBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
+-- When used with 'M', this covers the full range of (Bytes, PetaBytes).
+genMNum :: Gen Rational
+genMNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000_000_000_000
     lower = 0
     upper = 2_000_000_000_000
 
 -- | Generates a linear distribution from 0 to 2,000,000,000. When used
--- with 'GB', this covers the full range of (Bytes, PetaBytes).
-genGBNum :: Gen Rational
-genGBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
+-- with 'G', this covers the full range of (Bytes, PetaBytes).
+genGNum :: Gen Rational
+genGNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000_000_000
     lower = 0
     upper = 2_000_000_000
 
 -- | Generates a linear distribution from 0 to 2,000,000. When used with
--- 'TB', this covers the full range of (Bytes, PetaBytes).
-genTBNum :: Gen Rational
-genTBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
+-- 'T', this covers the full range of (Bytes, PetaBytes).
+genTNum :: Gen Rational
+genTNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000_000
     lower = 0
     upper = 2_000_000
 
--- | Generates a linear distribution from 0 to 2,000. When used with 'PB',
+-- | Generates a linear distribution from 0 to 2,000. When used with 'P',
 -- this covers the full range of (Bytes, PetaBytes).
-genPBNum :: Gen Rational
-genPBNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
+genPNum :: Gen Rational
+genPNum = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 1_000
     lower = 0
