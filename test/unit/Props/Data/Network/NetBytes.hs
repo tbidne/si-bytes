@@ -6,18 +6,23 @@ module Props.Data.Network.NetBytes (props) where
 import ByteTypes.Class.Conversion (Conversion (..), DecByteSize (..), IncByteSize (..))
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
+import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Bytes (Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Direction (ByteDirection (..))
-import ByteTypes.Data.Network qualified as NetBytes
 import ByteTypes.Data.Network.NetBytes (AnyNetSize (..), NetBytes (..))
+import ByteTypes.Data.Network.NetBytes qualified as NetBytes
 import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
 import ByteTypes.Data.Size qualified as Size
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
 import Props.Data.Network.Generators qualified as NGens
+import Props.Data.Size.Generators qualified as SGens
 import Props.MaxRuns (MaxRuns (..))
-import Props.Utils qualified as PropUtils
+import Props.Verify.Algebra qualified as VAlgebra
+import Props.Verify.Conversion (ResultConvs (..))
+import Props.Verify.Conversion qualified as VConversion
+import Props.Verify.Normalize qualified as VNormalize
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Test.Tasty.Hedgehog qualified as TH
@@ -31,121 +36,61 @@ props =
 
 netBytesProps :: [TestTree]
 netBytesProps =
-  [ convertBProps,
-    convertKBProps,
-    convertMBProps,
-    convertGBProps,
-    convertTBProps,
-    convertPBProps,
+  [ convertProps,
     incProps,
-    decProps
+    decProps,
+    normalizeProps,
+    netBytesEqProps,
+    netBytesOrdProps,
+    netBytesGroupProps,
+    netBytesVectorSpaceProps
   ]
 
-data ExpectedConvs = MkExpectedConvs
-  { bExp :: Rational,
-    kExp :: Rational,
-    mExp :: Rational,
-    gExp :: Rational,
-    tExp :: Rational,
-    pExp :: Rational
-  }
+anyNetSizeProps :: [TestTree]
+anyNetSizeProps =
+  [ anyNetSizeEqProps,
+    anyNetSizeOrdProps,
+    anyNetSizeGroupProps,
+    anyNetSizeVectorSpaceProps,
+    anyNetSizeNormalizeProps
+  ]
 
-convertBProps :: TestTree
-convertBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "NetBytes B Conversions" $
+convertProps :: TestTree
+convertProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "NetBytes Conversions" $
     H.withTests limit $
       H.property $ do
-        bytes@(MkNetBytes (MkBytes x)) <- H.forAll (NGens.genNet @'Up @'B)
-        let bExp = x
-            kExp = x .%. 1_000
-            mExp = x .%. 1_000_000
-            gExp = x .%. 1_000_000_000
-            tExp = x .%. 1_000_000_000_000
-            pExp = x .%. 1_000_000_000_000_000
-        convert MkExpectedConvs {..} bytes
+        b <- H.forAll (NGens.genNet @'Up @'B)
+        k <- H.forAll (NGens.genNet @'Up @'KB)
+        m <- H.forAll (NGens.genNet @'Up @'MB)
+        g <- H.forAll (NGens.genNet @'Up @'GB)
+        t <- H.forAll (NGens.genNet @'Up @'TB)
+        p <- H.forAll (NGens.genNet @'Up @'PB)
+        convert b VConversion.convertB
+        convert k VConversion.convertKB
+        convert m VConversion.convertMB
+        convert g VConversion.convertGB
+        convert t VConversion.convertTB
+        convert p VConversion.convertPB
 
-convertKBProps :: TestTree
-convertKBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "NetBytes KB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkNetBytes (MkBytes x)) <- H.forAll (NGens.genNet @'Up @'KB)
-        let bExp = x .*. 1_000
-            kExp = x
-            mExp = x .%. 1_000
-            gExp = x .%. 1_000_000
-            tExp = x .%. 1_000_000_000
-            pExp = x .%. 1_000_000_000_000
-        convert MkExpectedConvs {..} bytes
-
-convertMBProps :: TestTree
-convertMBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "NetBytes MB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkNetBytes (MkBytes x)) <- H.forAll (NGens.genNet @'Up @'MB)
-        let bExp = x .*. 1_000_000
-            kExp = x .*. 1_000
-            mExp = x
-            gExp = x .%. 1_000
-            tExp = x .%. 1_000_000
-            pExp = x .%. 1_000_000_000
-        convert MkExpectedConvs {..} bytes
-
-convertGBProps :: TestTree
-convertGBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "NetBytes GB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkNetBytes (MkBytes x)) <- H.forAll (NGens.genNet @'Up @'GB)
-        let bExp = x .*. 1_000_000_000
-            kExp = x .*. 1_000_000
-            mExp = x .*. 1_000
-            gExp = x
-            tExp = x .%. 1_000
-            pExp = x .%. 1_000_000
-        convert MkExpectedConvs {..} bytes
-
-convertTBProps :: TestTree
-convertTBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "NetBytes TB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkNetBytes (MkBytes x)) <- H.forAll (NGens.genNet @'Up @'TB)
-        let bExp = x .*. 1_000_000_000_000
-            kExp = x .*. 1_000_000_000
-            mExp = x .*. 1_000_000
-            gExp = x .*. 1_000
-            tExp = x
-            pExp = x .%. 1_000
-        convert MkExpectedConvs {..} bytes
-
-convertPBProps :: TestTree
-convertPBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "NetBytes PB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkNetBytes (MkBytes x)) <- H.forAll (NGens.genNet @'Up @'PB)
-        let bExp = x .*. 1_000_000_000_000_000
-            kExp = x .*. 1_000_000_000_000
-            mExp = x .*. 1_000_000_000
-            gExp = x .*. 1_000_000
-            tExp = x .*. 1_000
-            pExp = x
-        convert MkExpectedConvs {..} bytes
-
-convert :: SingByteSize s => ExpectedConvs -> NetBytes d s Rational -> PropertyT IO ()
-convert MkExpectedConvs {..} bytes = do
-  convertAndTest bExp bytes "B" toB
-  convertAndTest kExp bytes "KB" toKB
-  convertAndTest mExp bytes "MB" toMB
-  convertAndTest gExp bytes "GB" toGB
-  convertAndTest tExp bytes "TB" toTB
-  convertAndTest pExp bytes "PB" toPB
+convert ::
+  SingByteSize s =>
+  NetBytes d s Rational ->
+  (ResultConvs Rational -> PropertyT IO ()) ->
+  PropertyT IO ()
+convert bytes@(MkNetBytes (MkBytes x)) convertAndTestFn = do
+  let original = x
+      bRes = Bytes.unBytes $ NetBytes.unNetBytes $ toB bytes
+      kRes = Bytes.unBytes $ NetBytes.unNetBytes $ toKB bytes
+      mRes = Bytes.unBytes $ NetBytes.unNetBytes $ toMB bytes
+      gRes = Bytes.unBytes $ NetBytes.unNetBytes $ toGB bytes
+      tRes = Bytes.unBytes $ NetBytes.unNetBytes $ toTB bytes
+      pRes = Bytes.unBytes $ NetBytes.unNetBytes $ toPB bytes
+  convertAndTestFn MkResultConvs {..}
 
 incProps :: TestTree
 incProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Increasing label reduces size by 1,000" $
+  TH.testProperty "NetBytes increasing label reduces size by 1,000" $
     H.withTests limit $
       H.property $ do
         (MkAnyNetSize sz bytes@(MkNetBytes (MkBytes x))) <- H.forAll NGens.genNormalizedNetBytes
@@ -162,7 +107,7 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
 
 decProps :: TestTree
 decProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Decreasing label multiplies size by 1,000" $
+  TH.testProperty "NetBytes decreasing label multiplies size by 1,000" $
     H.withTests limit $
       H.property $ do
         (MkAnyNetSize sz bytes@(MkNetBytes (MkBytes x))) <- H.forAll NGens.genNormalizedNetBytes
@@ -177,64 +122,119 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
         H.footnote $ " result: " <> show result
         result === expected
 
-anyNetSizeProps :: [TestTree]
-anyNetSizeProps = [convertNetProps]
-
-convertNetProps :: TestTree
-convertNetProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty
-    "AnySize Conversions match underlying Bytes"
-    $ H.withTests limit $
+normalizeProps :: TestTree
+normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "NetBytes normalizes" $
+    H.withTests limit $
       H.property $ do
-        anyNetSize :: (AnyNetSize 'Down Rational) <- H.forAll NGens.genSomeNetSizeDown
-        convertAndTestAny anyNetSize toB toB
-        convertAndTestAny anyNetSize toKB toKB
-        convertAndTestAny anyNetSize toMB toMB
-        convertAndTestAny anyNetSize toGB toGB
-        convertAndTestAny anyNetSize toTB toTB
-        convertAndTestAny anyNetSize toPB toPB
+        (MkAnyNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
+        let normalized@(MkAnyNetSize _ (MkNetBytes (MkBytes x))) =
+              Size.withSingByteSize sz $ normalize bytes
+            label = anySizeToLabel normalized
+        H.footnote $ "original: " <> show bytes
+        H.footnote $ "normalized: " <> show normalized
+        VNormalize.isNormalized label x
 
-convertAndTest ::
-  Rational ->
-  NetBytes d s Rational ->
-  String ->
-  (NetBytes d s Rational -> NetBytes d t Rational) ->
-  PropertyT IO ()
-convertAndTest expected bytes label convFn = do
-  let expectedRed = PropUtils.reduce expected
-  let resultRed = PropUtils.reduce $ Bytes.unBytes $ NetBytes.unNetBytes $ convFn bytes
-  H.footnote $ label <> " expected: " <> show expectedRed
-  H.footnote $ label <> " result: " <> show resultRed
-  resultRed === expectedRed
+netBytesEqProps :: TestTree
+netBytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "NetBytes Eq laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll (NGens.genNet @'Up @'PB)
+        y <- H.forAll (NGens.genNet @'Up @'PB)
+        z <- H.forAll (NGens.genNet @'Up @'PB)
+        VAlgebra.eqLaws x y z
 
-convertAndTestAny ::
-  forall n d t.
-  (Ord n, Show n) =>
-  AnyNetSize d n ->
-  (AnyNetSize d n -> NetBytes d t n) ->
-  (forall s. SingByteSize s => NetBytes d s n -> NetBytes d t n) ->
-  PropertyT IO ()
-convertAndTestAny anySize@(MkAnyNetSize sz bytes) anyToX toX = do
-  let anyConv = anyToX anySize
-      bytesConv :: NetBytes d t n
-      bytesConv = case sz of
-        SB -> toX bytes
-        SKB -> toX bytes
-        SMB -> toX bytes
-        SGB -> toX bytes
-        STB -> toX bytes
-        SPB -> toX bytes
-  anyMatchesBytes anyConv bytesConv
+netBytesOrdProps :: TestTree
+netBytesOrdProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "NetBytes Ord laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll (NGens.genNet @'Up @'PB)
+        y <- H.forAll (NGens.genNet @'Up @'PB)
+        z <- H.forAll (NGens.genNet @'Up @'PB)
+        VAlgebra.ordLaws x y z
 
-anyMatchesBytes ::
-  (Ord n, Show n) =>
-  NetBytes d s n ->
-  NetBytes d s n ->
-  PropertyT IO ()
-anyMatchesBytes anySize bytes = do
-  let anyBytes = Bytes.unBytes $ NetBytes.unNetBytes anySize
-      bytes' = Bytes.unBytes $ NetBytes.unNetBytes bytes
-  anyBytes === bytes'
+netBytesGroupProps :: TestTree
+netBytesGroupProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "NetBytes Group laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll (NGens.genNet @'Up @'PB)
+        y <- H.forAll (NGens.genNet @'Up @'PB)
+        z <- H.forAll (NGens.genNet @'Up @'PB)
+        VAlgebra.groupLaws x y z
+
+netBytesVectorSpaceProps :: TestTree
+netBytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "NetBytes Vector Space laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll (NGens.genNet @'Up @'PB)
+        y <- H.forAll (NGens.genNet @'Up @'PB)
+        k <- H.forAll SGens.genD
+        l <- H.forAll SGens.genD
+        VAlgebra.vectorSpaceLaws x y k l
+
+anyNetSizeEqProps :: TestTree
+anyNetSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "AnyNetSize Eq laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll NGens.genSomeNetSizeUp
+        y <- H.forAll NGens.genSomeNetSizeUp
+        z <- H.forAll NGens.genSomeNetSizeUp
+        VAlgebra.eqLaws x y z
+
+anyNetSizeOrdProps :: TestTree
+anyNetSizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "AnyNetSize Ord laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll NGens.genSomeNetSizeUp
+        y <- H.forAll NGens.genSomeNetSizeUp
+        z <- H.forAll NGens.genSomeNetSizeUp
+        VAlgebra.ordLaws x y z
+
+anyNetSizeGroupProps :: TestTree
+anyNetSizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "AnyNetSize Group laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll NGens.genSomeNetSizeUp
+        y <- H.forAll NGens.genSomeNetSizeUp
+        z <- H.forAll NGens.genSomeNetSizeUp
+        VAlgebra.groupLaws x y z
+
+anyNetSizeVectorSpaceProps :: TestTree
+anyNetSizeVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "AnyNetSize Vector Space laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll NGens.genSomeNetSizeUp
+        y <- H.forAll NGens.genSomeNetSizeUp
+        k <- H.forAll SGens.genD
+        l <- H.forAll SGens.genD
+        VAlgebra.vectorSpaceLaws x y k l
+
+anyNetSizeNormalizeProps :: TestTree
+anyNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "AnyNetSize normalization laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll NGens.genSomeNetSizeUp
+        y <- H.forAll NGens.genSomeNetSizeUp
+        k <- H.forAll SGens.genD
+        VNormalize.normalizeLaws x y k
 
 netToNum :: NetBytes d s n -> n
 netToNum = Bytes.unBytes . NetBytes.unNetBytes
+
+anySizeToLabel :: AnyNetSize d n -> ByteSize
+anySizeToLabel (MkAnyNetSize sz _) = case sz of
+  SB -> B
+  SKB -> KB
+  SMB -> MB
+  SGB -> GB
+  STB -> TB
+  SPB -> PB

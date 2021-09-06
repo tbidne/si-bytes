@@ -4,11 +4,10 @@ module Props.Class.Conversion (props) where
 import ByteTypes.Class.Conversion qualified as Conv
 import ByteTypes.Data.Size (ByteSize (..))
 import GHC.Real (Ratio (..))
-import Hedgehog (Gen)
+import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
 import Props.Data.Size.Generators qualified as Gens
 import Props.MaxRuns (MaxRuns (..))
-import Props.Utils qualified as PropUtils
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Test.Tasty.Hedgehog qualified as TH
@@ -27,7 +26,7 @@ convertProps = T.askOption $ \(MkMaxRuns limit) ->
             result = Conv.convert s1 s2 n
         H.footnote $ "expected: " <> show expected
         H.footnote $ "result: " <> show result
-        PropUtils.rationalEq result expected
+        result === expected
 
 genConvertInput :: Gen (ByteSize, ByteSize, Rational)
 genConvertInput =

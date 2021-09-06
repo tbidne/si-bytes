@@ -20,7 +20,10 @@ import Hedgehog qualified as H
 import Props.Data.Bytes.Generators qualified as Gens
 import Props.Data.Size.Generators qualified as SGens
 import Props.MaxRuns (MaxRuns (..))
-import Props.Utils qualified as PropUtils
+import Props.Verify.Algebra qualified as VAlgebra
+import Props.Verify.Conversion (ResultConvs (..))
+import Props.Verify.Conversion qualified as VConversion
+import Props.Verify.Normalize qualified as VNormalize
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Test.Tasty.Hedgehog qualified as TH
@@ -34,12 +37,7 @@ props =
 
 bytesProps :: [TestTree]
 bytesProps =
-  [ convertBProps,
-    convertKBProps,
-    convertMBProps,
-    convertGBProps,
-    convertTBProps,
-    convertPBProps,
+  [ convertProps,
     incProps,
     decProps,
     normalizeProps,
@@ -49,124 +47,51 @@ bytesProps =
     bytesVectorSpaceProps
   ]
 
-data ExpectedConvs = MkExpectedConvs
-  { bExp :: Rational,
-    kExp :: Rational,
-    mExp :: Rational,
-    gExp :: Rational,
-    tExp :: Rational,
-    pExp :: Rational
-  }
+anySizeProps :: [TestTree]
+anySizeProps =
+  [ anySizeEqProps,
+    anySizeOrdProps,
+    anySizeGroupProps,
+    anyVectorSpaceProps,
+    anyNormalizeProps
+  ]
 
-convertBProps :: TestTree
-convertBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes B Conversions" $
+convertProps :: TestTree
+convertProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "Bytes Conversions" $
     H.withTests limit $
       H.property $ do
-        bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'B)
-        let bExp = x
-            kExp = x .%. 1_000
-            mExp = x .%. 1_000_000
-            gExp = x .%. 1_000_000_000
-            tExp = x .%. 1_000_000_000_000
-            pExp = x .%. 1_000_000_000_000_000
-        convert MkExpectedConvs {..} bytes
+        b <- H.forAll (Gens.genBytes @'B)
+        k <- H.forAll (Gens.genBytes @'KB)
+        m <- H.forAll (Gens.genBytes @'MB)
+        g <- H.forAll (Gens.genBytes @'GB)
+        t <- H.forAll (Gens.genBytes @'TB)
+        p <- H.forAll (Gens.genBytes @'PB)
+        convert b VConversion.convertB
+        convert k VConversion.convertKB
+        convert m VConversion.convertMB
+        convert g VConversion.convertGB
+        convert t VConversion.convertTB
+        convert p VConversion.convertPB
 
-convertKBProps :: TestTree
-convertKBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes KB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'KB)
-        let bExp = x .*. 1_000
-            kExp = x
-            mExp = x .%. 1_000
-            gExp = x .%. 1_000_000
-            tExp = x .%. 1_000_000_000
-            pExp = x .%. 1_000_000_000_000
-        convert MkExpectedConvs {..} bytes
-
-convertMBProps :: TestTree
-convertMBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes MB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'MB)
-        let bExp = x .*. 1_000_000
-            kExp = x .*. 1_000
-            mExp = x
-            gExp = x .%. 1_000
-            tExp = x .%. 1_000_000
-            pExp = x .%. 1_000_000_000
-        convert MkExpectedConvs {..} bytes
-
-convertGBProps :: TestTree
-convertGBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes GB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'GB)
-        let bExp = x .*. 1_000_000_000
-            kExp = x .*. 1_000_000
-            mExp = x .*. 1_000
-            gExp = x
-            tExp = x .%. 1_000
-            pExp = x .%. 1_000_000
-        convert MkExpectedConvs {..} bytes
-
-convertTBProps :: TestTree
-convertTBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes TB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'TB)
-        let bExp = x .*. 1_000_000_000_000
-            kExp = x .*. 1_000_000_000
-            mExp = x .*. 1_000_000
-            gExp = x .*. 1_000
-            tExp = x
-            pExp = x .%. 1_000
-        convert MkExpectedConvs {..} bytes
-
-convertPBProps :: TestTree
-convertPBProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes PB Conversions" $
-    H.withTests limit $
-      H.property $ do
-        bytes@(MkBytes x) <- H.forAll (Gens.genBytes @'PB)
-        let bExp = x .*. 1_000_000_000_000_000
-            kExp = x .*. 1_000_000_000_000
-            mExp = x .*. 1_000_000_000
-            gExp = x .*. 1_000_000
-            tExp = x .*. 1_000
-            pExp = x
-        convert MkExpectedConvs {..} bytes
-
-convert :: SingByteSize s => ExpectedConvs -> Bytes s Rational -> PropertyT IO ()
-convert MkExpectedConvs {..} bytes = do
-  convertAndTest bExp bytes "B" toB
-  convertAndTest kExp bytes "KB" toKB
-  convertAndTest mExp bytes "MB" toMB
-  convertAndTest gExp bytes "GB" toGB
-  convertAndTest tExp bytes "TB" toTB
-  convertAndTest pExp bytes "PB" toPB
-
-convertAndTest ::
-  Rational ->
+convert ::
+  SingByteSize s =>
   Bytes s Rational ->
-  String ->
-  (Bytes s Rational -> Bytes t Rational) ->
+  (ResultConvs Rational -> PropertyT IO ()) ->
   PropertyT IO ()
-convertAndTest expected bytes label convFn = do
-  let expectedRed = PropUtils.reduce expected
-  let resultRed = PropUtils.reduce $ Bytes.unBytes $ convFn bytes
-  H.footnote $ label <> " expected: " <> show expectedRed
-  H.footnote $ label <> " result: " <> show resultRed
-  resultRed === expectedRed
+convert bytes@(MkBytes x) convertAndTestFn = do
+  let original = x
+      bRes = Bytes.unBytes $ toB bytes
+      kRes = Bytes.unBytes $ toKB bytes
+      mRes = Bytes.unBytes $ toMB bytes
+      gRes = Bytes.unBytes $ toGB bytes
+      tRes = Bytes.unBytes $ toTB bytes
+      pRes = Bytes.unBytes $ toPB bytes
+  convertAndTestFn MkResultConvs {..}
 
 incProps :: TestTree
 incProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Increasing label reduces size by 1,000" $
+  TH.testProperty "Bytes increasing label reduces size by 1,000" $
     H.withTests limit $
       H.property $ do
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
@@ -183,7 +108,7 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
 
 decProps :: TestTree
 decProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Decreasing label multiplies size by 1,000" $
+  TH.testProperty "Bytes decreasing label multiplies size by 1,000" $
     H.withTests limit $
       H.property $ do
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
@@ -200,7 +125,7 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
 
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Normalizes bytes" $
+  TH.testProperty "Bytes normalizes" $
     H.withTests limit $
       H.property $ do
         (MkAnySize sz bytes) <- H.forAll Gens.genSomeBytes
@@ -208,7 +133,7 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
             label = anySizeToLabel normalized
         H.footnote $ "original: " <> show bytes
         H.footnote $ "normalized: " <> show normalized
-        PropUtils.isNormalized label x
+        VNormalize.isNormalized label x
 
 bytesEqProps :: TestTree
 bytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -218,7 +143,7 @@ bytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
         x <- H.forAll (Gens.genBytes @'PB)
         y <- H.forAll (Gens.genBytes @'PB)
         z <- H.forAll (Gens.genBytes @'PB)
-        PropUtils.eqLaws x y z
+        VAlgebra.eqLaws x y z
 
 bytesOrdProps :: TestTree
 bytesOrdProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -228,7 +153,7 @@ bytesOrdProps = T.askOption $ \(MkMaxRuns limit) ->
         x <- H.forAll (Gens.genBytes @'PB)
         y <- H.forAll (Gens.genBytes @'PB)
         z <- H.forAll (Gens.genBytes @'PB)
-        PropUtils.ordLaws x y z
+        VAlgebra.ordLaws x y z
 
 bytesGroupProps :: TestTree
 bytesGroupProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -238,7 +163,7 @@ bytesGroupProps = T.askOption $ \(MkMaxRuns limit) ->
         x <- H.forAll (Gens.genBytes @'PB)
         y <- H.forAll (Gens.genBytes @'PB)
         z <- H.forAll (Gens.genBytes @'PB)
-        PropUtils.groupLaws x y z
+        VAlgebra.groupLaws x y z
 
 bytesVectorSpaceProps :: TestTree
 bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -249,60 +174,7 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         y <- H.forAll (Gens.genBytes @'PB)
         k <- H.forAll SGens.genD
         l <- H.forAll SGens.genD
-        PropUtils.vectorSpaceLaws x y k l
-
-anySizeProps :: [TestTree]
-anySizeProps =
-  [ convertAnySizeProps,
-    normalizeAnySizeProps,
-    anySizeEqProps,
-    anySizeOrdProps,
-    anySizeGroupProps,
-    anyVectorSpaceProps
-  ]
-
-convertAnySizeProps :: TestTree
-convertAnySizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty
-    "AnySize Conversions match underlying Bytes"
-    $ H.withTests limit $
-      H.property $ do
-        anySize <- H.forAll Gens.genSomeBytes
-        convertAndTestAny anySize toB toB
-        convertAndTestAny anySize toKB toKB
-        convertAndTestAny anySize toMB toMB
-        convertAndTestAny anySize toGB toGB
-        convertAndTestAny anySize toTB toTB
-        convertAndTestAny anySize toPB toPB
-
-convertAndTestAny ::
-  forall n t.
-  (Ord n, Show n) =>
-  AnySize n ->
-  (AnySize n -> Bytes t n) ->
-  (forall s. SingByteSize s => Bytes s n -> Bytes t n) ->
-  PropertyT IO ()
-convertAndTestAny anySize@(MkAnySize sz bytes) anyToX toX =
-  let anyConv = anyToX anySize
-      bytesConv :: Bytes t n
-      bytesConv = Size.withSingByteSize sz $ toX bytes
-   in anyMatchesBytes anyConv bytesConv
-
-anyMatchesBytes :: (Ord n, Show n) => Bytes s n -> Bytes s n -> PropertyT IO ()
-anyMatchesBytes anySize bytes = do
-  let anyBytes = Bytes.unBytes anySize
-      bytes' = Bytes.unBytes bytes
-  anyBytes === bytes'
-
-normalizeAnySizeProps :: TestTree
-normalizeAnySizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "AnySize normalization" $
-    H.withTests limit $
-      H.property $ do
-        anySize <- H.forAll Gens.genSomeBytes
-        let anyNorm@(MkAnySize _ (MkBytes x)) = normalize anySize
-            label = anySizeToLabel anyNorm
-        PropUtils.isNormalized label x
+        VAlgebra.vectorSpaceLaws x y k l
 
 anySizeToLabel :: AnySize n -> ByteSize
 anySizeToLabel (MkAnySize sz _) = case sz of
@@ -318,38 +190,48 @@ anySizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "AnySize Eq laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (Gens.genBytes @'PB)
-        y <- H.forAll (Gens.genBytes @'PB)
-        z <- H.forAll (Gens.genBytes @'PB)
-        PropUtils.eqLaws x y z
+        x <- H.forAll Gens.genSomeBytes
+        y <- H.forAll Gens.genSomeBytes
+        z <- H.forAll Gens.genSomeBytes
+        VAlgebra.eqLaws x y z
 
 anySizeOrdProps :: TestTree
 anySizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "AnySize Ord laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (Gens.genBytes @'PB)
-        y <- H.forAll (Gens.genBytes @'PB)
-        z <- H.forAll (Gens.genBytes @'PB)
-        PropUtils.ordLaws x y z
+        x <- H.forAll Gens.genSomeBytes
+        y <- H.forAll Gens.genSomeBytes
+        z <- H.forAll Gens.genSomeBytes
+        VAlgebra.ordLaws x y z
 
 anySizeGroupProps :: TestTree
 anySizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "AnySize Group laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (Gens.genBytes @'PB)
-        y <- H.forAll (Gens.genBytes @'PB)
-        z <- H.forAll (Gens.genBytes @'PB)
-        PropUtils.groupLaws x y z
+        x <- H.forAll Gens.genSomeBytes
+        y <- H.forAll Gens.genSomeBytes
+        z <- H.forAll Gens.genSomeBytes
+        VAlgebra.groupLaws x y z
 
 anyVectorSpaceProps :: TestTree
 anyVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes Vector Space laws" $
+  TH.testProperty "AnySize Vector Space laws" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll (Gens.genBytes @'PB)
-        y <- H.forAll (Gens.genBytes @'PB)
+        x <- H.forAll Gens.genSomeBytes
+        y <- H.forAll Gens.genSomeBytes
         k <- H.forAll SGens.genD
         l <- H.forAll SGens.genD
-        PropUtils.vectorSpaceLaws x y k l
+        VAlgebra.vectorSpaceLaws x y k l
+
+anyNormalizeProps :: TestTree
+anyNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "AnySize normalization laws" $
+    H.withTests limit $
+      H.property $ do
+        x <- H.forAll Gens.genSomeBytes
+        y <- H.forAll Gens.genSomeBytes
+        k <- H.forAll SGens.genD
+        VNormalize.normalizeLaws x y k

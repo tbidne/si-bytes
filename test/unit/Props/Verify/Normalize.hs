@@ -1,0 +1,67 @@
+-- | Exports functions for verifying 'Normalize' properties.
+module Props.Verify.Normalize
+  ( isNormalized,
+    normalizeLaws,
+  )
+where
+
+import ByteTypes.Class.Math.Algebra.Group (Group (..))
+import ByteTypes.Class.Math.Algebra.Module (Module (..))
+import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
+import ByteTypes.Class.Normalize (Normalize (..))
+import ByteTypes.Data.Size (ByteSize (..))
+import Hedgehog (PropertyT, (===))
+import Hedgehog qualified as H
+import Props.Utils ((<=>))
+
+-- | Verifies that the parameter numberic value is normalized, taking care
+-- to account for special 'B' and 'PB' rules.
+isNormalized ::
+  (Num n, Ord n, Show n) =>
+  ByteSize ->
+  n ->
+  PropertyT IO ()
+isNormalized B x = do
+  H.footnoteShow x
+  H.assert $ x < 1_000
+isNormalized PB x = do
+  H.footnoteShow x
+  H.assert $ x >= 1
+isNormalized _ x
+  | x == 0 = pure ()
+  | otherwise = do
+    H.footnoteShow x
+    H.assert $ x >= 1
+    H.assert $ x < 1_000
+
+-- | Verifies that normalize is a homomorphism. In particular, that it
+-- is order-preserving and respects the group/module/vector space
+-- structure.
+normalizeLaws ::
+  forall n k.
+  ( Norm n ~ n,
+    Ord n,
+    Normalize n,
+    Show n,
+    VectorSpace n k
+  ) =>
+  n ->
+  n ->
+  k ->
+  PropertyT IO ()
+normalizeLaws x y k = do
+  -- order preserving
+  H.assert $ x == y <=> normalize x == normalize y
+  H.assert $ x <= y <=> normalize x <= normalize y
+
+  -- respects group structure
+  (gid :: n) === normalize (gid :: n)
+  ginv x === normalize (ginv x)
+  normalize (x .+. y) === normalize x .+. normalize y
+  normalize (x .-. y) === normalize x .-. normalize y
+
+  -- respects module structure
+  normalize (x .* k) === normalize x .* k
+
+  -- respects vector space structure
+  normalize (x .% k) === normalize x .% k

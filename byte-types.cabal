@@ -91,6 +91,9 @@ test-suite unit
     Props.Data.Size.Generators
     Props.MaxRuns
     Props.Utils
+    Props.Verify.Algebra
+    Props.Verify.Conversion
+    Props.Verify.Normalize
 
   build-depends:
     , base
