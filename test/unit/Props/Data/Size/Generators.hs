@@ -1,6 +1,6 @@
--- | Exports generators for 'ByteSize'.
+-- | Exports generators for 'Size'.
 module Props.Data.Size.Generators
-  ( genByteSize,
+  ( genSize,
     genD,
     genBNum,
     genKNum,
@@ -11,15 +11,15 @@ module Props.Data.Size.Generators
   )
 where
 
-import ByteTypes.Data.Size (ByteSize (..))
+import ByteTypes.Data.Size (Size (..))
 import Data.Ratio ((%))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
 import Hedgehog.Range qualified as HRange
 
--- | Uniform distribution over 'ByteSize'.
-genByteSize :: Gen ByteSize
-genByteSize = HGen.element [B, K, M, G, T, P]
+-- | Uniform distribution over 'Size'.
+genSize :: Gen Size
+genSize = HGen.element [B, K, M, G, T, P]
 
 -- | Generates a linear distribution from 0 to 1,000,000,000,000,000.
 genD :: Gen Rational

@@ -5,15 +5,15 @@ module Props.Data.Bytes (props) where
 
 import ByteTypes.Class.Conversion
   ( Conversion (..),
-    DecByteSize (..),
-    IncByteSize (..),
+    DecSize (..),
+    IncSize (..),
   )
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
-import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
+import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
@@ -75,7 +75,7 @@ convertProps = T.askOption $ \(MkMaxRuns limit) ->
         convert p VConversion.convertP
 
 convert ::
-  SingByteSize s =>
+  SingSize s =>
   Bytes s Rational ->
   (ResultConvs Rational -> PropertyT IO ()) ->
   PropertyT IO ()
@@ -97,11 +97,11 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
               SP -> (x, Bytes.unBytes bytes)
-              SB -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              SK -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              SM -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              SG -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              ST -> Size.withSingByteSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SB -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SK -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SM -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SG -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              ST -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -114,11 +114,11 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
         (MkAnySize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
               SB -> (x, Bytes.unBytes bytes)
-              SK -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SM -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SG -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              ST -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SP -> Size.withSingByteSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SK -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SM -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SG -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              ST -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SP -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -129,7 +129,7 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         (MkAnySize sz bytes) <- H.forAll Gens.genSomeBytes
-        let normalized@(MkAnySize _ (MkBytes x)) = Size.withSingByteSize sz $ normalize bytes
+        let normalized@(MkAnySize _ (MkBytes x)) = Size.withSingSize sz $ normalize bytes
             label = anySizeToLabel normalized
         H.footnote $ "original: " <> show bytes
         H.footnote $ "normalized: " <> show normalized
@@ -176,7 +176,7 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genD
         VAlgebra.vectorSpaceLaws x y k l
 
-anySizeToLabel :: AnySize n -> ByteSize
+anySizeToLabel :: AnySize n -> Size
 anySizeToLabel (MkAnySize sz _) = case sz of
   SB -> B
   SK -> K

@@ -2,8 +2,8 @@
 
 -- | Provides typeclasses for convert between byte sizes.
 module ByteTypes.Class.Conversion
-  ( DecByteSize (..),
-    IncByteSize (..),
+  ( DecSize (..),
+    IncSize (..),
     Conversion (..),
     convert,
     convertWitness,
@@ -13,19 +13,19 @@ where
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
-import ByteTypes.Data.Size (ByteSize (..), NextSize, PrevSize, SByteSize (..), SingByteSize (..))
+import ByteTypes.Data.Size (NextSize, PrevSize, SSize (..), SingSize (..), Size (..))
 
 -- | Typeclass for decrementing bytes to the next units.
-class DecByteSize a where
+class DecSize a where
   prev :: a -> PrevSize a
 
 -- | Typeclass for increasing bytes to the next units.
-class IncByteSize a where
+class IncSize a where
   next :: a -> NextSize a
 
 -- | Provides a common interface for converting between byte sizes.
 class Conversion a where
-  type Converted (b :: ByteSize) a = r | r -> b
+  type Converted (b :: Size) a = r | r -> b
 
   toB :: a -> Converted 'B a
   toK :: a -> Converted 'K a
@@ -35,7 +35,7 @@ class Conversion a where
   toP :: a -> Converted 'P a
 
 -- | Low level function for converting a numeric literal /from/ the inferred
--- 'SingByteSize' /to/ the parameter 'ByteSize'. For instance,
+-- 'SingSize' /to/ the parameter 'Size'. For instance,
 -- @
 -- convertWitness @SK 'M 5_000 == 5
 -- @
@@ -43,8 +43,8 @@ class Conversion a where
 -- This is slightly more principled than 'convert', but the higher level
 -- byte types and functions should still be preferred
 -- (e.g. 'ByteTypes.Data.Bytes', 'ByteTypes.Class.Normalize').
-convertWitness :: forall s n. (Field n, NumLiteral n, SingByteSize s) => ByteSize -> n -> n
-convertWitness toUnits n = case singByteSize @s of
+convertWitness :: forall s n. (Field n, NumLiteral n, SingSize s) => Size -> n -> n
+convertWitness toUnits n = case singSize @s of
   SB -> convert B toUnits n
   SK -> convert K toUnits n
   SM -> convert M toUnits n
@@ -58,7 +58,7 @@ convertWitness toUnits n = case singByteSize @s of
 -- byte types and functions should be preferred
 -- (e.g. 'ByteTypes.Data.Bytes', 'ByteTypes.Class.Normalize'), but this is
 -- herewhen it is needed.
-convert :: (Field n, NumLiteral n) => ByteSize -> ByteSize -> n -> n
+convert :: (Field n, NumLiteral n) => Size -> Size -> n -> n
 convert B B n = n
 convert B K n = n .%. fromLit 1_000
 convert B M n = n .%. fromLit 1_000_000

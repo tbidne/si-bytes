@@ -4,12 +4,12 @@ module ByteTypes.Data.Network.NetBytes
   ( -- * Network Bytes
     NetBytes (..),
     unNetBytes,
-    netToSByteSize,
-    netToSByteDirection,
+    netToSSize,
+    netToSDirection,
 
     -- * Unknown Size
     AnyNetSize (..),
-    anyNetSizeToSByteDirection,
+    anyNetSizeToSDirection,
   )
 where
 
@@ -27,18 +27,18 @@ import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
 import ByteTypes.Data.Direction
-  ( ByteDirection (..),
-    SByteDirection (..),
-    SingByteDirection (..),
+  ( Direction (..),
+    SDirection (..),
+    SingDirection (..),
   )
-import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
+import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Control.Applicative (liftA2)
 import Data.Kind (Type)
 import Text.Printf (PrintfArg (..))
 
--- | Wrapper around the 'Bytes' type that adds the 'ByteDirection' tag.
-type NetBytes :: ByteDirection -> ByteSize -> Type -> Type
+-- | Wrapper around the 'Bytes' type that adds the 'Direction' tag.
+type NetBytes :: Direction -> Size -> Type -> Type
 data NetBytes d s n where
   MkNetBytes :: Bytes s n -> NetBytes d s n
 
@@ -46,13 +46,13 @@ data NetBytes d s n where
 unNetBytes :: NetBytes d s n -> Bytes s n
 unNetBytes (MkNetBytes x) = x
 
--- | Retrieves the 'SByteDirection' witness.
-netToSByteDirection :: SingByteDirection d => NetBytes d s n -> SByteDirection d
-netToSByteDirection _ = singByteDirection
+-- | Retrieves the 'SDirection' witness.
+netToSDirection :: SingDirection d => NetBytes d s n -> SDirection d
+netToSDirection _ = singDirection
 
--- | Retrieves the 'SingByteSize' witness.
-netToSByteSize :: SingByteSize s => NetBytes d s n -> SByteSize s
-netToSByteSize _ = singByteSize
+-- | Retrieves the 'SingSize' witness.
+netToSSize :: SingSize s => NetBytes d s n -> SSize s
+netToSSize _ = singSize
 
 deriving instance Show n => Show (NetBytes d s n)
 
@@ -96,7 +96,7 @@ instance Ring n => Module (NetBytes d s n) n where
 instance Field n => VectorSpace (NetBytes d s n) n where
   MkNetBytes x .% k = MkNetBytes $ x .% k
 
-instance (Field n, NumLiteral n, SingByteSize s) => Conversion (NetBytes d s n) where
+instance (Field n, NumLiteral n, SingSize s) => Conversion (NetBytes d s n) where
   type Converted 'B (NetBytes d s n) = NetBytes d 'B n
   type Converted 'K (NetBytes d s n) = NetBytes d 'K n
   type Converted 'M (NetBytes d s n) = NetBytes d 'M n
@@ -111,7 +111,7 @@ instance (Field n, NumLiteral n, SingByteSize s) => Conversion (NetBytes d s n) 
   toT (MkNetBytes b) = MkNetBytes $ toT b
   toP (MkNetBytes b) = MkNetBytes $ toP b
 
-instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (NetBytes d s n) where
+instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (NetBytes d s n) where
   type Norm (NetBytes d s n) = AnyNetSize d n
 
   normalize (MkNetBytes bytes) = case normalize bytes of
@@ -119,10 +119,10 @@ instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (NetBytes d
 
 instance
   forall d s n.
-  (PrintfArg n, SingByteDirection d, SingByteSize s) =>
+  (PrintfArg n, SingDirection d, SingSize s) =>
   PrettyPrint (NetBytes d s n)
   where
-  pretty (MkNetBytes x) = case singByteDirection @d of
+  pretty (MkNetBytes x) = case singDirection @d of
     SDown -> pretty x <> " Down"
     SUp -> pretty x <> " Up"
 
@@ -139,15 +139,15 @@ instance
 --       ...
 -- @
 --
--- 'AnyNetSize' carries along an 'SByteSize' runtime witness for when we
+-- 'AnyNetSize' carries along an 'SSize' runtime witness for when we
 -- need the size. Its 'Group' functions are 'normalize'd.
 --
 -- N.B. 'AnyNetSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord',
 -- 'Group') are themselves lawful w.r.t. the notion of equivalence defined
 -- in its 'Eq' instance.
-type AnyNetSize :: ByteDirection -> Type -> Type
+type AnyNetSize :: Direction -> Type -> Type
 data AnyNetSize d n where
-  MkAnyNetSize :: SByteSize s -> NetBytes d s n -> AnyNetSize d n
+  MkAnyNetSize :: SSize s -> NetBytes d s n -> AnyNetSize d n
 
 deriving instance Show n => Show (AnyNetSize d n)
 
@@ -161,7 +161,7 @@ deriving instance Functor (AnyNetSize d)
 -- @
 --
 -- Because we expose the underlying @NetBytes@ in several ways (e.g. 'Show',
--- the 'SByteSize' witness), this is technically unlawful for equality
+-- the 'SSize' witness), this is technically unlawful for equality
 -- as it breaks the substitutivity law:
 --
 -- \[
@@ -207,18 +207,18 @@ instance (Field n, NumLiteral n) => Conversion (AnyNetSize d n) where
   type Converted 'T (AnyNetSize d n) = NetBytes d 'T n
   type Converted 'P (AnyNetSize d n) = NetBytes d 'P n
 
-  toB (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toB x
-  toK (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toK x
-  toM (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toM x
-  toG (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toG x
-  toT (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toT x
-  toP (MkAnyNetSize sz x) = Size.withSingByteSize sz $ toP x
+  toB (MkAnyNetSize sz x) = Size.withSingSize sz $ toB x
+  toK (MkAnyNetSize sz x) = Size.withSingSize sz $ toK x
+  toM (MkAnyNetSize sz x) = Size.withSingSize sz $ toM x
+  toG (MkAnyNetSize sz x) = Size.withSingSize sz $ toG x
+  toT (MkAnyNetSize sz x) = Size.withSingSize sz $ toT x
+  toP (MkAnyNetSize sz x) = Size.withSingSize sz $ toP x
 
 instance (Field n, NumLiteral n, Ord n) => Normalize (AnyNetSize d n) where
   type Norm (AnyNetSize d n) = AnyNetSize d n
-  normalize (MkAnyNetSize sz x) = Size.withSingByteSize sz $ normalize x
+  normalize (MkAnyNetSize sz x) = Size.withSingSize sz $ normalize x
 
-instance (PrintfArg n, SingByteDirection d) => PrettyPrint (AnyNetSize d n) where
+instance (PrintfArg n, SingDirection d) => PrettyPrint (AnyNetSize d n) where
   pretty (MkAnyNetSize sz b) = case sz of
     SB -> pretty b
     SK -> pretty b
@@ -227,6 +227,6 @@ instance (PrintfArg n, SingByteDirection d) => PrettyPrint (AnyNetSize d n) wher
     ST -> pretty b
     SP -> pretty b
 
--- | Retrieves the 'SingByteDirection' witness.
-anyNetSizeToSByteDirection :: SingByteDirection d => AnyNetSize d n -> SByteDirection d
-anyNetSizeToSByteDirection _ = singByteDirection
+-- | Retrieves the 'SingDirection' witness.
+anyNetSizeToSDirection :: SingDirection d => AnyNetSize d n -> SDirection d
+anyNetSizeToSDirection _ = singDirection

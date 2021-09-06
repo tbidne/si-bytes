@@ -1,10 +1,10 @@
--- | Provides the 'ByteDirection' type and singletons.
+-- | Provides the 'Direction' type and singletons.
 module ByteTypes.Data.Direction
-  ( -- * ByteDirection Tags
-    ByteDirection (..),
-    SByteDirection (..),
-    SingByteDirection (..),
-    withSingByteDirection,
+  ( -- * Direction Tags
+    Direction (..),
+    SDirection (..),
+    SingDirection (..),
+    withSingDirection,
   )
 where
 
@@ -12,37 +12,37 @@ import Data.Kind (Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
 
 -- | Tags for differentiating downloaded vs. uploaded bytes.
-data ByteDirection
+data Direction
   = Down
   | Up
   deriving (Eq, Show)
 
--- | Singleton for 'ByteDirection'.
-type SByteDirection :: ByteDirection -> Type
-data SByteDirection d where
-  SDown :: SByteDirection 'Down
-  SUp :: SByteDirection 'Up
+-- | Singleton for 'Direction'.
+type SDirection :: Direction -> Type
+data SDirection d where
+  SDown :: SDirection 'Down
+  SUp :: SDirection 'Up
 
-deriving instance Show (SByteDirection d)
+deriving instance Show (SDirection d)
 
-instance TestEquality SByteDirection where
+instance TestEquality SDirection where
   testEquality x y = case (x, y) of
     (SDown, SDown) -> Just Refl
     (SUp, SUp) -> Just Refl
     _ -> Nothing
 
--- | Typeclass for recovering the 'ByteDirection' at runtime.
-class SingByteDirection d where
-  singByteDirection :: SByteDirection d
+-- | Typeclass for recovering the 'Direction' at runtime.
+class SingDirection d where
+  singDirection :: SDirection d
 
-instance SingByteDirection 'Down where singByteDirection = SDown
+instance SingDirection 'Down where singDirection = SDown
 
-instance SingByteDirection 'Up where singByteDirection = SUp
+instance SingDirection 'Up where singDirection = SUp
 
 -- | Singleton \"with\"-style convenience function. Allows us to run a
--- computation @SingByteDirection d => r@ without explicitly pattern-matching
+-- computation @SingDirection d => r@ without explicitly pattern-matching
 -- every time.
-withSingByteDirection :: SByteDirection d -> (SingByteDirection d => r) -> r
-withSingByteDirection s x = case s of
+withSingDirection :: SDirection d -> (SingDirection d => r) -> r
+withSingDirection s x = case s of
   SDown -> x
   SUp -> x

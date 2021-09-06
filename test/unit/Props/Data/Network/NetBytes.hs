@@ -7,10 +7,10 @@ import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Bytes (Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
-import ByteTypes.Data.Direction (ByteDirection (..))
+import ByteTypes.Data.Direction (Direction (..))
 import ByteTypes.Data.Network.NetBytes (AnyNetSize (..), NetBytes (..))
 import ByteTypes.Data.Network.NetBytes qualified as NetBytes
-import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
+import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Hedgehog (PropertyT)
 import Hedgehog qualified as H
@@ -70,7 +70,7 @@ convertProps = T.askOption $ \(MkMaxRuns limit) ->
         convert p VConversion.convertP
 
 convert ::
-  SingByteSize s =>
+  SingSize s =>
   NetBytes d s Rational ->
   (ResultConvs Rational -> PropertyT IO ()) ->
   PropertyT IO ()
@@ -91,7 +91,7 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         (MkAnyNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
         let normalized@(MkAnyNetSize _ (MkNetBytes (MkBytes x))) =
-              Size.withSingByteSize sz $ normalize bytes
+              Size.withSingSize sz $ normalize bytes
             label = anySizeToLabel normalized
         H.footnote $ "original: " <> show bytes
         H.footnote $ "normalized: " <> show normalized
@@ -189,7 +189,7 @@ anyNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         k <- H.forAll SGens.genD
         VNormalize.normalizeLaws x y k
 
-anySizeToLabel :: AnyNetSize d n -> ByteSize
+anySizeToLabel :: AnyNetSize d n -> Size
 anySizeToLabel (MkAnyNetSize sz _) = case sz of
   SB -> B
   SK -> K

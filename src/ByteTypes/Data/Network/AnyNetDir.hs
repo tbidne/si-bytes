@@ -1,5 +1,5 @@
 -- | This module provides types for hiding the
--- 'ByteTypes.Data.Direction.ByteDirection' on 'NetBytes'.
+-- 'ByteTypes.Data.Direction.Direction' on 'NetBytes'.
 --
 -- This paradigm differs from the previous size hiding
 -- 'ByteTypes.Data.Bytes.AnySize' and 'AnyNetSize' in that because we had
@@ -27,10 +27,10 @@ import ByteTypes.Class.Math.Scalar.Ord (ScalarEq (..), ScalarOrd (..))
 import ByteTypes.Class.Math.Scalar.Scalar (Scalar)
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
-import ByteTypes.Data.Direction (SByteDirection (..))
+import ByteTypes.Data.Direction (SDirection (..))
 import ByteTypes.Data.Direction qualified as Direction
 import ByteTypes.Data.Network.NetBytes (AnyNetSize (..), NetBytes)
-import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
+import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Data.Kind (Type)
 import Text.Printf (PrintfArg (..))
@@ -54,15 +54,15 @@ import Text.Printf (PrintfArg (..))
 -- used to combine arbitrary 'AnyNetDir's (e.g. 'Applicative',
 -- 'ByteTypes.Class.Math.Algebra.Group'), as that would defeat the purpose of
 -- enforcing the distinction between upload and downloaded bytes.
-type AnyNetDir :: ByteSize -> Type -> Type
+type AnyNetDir :: Size -> Type -> Type
 data AnyNetDir s n where
-  MkAnyNetDir :: SByteDirection d -> NetBytes d s n -> AnyNetDir s n
+  MkAnyNetDir :: SDirection d -> NetBytes d s n -> AnyNetDir s n
 
 deriving instance Show n => Show (AnyNetDir s n)
 
 deriving instance Functor (AnyNetDir s)
 
--- | Returns true when the two @AnyNetDir@ have the same @ByteDirection@
+-- | Returns true when the two @AnyNetDir@ have the same @Direction@
 -- /and/ the underlying @NetBytes@ has the same value.
 --
 -- @
@@ -71,8 +71,8 @@ deriving instance Functor (AnyNetDir s)
 -- @
 --
 -- Notice no 'Ord' instance is provided, as we provide no ordering for
--- 'ByteTypes.Data.Direction.ByteDirection'.
-instance (Eq n, Field n, NumLiteral n, SingByteSize s) => Eq (AnyNetDir s n) where
+-- 'ByteTypes.Data.Direction.Direction'.
+instance (Eq n, Field n, NumLiteral n, SingSize s) => Eq (AnyNetDir s n) where
   MkAnyNetDir dx x == MkAnyNetDir dy y =
     case (dx, dy) of
       (SDown, SDown) -> x == y
@@ -91,7 +91,7 @@ instance Ring n => ScalarNum (AnyNetDir s n) where
   MkAnyNetDir sz x .+ k = MkAnyNetDir sz $ x .+ k
   MkAnyNetDir sz x .- k = MkAnyNetDir sz $ x .- k
 
-instance (Field n, NumLiteral n, SingByteSize s) => Conversion (AnyNetDir s n) where
+instance (Field n, NumLiteral n, SingSize s) => Conversion (AnyNetDir s n) where
   type Converted 'B (AnyNetDir s n) = AnyNetDir 'B n
   type Converted 'K (AnyNetDir s n) = AnyNetDir 'K n
   type Converted 'M (AnyNetDir s n) = AnyNetDir 'M n
@@ -106,15 +106,15 @@ instance (Field n, NumLiteral n, SingByteSize s) => Conversion (AnyNetDir s n) w
   toT (MkAnyNetDir dir x) = MkAnyNetDir dir $ toT x
   toP (MkAnyNetDir dir x) = MkAnyNetDir dir $ toP x
 
-instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (AnyNetDir s n) where
+instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (AnyNetDir s n) where
   type Norm (AnyNetDir s n) = AnyNet n
   normalize (MkAnyNetDir dir x) =
     case normalize x of
       MkAnyNetSize sz y -> MkAnyNet dir sz y
 
-instance (PrintfArg n, SingByteSize s) => PrettyPrint (AnyNetDir s n) where
+instance (PrintfArg n, SingSize s) => PrettyPrint (AnyNetDir s n) where
   pretty (MkAnyNetDir dir x) =
-    Direction.withSingByteDirection dir $ pretty x
+    Direction.withSingDirection dir $ pretty x
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size /and/
 -- direction. This is useful when a function does not know a priori what
@@ -131,16 +131,16 @@ instance (PrintfArg n, SingByteSize s) => PrettyPrint (AnyNetDir s n) where
 --       ...
 -- @
 --
--- 'AnyNet' carries along 'SByteDirection' and 'SByteSize' runtime witnesses
--- for recovering the 'ByteTypes.Data.Direction.ByteDirection'
--- and 'ByteSize', respectively.
+-- 'AnyNet' carries along 'SDirection' and 'SSize' runtime witnesses
+-- for recovering the 'ByteTypes.Data.Direction.Direction'
+-- and 'Size', respectively.
 --
 -- N.B. 'AnyNetSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord')
 -- are themselves lawful w.r.t. the notion of equivalence defined
 -- in its 'Eq' instance.
 type AnyNet :: Type -> Type
 data AnyNet n where
-  MkAnyNet :: SByteDirection d -> SByteSize s -> NetBytes d s n -> AnyNet n
+  MkAnyNet :: SDirection d -> SSize s -> NetBytes d s n -> AnyNet n
 
 deriving instance Show n => Show (AnyNet n)
 
@@ -156,8 +156,8 @@ deriving instance Functor AnyNet
 -- @
 instance (Eq n, Field n, NumLiteral n) => Eq (AnyNet n) where
   MkAnyNet dx szx x == MkAnyNet dy szy y =
-    Size.withSingByteSize szx $
-      Size.withSingByteSize szy $
+    Size.withSingSize szx $
+      Size.withSingSize szy $
         case (dx, dy) of
           (SDown, SDown) -> toB x == toB y
           (SUp, SUp) -> toB x == toB y
@@ -171,20 +171,20 @@ instance (Field n, NumLiteral n) => Conversion (AnyNet n) where
   type Converted 'T (AnyNet n) = AnyNetDir 'T n
   type Converted 'P (AnyNet n) = AnyNetDir 'P n
 
-  toB (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toB (MkAnyNetDir dir x)
-  toK (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toK (MkAnyNetDir dir x)
-  toM (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toM (MkAnyNetDir dir x)
-  toG (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toG (MkAnyNetDir dir x)
-  toT (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toT (MkAnyNetDir dir x)
-  toP (MkAnyNet dir sz x) = Size.withSingByteSize sz $ toP (MkAnyNetDir dir x)
+  toB (MkAnyNet dir sz x) = Size.withSingSize sz $ toB (MkAnyNetDir dir x)
+  toK (MkAnyNet dir sz x) = Size.withSingSize sz $ toK (MkAnyNetDir dir x)
+  toM (MkAnyNet dir sz x) = Size.withSingSize sz $ toM (MkAnyNetDir dir x)
+  toG (MkAnyNet dir sz x) = Size.withSingSize sz $ toG (MkAnyNetDir dir x)
+  toT (MkAnyNet dir sz x) = Size.withSingSize sz $ toT (MkAnyNetDir dir x)
+  toP (MkAnyNet dir sz x) = Size.withSingSize sz $ toP (MkAnyNetDir dir x)
 
 instance (Field n, NumLiteral n, Ord n) => Normalize (AnyNet n) where
   type Norm (AnyNet n) = AnyNet n
   normalize (MkAnyNet dir sz x) =
-    case Size.withSingByteSize sz normalize x of
+    case Size.withSingSize sz normalize x of
       MkAnyNetSize sz' x' -> MkAnyNet dir sz' x'
 
 instance PrintfArg n => PrettyPrint (AnyNet n) where
   pretty (MkAnyNet dir sz x) =
-    Direction.withSingByteDirection dir $
-      Size.withSingByteSize sz $ pretty x
+    Direction.withSingDirection dir $
+      Size.withSingSize sz $ pretty x

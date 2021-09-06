@@ -9,7 +9,7 @@ import ByteTypes.Class.Math.Algebra.Group (Group (..))
 import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
 import ByteTypes.Class.Normalize (Normalize (..))
-import ByteTypes.Data.Size (ByteSize (..))
+import ByteTypes.Data.Size (Size (..))
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
 import Props.Utils ((<=>))
@@ -18,7 +18,7 @@ import Props.Utils ((<=>))
 -- to account for special 'B' and 'P' rules.
 isNormalized ::
   (Num n, Ord n, Show n) =>
-  ByteSize ->
+  Size ->
   n ->
   PropertyT IO ()
 isNormalized B x = do

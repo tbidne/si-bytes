@@ -1,11 +1,11 @@
--- | Provides the 'ByteSize' type and typeclasses for converting
+-- | Provides the 'Size' type and typeclasses for converting
 -- between units.
 module ByteTypes.Data.Size
-  ( -- * ByteSize Tags
-    ByteSize (..),
-    SByteSize (..),
-    SingByteSize (..),
-    withSingByteSize,
+  ( -- * Size Tags
+    Size (..),
+    SSize (..),
+    SingSize (..),
+    withSingSize,
 
     -- * Type Families for Relating Tags
     NextSize,
@@ -17,7 +17,7 @@ import Data.Kind (Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
 
 -- | Byte units.
-data ByteSize
+data Size
   = B
   | K
   | M
@@ -26,17 +26,17 @@ data ByteSize
   | P
   deriving (Eq, Ord, Show)
 
--- | Singleton for 'ByteSize'.
-type SByteSize :: ByteSize -> Type
-data SByteSize s where
-  SB :: SByteSize 'B
-  SK :: SByteSize 'K
-  SM :: SByteSize 'M
-  SG :: SByteSize 'G
-  ST :: SByteSize 'T
-  SP :: SByteSize 'P
+-- | Singleton for 'Size'.
+type SSize :: Size -> Type
+data SSize s where
+  SB :: SSize 'B
+  SK :: SSize 'K
+  SM :: SSize 'M
+  SG :: SSize 'G
+  ST :: SSize 'T
+  SP :: SSize 'P
 
-instance TestEquality SByteSize where
+instance TestEquality SSize where
   testEquality x y = case (x, y) of
     (SB, SB) -> Just Refl
     (SK, SK) -> Just Refl
@@ -46,29 +46,29 @@ instance TestEquality SByteSize where
     (SP, SP) -> Just Refl
     _ -> Nothing
 
-deriving instance Show (SByteSize s)
+deriving instance Show (SSize s)
 
--- | Typeclass for recovering the 'ByteSize' at runtime.
-class SingByteSize s where
-  singByteSize :: SByteSize s
+-- | Typeclass for recovering the 'Size' at runtime.
+class SingSize s where
+  singSize :: SSize s
 
-instance SingByteSize 'B where singByteSize = SB
+instance SingSize 'B where singSize = SB
 
-instance SingByteSize 'K where singByteSize = SK
+instance SingSize 'K where singSize = SK
 
-instance SingByteSize 'M where singByteSize = SM
+instance SingSize 'M where singSize = SM
 
-instance SingByteSize 'G where singByteSize = SG
+instance SingSize 'G where singSize = SG
 
-instance SingByteSize 'T where singByteSize = ST
+instance SingSize 'T where singSize = ST
 
-instance SingByteSize 'P where singByteSize = SP
+instance SingSize 'P where singSize = SP
 
 -- | Singleton \"with\"-style convenience function. Allows us to run a
--- computation @SingByteSize d => r@ without explicitly pattern-matching
+-- computation @SingSize d => r@ without explicitly pattern-matching
 -- every time.
-withSingByteSize :: SByteSize s -> (SingByteSize s => r) -> r
-withSingByteSize s x = case s of
+withSingSize :: SSize s -> (SingSize s => r) -> r
+withSingSize s x = case s of
   SB -> x
   SK -> x
   SM -> x

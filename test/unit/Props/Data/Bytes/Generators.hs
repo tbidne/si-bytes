@@ -7,7 +7,7 @@ module Props.Data.Bytes.Generators
 where
 
 import ByteTypes.Data.Bytes (AnySize (..), Bytes (..))
-import ByteTypes.Data.Size (ByteSize (..), SByteSize (..))
+import ByteTypes.Data.Size (SSize (..), Size (..))
 import Data.Ratio ((%))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
@@ -34,7 +34,7 @@ genSomeBytes = do
 -- is \[ 0 \le x < 1,000 \].
 genNormalizedBytes :: Gen (AnySize Rational)
 genNormalizedBytes = do
-  sz <- Gens.genByteSize
+  sz <- Gens.genSize
   num <- gen_1_000
   pure $ case sz of
     B -> MkAnySize SB $ MkBytes num

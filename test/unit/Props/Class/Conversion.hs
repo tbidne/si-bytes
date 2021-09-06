@@ -2,7 +2,7 @@
 module Props.Class.Conversion (props) where
 
 import ByteTypes.Class.Conversion qualified as Conv
-import ByteTypes.Data.Size (ByteSize (..))
+import ByteTypes.Data.Size (Size (..))
 import GHC.Real (Ratio (..))
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
@@ -28,11 +28,11 @@ convertProps = T.askOption $ \(MkMaxRuns limit) ->
         H.footnote $ "result: " <> show result
         result === expected
 
-genConvertInput :: Gen (ByteSize, ByteSize, Rational)
+genConvertInput :: Gen (Size, Size, Rational)
 genConvertInput =
-  (,,) <$> Gens.genByteSize <*> Gens.genByteSize <*> Gens.genD
+  (,,) <$> Gens.genSize <*> Gens.genSize <*> Gens.genD
 
-szToRank :: ByteSize -> Int
+szToRank :: Size -> Int
 szToRank B = 0
 szToRank K = 1
 szToRank M = 2
@@ -45,5 +45,5 @@ intToMult n
   | n >= 0 = (1_000 ^ n) :% 1
   | otherwise = 1 :% (1_000 ^ abs n)
 
-sizesToMult :: ByteSize -> ByteSize -> Rational
+sizesToMult :: Size -> Size -> Rational
 sizesToMult x y = intToMult $ szToRank x - szToRank y
