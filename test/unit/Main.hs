@@ -2,11 +2,11 @@
 module Main (main) where
 
 import Data.Proxy (Proxy (..))
-import Props.Class.Conversion qualified as PConv
-import Props.Data.Bytes qualified as Pytes
-import Props.Data.Network.NetBytes qualified as PNetBytes
-import Props.Data.Network.SomeNetDir qualified as PSomeNetDir
-import Props.MaxRuns (MaxRuns)
+import ByteTypes.Props.Class.Conversion qualified as PConv
+import ByteTypes.Props.Data.Bytes qualified as Pytes
+import ByteTypes.Props.Data.Network.NetBytes qualified as PNetBytes
+import ByteTypes.Props.Data.Network.SomeNetDir qualified as PSomeNetDir
+import ByteTypes.Props.MaxRuns (MaxRuns)
 import Test.Tasty qualified as T
 import Test.Tasty.Options (OptionDescription (..))
 

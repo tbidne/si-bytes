@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 -- | Property tests for 'NetBytes'.
-module Props.Data.Network.NetBytes (props) where
+module ByteTypes.Props.Data.Network.NetBytes (props) where
 
 import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Normalize (Normalize (..))
@@ -14,13 +14,13 @@ import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Hedgehog (PropertyT)
 import Hedgehog qualified as H
-import Props.Data.Network.Generators qualified as NGens
-import Props.Data.Size.Generators qualified as SGens
-import Props.MaxRuns (MaxRuns (..))
-import Props.Verify.Algebra qualified as VAlgebra
-import Props.Verify.Conversion (ResultConvs (..))
-import Props.Verify.Conversion qualified as VConversion
-import Props.Verify.Normalize qualified as VNormalize
+import ByteTypes.Props.Data.Network.Generators qualified as NGens
+import ByteTypes.Props.Data.Size.Generators qualified as SGens
+import ByteTypes.Props.MaxRuns (MaxRuns (..))
+import ByteTypes.Props.Verify.Algebra qualified as VAlgebra
+import ByteTypes.Props.Verify.Conversion (ResultConvs (..))
+import ByteTypes.Props.Verify.Conversion qualified as VConversion
+import ByteTypes.Props.Verify.Normalize qualified as VNormalize
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Test.Tasty.Hedgehog qualified as TH

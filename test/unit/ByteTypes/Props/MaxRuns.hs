@@ -1,5 +1,5 @@
 -- | Provides the 'MaxRuns' typeclass.
-module Props.MaxRuns
+module ByteTypes.Props.MaxRuns
   ( MaxRuns (..),
   )
 where

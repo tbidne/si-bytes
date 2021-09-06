@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 -- | Exports functions for verifying 'Conversion' properties.
-module Props.Verify.Conversion
+module ByteTypes.Props.Verify.Conversion
   ( ResultConvs (..),
     convertB,
     convertK,

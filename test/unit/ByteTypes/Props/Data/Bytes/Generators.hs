@@ -1,5 +1,5 @@
 -- | Exports generators for 'Bytes'.
-module Props.Data.Bytes.Generators
+module ByteTypes.Props.Data.Bytes.Generators
   ( genBytes,
     genNormalizedBytes,
     genSomeBytes,
@@ -12,7 +12,7 @@ import Data.Ratio ((%))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
 import Hedgehog.Range qualified as HRange
-import Props.Data.Size.Generators qualified as Gens
+import ByteTypes.Props.Data.Size.Generators qualified as Gens
 
 -- | Generates 'Bytes' over 'Gens.genBNum'.
 genBytes :: Gen (Bytes s Rational)

@@ -83,18 +83,18 @@ test-suite unit
   type:             exitcode-stdio-1.0
   main-is:          Main.hs
   other-modules:
-    Props.Class.Conversion
-    Props.Data.Bytes
-    Props.Data.Bytes.Generators
-    Props.Data.Network.Generators
-    Props.Data.Network.NetBytes
-    Props.Data.Network.SomeNetDir
-    Props.Data.Size.Generators
-    Props.MaxRuns
-    Props.Utils
-    Props.Verify.Algebra
-    Props.Verify.Conversion
-    Props.Verify.Normalize
+    ByteTypes.Props.Class.Conversion
+    ByteTypes.Props.Data.Bytes
+    ByteTypes.Props.Data.Bytes.Generators
+    ByteTypes.Props.Data.Network.Generators
+    ByteTypes.Props.Data.Network.NetBytes
+    ByteTypes.Props.Data.Network.SomeNetDir
+    ByteTypes.Props.Data.Size.Generators
+    ByteTypes.Props.MaxRuns
+    ByteTypes.Props.Utils
+    ByteTypes.Props.Verify.Algebra
+    ByteTypes.Props.Verify.Conversion
+    ByteTypes.Props.Verify.Normalize
 
   build-depends:
     , base

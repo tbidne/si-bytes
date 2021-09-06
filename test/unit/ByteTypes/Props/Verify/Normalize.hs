@@ -1,5 +1,5 @@
 -- | Exports functions for verifying 'Normalize' properties.
-module Props.Verify.Normalize
+module ByteTypes.Props.Verify.Normalize
   ( isNormalized,
     normalizeLaws,
   )
@@ -12,7 +12,7 @@ import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Size (Size (..))
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
-import Props.Utils ((<=>))
+import ByteTypes.Props.Utils ((<=>))
 
 -- | Verifies that the parameter numberic value is normalized, taking care
 -- to account for special 'B' and 'P' rules.

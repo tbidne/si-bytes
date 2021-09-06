@@ -1,5 +1,5 @@
 -- | Exports functions for verifying algebraic laws
-module Props.Verify.Algebra
+module ByteTypes.Props.Verify.Algebra
   ( -- * Verifying laws
     eqLaws,
     ordLaws,
@@ -18,7 +18,7 @@ import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
-import Props.Utils ((<=>), (==>))
+import ByteTypes.Props.Utils ((<=>), (==>))
 
 -- | Verifies 'Eq' laws for 'BytesEq'.
 eqLaws :: (Eq a, Show a) => a -> a -> a -> PropertyT IO ()

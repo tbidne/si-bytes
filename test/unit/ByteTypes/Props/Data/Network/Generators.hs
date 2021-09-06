@@ -1,5 +1,5 @@
 -- | Exports generators for 'NetBytes'.
-module Props.Data.Network.Generators
+module ByteTypes.Props.Data.Network.Generators
   ( genNet,
     genNormalizedNetBytes,
     genSomeNetSizeDown,
@@ -13,7 +13,7 @@ import ByteTypes.Data.Network.NetBytes (NetBytes (..), SomeNetSize (..))
 import ByteTypes.Data.Size (SSize (..))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
-import Props.Data.Bytes.Generators qualified as BGens
+import ByteTypes.Props.Data.Bytes.Generators qualified as BGens
 
 -- | Generates 'NetBytes' 'Down' over 'BGens.genBytes'.
 genNet :: Gen (NetBytes d s Rational)
