@@ -18,11 +18,7 @@ module ByteTypes.Data.Network.AnyNetDir
   )
 where
 
-import ByteTypes.Class.Conversion
-  ( Conversion (..),
-    DecByteSize (..),
-    IncByteSize (..),
-  )
+import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
@@ -34,13 +30,7 @@ import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Direction (SByteDirection (..))
 import ByteTypes.Data.Direction qualified as Direction
 import ByteTypes.Data.Network.NetBytes (AnyNetSize (..), NetBytes)
-import ByteTypes.Data.Size
-  ( ByteSize (..),
-    NextUnit,
-    PrevUnit,
-    SByteSize (..),
-    SingByteSize (..),
-  )
+import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
 import ByteTypes.Data.Size qualified as Size
 import Data.Kind (Type)
 import Text.Printf (PrintfArg (..))
@@ -115,46 +105,6 @@ instance (Field n, NumLiteral n, SingByteSize s) => Conversion (AnyNetDir s n) w
   toGB (MkAnyNetDir dir x) = MkAnyNetDir dir $ toGB x
   toTB (MkAnyNetDir dir x) = MkAnyNetDir dir $ toTB x
   toPB (MkAnyNetDir dir x) = MkAnyNetDir dir $ toPB x
-
-instance (Field n, NumLiteral n) => IncByteSize (AnyNetDir 'B n) where
-  type Next (AnyNetDir 'B n) = AnyNetDir (NextUnit 'B) n
-  next (MkAnyNetDir dir x) = MkAnyNetDir dir $ next x
-
-instance (Field n, NumLiteral n) => IncByteSize (AnyNetDir 'KB n) where
-  type Next (AnyNetDir 'KB n) = AnyNetDir (NextUnit 'KB) n
-  next (MkAnyNetDir dir x) = MkAnyNetDir dir $ next x
-
-instance (Field n, NumLiteral n) => IncByteSize (AnyNetDir 'MB n) where
-  type Next (AnyNetDir 'MB n) = AnyNetDir (NextUnit 'MB) n
-  next (MkAnyNetDir dir x) = MkAnyNetDir dir $ next x
-
-instance (Field n, NumLiteral n) => IncByteSize (AnyNetDir 'GB n) where
-  type Next (AnyNetDir 'GB n) = AnyNetDir (NextUnit 'GB) n
-  next (MkAnyNetDir dir x) = MkAnyNetDir dir $ next x
-
-instance (Field n, NumLiteral n) => IncByteSize (AnyNetDir 'TB n) where
-  type Next (AnyNetDir 'TB n) = AnyNetDir (NextUnit 'TB) n
-  next (MkAnyNetDir dir x) = MkAnyNetDir dir $ next x
-
-instance (NumLiteral n, Ring n) => DecByteSize (AnyNetDir 'KB n) where
-  type Prev (AnyNetDir 'KB n) = AnyNetDir (PrevUnit 'KB) n
-  prev (MkAnyNetDir dir x) = MkAnyNetDir dir $ prev x
-
-instance (NumLiteral n, Ring n) => DecByteSize (AnyNetDir 'MB n) where
-  type Prev (AnyNetDir 'MB n) = AnyNetDir (PrevUnit 'MB) n
-  prev (MkAnyNetDir dir x) = MkAnyNetDir dir $ prev x
-
-instance (NumLiteral n, Ring n) => DecByteSize (AnyNetDir 'GB n) where
-  type Prev (AnyNetDir 'GB n) = AnyNetDir (PrevUnit 'GB) n
-  prev (MkAnyNetDir dir x) = MkAnyNetDir dir $ prev x
-
-instance (NumLiteral n, Ring n) => DecByteSize (AnyNetDir 'TB n) where
-  type Prev (AnyNetDir 'TB n) = AnyNetDir (PrevUnit 'TB) n
-  prev (MkAnyNetDir dir x) = MkAnyNetDir dir $ prev x
-
-instance (NumLiteral n, Ring n) => DecByteSize (AnyNetDir 'PB n) where
-  type Prev (AnyNetDir 'PB n) = AnyNetDir (PrevUnit 'PB) n
-  prev (MkAnyNetDir dir x) = MkAnyNetDir dir $ prev x
 
 instance (Field n, NumLiteral n, Ord n, SingByteSize s) => Normalize (AnyNetDir s n) where
   type Norm (AnyNetDir s n) = AnyNet n

@@ -8,8 +8,8 @@ module ByteTypes.Data.Size
     withSingByteSize,
 
     -- * Type Families for Relating Tags
-    NextUnit,
-    PrevUnit,
+    NextSize,
+    PrevSize,
   )
 where
 
@@ -76,20 +76,30 @@ withSingByteSize s x = case s of
   STB -> x
   SPB -> x
 
--- | Closed type family that relates units to the next larger one.
-type NextUnit :: ByteSize -> ByteSize
-type family NextUnit a = r | r -> a where
-  NextUnit 'B = 'KB
-  NextUnit 'KB = 'MB
-  NextUnit 'MB = 'GB
-  NextUnit 'GB = 'TB
-  NextUnit 'TB = 'PB
+-- | Type family that relates units to the next larger one.
+type NextSize :: forall k. k -> k
+type family NextSize a = r | r -> a
 
--- | Closed type family that relates units to the previous smaller one.
-type PrevUnit :: ByteSize -> ByteSize
-type family PrevUnit a = r | r -> a where
-  PrevUnit 'KB = 'B
-  PrevUnit 'MB = 'KB
-  PrevUnit 'GB = 'MB
-  PrevUnit 'TB = 'GB
-  PrevUnit 'PB = 'TB
+type instance NextSize 'B = 'KB
+
+type instance NextSize 'KB = 'MB
+
+type instance NextSize 'MB = 'GB
+
+type instance NextSize 'GB = 'TB
+
+type instance NextSize 'TB = 'PB
+
+-- | Type family that relates units to the previous smaller one.
+type PrevSize :: forall k. k -> k
+type family PrevSize a = r | r -> a
+
+type instance PrevSize 'KB = 'B
+
+type instance PrevSize 'MB = 'KB
+
+type instance PrevSize 'GB = 'MB
+
+type instance PrevSize 'TB = 'GB
+
+type instance PrevSize 'PB = 'TB

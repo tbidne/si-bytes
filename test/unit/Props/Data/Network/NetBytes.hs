@@ -3,9 +3,7 @@
 -- | Property tests for 'NetBytes'.
 module Props.Data.Network.NetBytes (props) where
 
-import ByteTypes.Class.Conversion (Conversion (..), DecByteSize (..), IncByteSize (..))
-import ByteTypes.Class.Math.Algebra.Field (Field (..))
-import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
+import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Bytes (Bytes (..))
 import ByteTypes.Data.Bytes qualified as Bytes
@@ -14,7 +12,7 @@ import ByteTypes.Data.Network.NetBytes (AnyNetSize (..), NetBytes (..))
 import ByteTypes.Data.Network.NetBytes qualified as NetBytes
 import ByteTypes.Data.Size (ByteSize (..), SByteSize (..), SingByteSize (..))
 import ByteTypes.Data.Size qualified as Size
-import Hedgehog (PropertyT, (===))
+import Hedgehog (PropertyT)
 import Hedgehog qualified as H
 import Props.Data.Network.Generators qualified as NGens
 import Props.Data.Size.Generators qualified as SGens
@@ -37,8 +35,6 @@ props =
 netBytesProps :: [TestTree]
 netBytesProps =
   [ convertProps,
-    incProps,
-    decProps,
     normalizeProps,
     netBytesEqProps,
     netBytesOrdProps,
@@ -87,40 +83,6 @@ convert bytes@(MkNetBytes (MkBytes x)) convertAndTestFn = do
       tRes = Bytes.unBytes $ NetBytes.unNetBytes $ toTB bytes
       pRes = Bytes.unBytes $ NetBytes.unNetBytes $ toPB bytes
   convertAndTestFn MkResultConvs {..}
-
-incProps :: TestTree
-incProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "NetBytes increasing label reduces size by 1,000" $
-    H.withTests limit $
-      H.property $ do
-        (MkAnyNetSize sz bytes@(MkNetBytes (MkBytes x))) <- H.forAll NGens.genNormalizedNetBytes
-        let (expected, result) :: (Rational, Rational) = case sz of
-              SPB -> (x, netToNum bytes)
-              SB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
-              SKB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
-              SMB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
-              SGB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
-              STB -> Size.withSingByteSize sz (x .%. 1_000, netToNum (next bytes))
-        H.footnote $ "expected: " <> show expected
-        H.footnote $ " result: " <> show result
-        result === expected
-
-decProps :: TestTree
-decProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "NetBytes decreasing label multiplies size by 1,000" $
-    H.withTests limit $
-      H.property $ do
-        (MkAnyNetSize sz bytes@(MkNetBytes (MkBytes x))) <- H.forAll NGens.genNormalizedNetBytes
-        let (expected, result) :: (Rational, Rational) = case sz of
-              SB -> (x, netToNum bytes)
-              SKB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
-              SMB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
-              SGB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
-              STB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
-              SPB -> Size.withSingByteSize sz (x .*. 1_000, netToNum (prev bytes))
-        H.footnote $ "expected: " <> show expected
-        H.footnote $ " result: " <> show result
-        result === expected
 
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -226,9 +188,6 @@ anyNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         y <- H.forAll NGens.genSomeNetSizeUp
         k <- H.forAll SGens.genD
         VNormalize.normalizeLaws x y k
-
-netToNum :: NetBytes d s n -> n
-netToNum = Bytes.unBytes . NetBytes.unNetBytes
 
 anySizeToLabel :: AnyNetSize d n -> ByteSize
 anySizeToLabel (MkAnyNetSize sz _) = case sz of
