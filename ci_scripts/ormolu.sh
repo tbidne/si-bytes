@@ -6,7 +6,11 @@ readarray -t files <<<"$files_string"
 any_failed=0
 ran_test=0
 for f in "${files[@]}"; do
-    ormolu --ghc-opt -XImportQualifiedPost --ghc-opt -XTypeApplications --mode check "$f"
+    ormolu \
+      --ghc-opt -XImportQualifiedPost \
+      --ghc-opt -XTypeApplications \
+      --ghc-opt -XPatternSynonyms \
+      --mode check "$f"
     if [ $? != 0 ]; then
         echo "Ormolu failure: $f"
         any_failed=1

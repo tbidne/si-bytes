@@ -2,6 +2,7 @@
 module ByteTypes.Props.Data.Size.Generators
   ( genSize,
     genD,
+    genNonZero,
     genBNum,
     genKNum,
     genMNum,
@@ -11,6 +12,7 @@ module ByteTypes.Props.Data.Size.Generators
   )
 where
 
+import ByteTypes.Class.Math.Algebra.Group (NonZero, unsafeNonZero)
 import ByteTypes.Data.Size (Size (..))
 import Data.Ratio ((%))
 import Hedgehog (Gen)
@@ -27,6 +29,14 @@ genD = (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
   where
     origin = 500_000_000_000_000
     lower = 0
+    upper = 1_000_000_000_000_000
+
+-- | Generates a linear distribution from 0 to 1,000,000,000,000,000.
+genNonZero :: Gen (NonZero Rational)
+genNonZero = unsafeNonZero . (% 1) <$> HGen.integral (HRange.linearFrom origin lower upper)
+  where
+    origin = 500_000_000_000_000
+    lower = 1
     upper = 1_000_000_000_000_000
 
 -- | Generates a linear distribution from 0 to 2,000,000,000,000,000,000.

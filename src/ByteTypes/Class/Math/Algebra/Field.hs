@@ -4,6 +4,11 @@ module ByteTypes.Class.Math.Algebra.Field
   )
 where
 
+import ByteTypes.Class.Math.Algebra.Group
+  ( NonZero (..),
+    unNonZero,
+    unsafeNonZero,
+  )
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Ratio (Ratio)
@@ -12,42 +17,42 @@ import GHC.Natural (Natural)
 
 -- | Defines an algebraic field.
 class Ring f => Field f where
-  finv :: f -> f
-  finv x = rid .%. x
+  finv :: NonZero f -> NonZero f
+  finv x = unsafeNonZero $ rid .%. x
 
-  (.%.) :: f -> f -> f
-  x .%. y = x .*. finv y
+  (.%.) :: f -> NonZero f -> f
+  x .%. y = x .*. unNonZero (finv y)
 
   {-# MINIMAL (finv | (.%.)) #-}
 
 infixl 7 .%.
 
-instance Field Double where (.%.) = (/)
+instance Field Double where x .%. MkNonZero d = x / d
 
-instance Field Float where (.%.) = (/)
+instance Field Float where x .%. MkNonZero d = x / d
 
-instance Field Int where (.%.) = div
+instance Field Int where x .%. MkNonZero d = x `div` d
 
-instance Field Int8 where (.%.) = div
+instance Field Int8 where x .%. MkNonZero d = x `div` d
 
-instance Field Int16 where (.%.) = div
+instance Field Int16 where x .%. MkNonZero d = x `div` d
 
-instance Field Int32 where (.%.) = div
+instance Field Int32 where x .%. MkNonZero d = x `div` d
 
-instance Field Int64 where (.%.) = div
+instance Field Int64 where x .%. MkNonZero d = x `div` d
 
-instance Field Integer where (.%.) = div
+instance Field Integer where x .%. MkNonZero d = x `div` d
 
-instance Field Natural where (.%.) = div
+instance Field Natural where x .%. MkNonZero d = x `div` d
 
-instance Field Word where (.%.) = div
+instance Field Word where x .%. MkNonZero d = x `div` d
 
-instance Field Word8 where (.%.) = div
+instance Field Word8 where x .%. MkNonZero d = x `div` d
 
-instance Field Word16 where (.%.) = div
+instance Field Word16 where x .%. MkNonZero d = x `div` d
 
-instance Field Word32 where (.%.) = div
+instance Field Word32 where x .%. MkNonZero d = x `div` d
 
-instance Field Word64 where (.%.) = div
+instance Field Word64 where x .%. MkNonZero d = x `div` d
 
-instance Integral a => Field (Ratio a) where (.%.) = (/)
+instance Integral a => Field (Ratio a) where x .%. MkNonZero d = x / d

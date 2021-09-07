@@ -20,7 +20,7 @@ import ByteTypes.Class.Conversion
   )
 import ByteTypes.Class.Conversion qualified as Conv
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
-import ByteTypes.Class.Math.Algebra.Group (Group (..))
+import ByteTypes.Class.Math.Algebra.Group (Group (..), NonZero, unsafeNonZero)
 import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
@@ -134,19 +134,19 @@ type instance NextSize (Bytes 'G n) = Bytes 'T n
 type instance NextSize (Bytes 'T n) = Bytes 'P n
 
 instance (Field n, NumLiteral n) => IncSize (Bytes 'B n) where
-  next x = resizeBytes $ x .% fromLit @n 1_000
+  next x = resizeBytes $ x .% nzFromLit @n 1_000
 
 instance (Field n, NumLiteral n) => IncSize (Bytes 'K n) where
-  next x = resizeBytes $ x .% fromLit @n 1_000
+  next x = resizeBytes $ x .% nzFromLit @n 1_000
 
 instance (Field n, NumLiteral n) => IncSize (Bytes 'M n) where
-  next x = resizeBytes $ x .% fromLit @n 1_000
+  next x = resizeBytes $ x .% nzFromLit @n 1_000
 
 instance (Field n, NumLiteral n) => IncSize (Bytes 'G n) where
-  next x = resizeBytes $ x .% fromLit @n 1_000
+  next x = resizeBytes $ x .% nzFromLit @n 1_000
 
 instance (Field n, NumLiteral n) => IncSize (Bytes 'T n) where
-  next x = resizeBytes $ x .% fromLit @n 1_000
+  next x = resizeBytes $ x .% nzFromLit @n 1_000
 
 type instance PrevSize (Bytes 'K n) = Bytes 'B n
 
@@ -314,3 +314,6 @@ instance (Field n, NumLiteral n, Ord n) => Normalize (SomeSize n) where
 
 instance PrintfArg n => PrettyPrint (SomeSize n) where
   pretty (MkSomeSize sz b) = Size.withSingSize sz $ pretty b
+
+nzFromLit :: (Group n, NumLiteral n) => Integer -> NonZero n
+nzFromLit = unsafeNonZero . fromLit

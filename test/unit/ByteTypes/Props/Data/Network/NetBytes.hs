@@ -144,8 +144,8 @@ netBytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         x <- H.forAll (NGens.genNet @'Up @'P)
         y <- H.forAll (NGens.genNet @'Up @'P)
-        k <- H.forAll SGens.genD
-        l <- H.forAll SGens.genD
+        k <- H.forAll SGens.genNonZero
+        l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
 
 someConvertProps :: TestTree
@@ -198,8 +198,8 @@ someNetSizeVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         x <- H.forAll NGens.genSomeNetSizeUp
         y <- H.forAll NGens.genSomeNetSizeUp
-        k <- H.forAll SGens.genD
-        l <- H.forAll SGens.genD
+        k <- H.forAll SGens.genNonZero
+        l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
 
 someNetSizeNormalizeProps :: TestTree
@@ -210,10 +210,11 @@ someNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         x@(MkSomeNetSize szx bytes) <- H.forAll NGens.genSomeNetSizeUp
         y <- H.forAll NGens.genSomeNetSizeUp
         k <- H.forAll SGens.genD
+        nz <- H.forAll SGens.genNonZero
         -- matches underlying bytes
         normalize x === Size.withSingSize szx (normalize bytes)
         -- laws
-        VNormalize.normalizeLaws x y k
+        VNormalize.normalizeLaws x y k nz
 
 someSizeToLabel :: SomeNetSize d n -> Size
 someSizeToLabel (MkSomeNetSize sz _) = case sz of

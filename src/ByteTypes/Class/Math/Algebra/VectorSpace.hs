@@ -5,6 +5,7 @@ module ByteTypes.Class.Math.Algebra.VectorSpace
 where
 
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
+import ByteTypes.Class.Math.Algebra.Group (NonZero, unNonZero)
 import ByteTypes.Class.Math.Algebra.Module (Module (..))
 
 -- | Defines an algebraic vector space over a field. Ideally, this class does
@@ -30,7 +31,7 @@ import ByteTypes.Class.Math.Algebra.Module (Module (..))
 -- it should explicitly override this function (presumably using a sensible
 -- instance for '(.%.)').
 class (Field k, Module v k) => VectorSpace v k where
-  (.%) :: v -> k -> v
-  x .% k = x .* finv k
+  (.%) :: v -> NonZero k -> v
+  x .% k = x .* unNonZero (finv k)
 
 infixl 7 .%

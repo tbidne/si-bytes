@@ -5,7 +5,7 @@ module ByteTypes.Props.Verify.Normalize
   )
 where
 
-import ByteTypes.Class.Math.Algebra.Group (Group (..))
+import ByteTypes.Class.Math.Algebra.Group (Group (..), NonZero)
 import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
 import ByteTypes.Class.Normalize (Normalize (..))
@@ -48,8 +48,9 @@ normalizeLaws ::
   n ->
   n ->
   k ->
+  NonZero k ->
   PropertyT IO ()
-normalizeLaws x y k = do
+normalizeLaws x y k nz = do
   -- order preserving
   H.assert $ x == y <=> normalize x == normalize y
   H.assert $ x <= y <=> normalize x <= normalize y
@@ -64,4 +65,4 @@ normalizeLaws x y k = do
   normalize (x .* k) === normalize x .* k
 
   -- respects vector space structure
-  normalize (x .% k) === normalize x .% k
+  normalize (x .% nz) === normalize x .% nz

@@ -12,7 +12,7 @@ module ByteTypes.Props.Verify.Algebra
 where
 
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
-import ByteTypes.Class.Math.Algebra.Group (Group (..))
+import ByteTypes.Class.Math.Algebra.Group (Group (..), NonZero (..), unNonZero)
 import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
@@ -47,7 +47,7 @@ ordLaws x y z = do
   H.assert $ x < y <=> y > x
 
 -- | Verify 'Group' laws.
-groupLaws :: (Eq a, Group a, Show a) => a -> a -> a -> PropertyT IO ()
+groupLaws :: (Group a, Show a) => a -> a -> a -> PropertyT IO ()
 groupLaws x y z = do
   H.annotateShow x
   H.annotateShow y
@@ -64,7 +64,7 @@ groupLaws x y z = do
   gid === ginv x .+. x
 
 -- | Verify 'Ring' laws.
-ringLaws :: (Eq a, Ring a, Show a) => a -> a -> a -> PropertyT IO ()
+ringLaws :: (Ring a, Show a) => a -> a -> a -> PropertyT IO ()
 ringLaws x y z = do
   groupLaws x y z
   -- group commutativity
@@ -79,15 +79,15 @@ ringLaws x y z = do
   (y .+. z) .*. x === (y .*. x) .+. (z .*. x)
 
 -- | Verify 'Field' laws.
-fieldLaws :: (Eq a, Field a, Show a) => a -> a -> a -> PropertyT IO ()
-fieldLaws x y z = do
+fieldLaws :: (Field a, Show a) => NonZero a -> a -> a -> PropertyT IO ()
+fieldLaws x'@(MkNonZero x) y z = do
   ringLaws x y z
   -- identity
-  rid === x .*. finv x
-  rid === finv x .*. x
+  rid === x .*. unNonZero (finv x')
+  rid === unNonZero (finv x') .*. x
 
 -- | Verify 'Module' laws.
-moduleLaws :: forall m r. (Eq m, Module m r, Show m) => m -> m -> r -> r -> PropertyT IO ()
+moduleLaws :: forall m r. (Module m r, Show m) => m -> m -> r -> r -> PropertyT IO ()
 moduleLaws x y k l = do
   -- left-distributivity
   k *. (x .+. y) === (k *. x) .+. (k *. y)
@@ -104,7 +104,16 @@ moduleLaws x y k l = do
   x === x .* rid @r
 
 -- | Verify 'VectorSpace' laws.
-vectorSpaceLaws :: forall v k. (Eq v, VectorSpace v k, Show v) => v -> v -> k -> k -> PropertyT IO ()
-vectorSpaceLaws x y k l = do
+vectorSpaceLaws ::
+  (VectorSpace v k, Show v) =>
+  v ->
+  v ->
+  NonZero k ->
+  NonZero k ->
+  PropertyT IO ()
+vectorSpaceLaws x y k'@(MkNonZero k) l'@(MkNonZero l) = do
   moduleLaws x y k l
-  moduleLaws x y (finv k) (finv l)
+  moduleLaws x y kInv lInv
+  where
+    kInv = unNonZero $ finv k'
+    lInv = unNonZero $ finv l'

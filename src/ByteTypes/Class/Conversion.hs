@@ -11,6 +11,7 @@ module ByteTypes.Class.Conversion
 where
 
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
+import ByteTypes.Class.Math.Algebra.Group (Group, NonZero, unsafeNonZero)
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
 import ByteTypes.Data.Size (NextSize, PrevSize, SSize (..), SingSize (..), Size (..))
@@ -57,41 +58,44 @@ convertWitness toUnits n = case singSize @s of
 -- e.g. @convert G K = \\n -> n * 1_000_000@. The higher level
 -- byte types and functions should be preferred
 -- (e.g. 'ByteTypes.Data.Bytes', 'ByteTypes.Class.Normalize'), but this is
--- herewhen it is needed.
+-- here when it is needed.
 convert :: (Field n, NumLiteral n) => Size -> Size -> n -> n
 convert B B n = n
-convert B K n = n .%. fromLit 1_000
-convert B M n = n .%. fromLit 1_000_000
-convert B G n = n .%. fromLit 1_000_000_000
-convert B T n = n .%. fromLit 1_000_000_000_000
-convert B P n = n .%. fromLit 1_000_000_000_000_000
+convert B K n = n .%. nzFromLit 1_000
+convert B M n = n .%. nzFromLit 1_000_000
+convert B G n = n .%. nzFromLit 1_000_000_000
+convert B T n = n .%. nzFromLit 1_000_000_000_000
+convert B P n = n .%. nzFromLit 1_000_000_000_000_000
 convert K B n = n .*. fromLit 1_000
 convert K K n = n
-convert K M n = n .%. fromLit 1_000
-convert K G n = n .%. fromLit 1_000_000
-convert K T n = n .%. fromLit 1_000_000_000
-convert K P n = n .%. fromLit 1_000_000_000_000
+convert K M n = n .%. nzFromLit 1_000
+convert K G n = n .%. nzFromLit 1_000_000
+convert K T n = n .%. nzFromLit 1_000_000_000
+convert K P n = n .%. nzFromLit 1_000_000_000_000
 convert M B n = n .*. fromLit 1_000_000
 convert M K n = n .*. fromLit 1_000
 convert M M n = n
-convert M G n = n .%. fromLit 1_000
-convert M T n = n .%. fromLit 1_000_000
-convert M P n = n .%. fromLit 1_000_000_000
+convert M G n = n .%. nzFromLit 1_000
+convert M T n = n .%. nzFromLit 1_000_000
+convert M P n = n .%. nzFromLit 1_000_000_000
 convert G B n = n .*. fromLit 1_000_000_000
 convert G K n = n .*. fromLit 1_000_000
 convert G M n = n .*. fromLit 1_000
 convert G G n = n
-convert G T n = n .%. fromLit 1_000
-convert G P n = n .%. fromLit 1_000_000
+convert G T n = n .%. nzFromLit 1_000
+convert G P n = n .%. nzFromLit 1_000_000
 convert T B n = n .*. fromLit 1_000_000_000_000
 convert T K n = n .*. fromLit 1_000_000_000
 convert T M n = n .*. fromLit 1_000_000
 convert T G n = n .*. fromLit 1_000
 convert T T n = n
-convert T P n = n .%. fromLit 1_000
+convert T P n = n .%. nzFromLit 1_000
 convert P B n = n .*. fromLit 1_000_000_000_000_000
 convert P K n = n .*. fromLit 1_000_000_000_000
 convert P M n = n .*. fromLit 1_000_000_000
 convert P G n = n .*. fromLit 1_000_000
 convert P T n = n .*. fromLit 1_000
 convert P P n = n
+
+nzFromLit :: (Group n, NumLiteral n) => Integer -> NonZero n
+nzFromLit = unsafeNonZero . fromLit

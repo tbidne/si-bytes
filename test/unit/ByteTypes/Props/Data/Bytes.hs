@@ -9,7 +9,9 @@ import ByteTypes.Class.Conversion
     IncSize (..),
   )
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
+import ByteTypes.Class.Math.Algebra.Group (Group, NonZero, unsafeNonZero)
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
+import ByteTypes.Class.Math.Literal (NumLiteral (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Bytes (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Bytes qualified as Bytes
@@ -107,14 +109,17 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
         (MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
               SP -> (x, Bytes.unBytes bytes)
-              SB -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              SK -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              SM -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              SG -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
-              ST -> Size.withSingSize sz (x .%. 1_000, Bytes.unBytes (next bytes))
+              SB -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
+              SK -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
+              SM -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
+              SG -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
+              ST -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
+  where
+    divisor :: NonZero Rational
+    divisor = nzFromLit 1_000
 
 decProps :: TestTree
 decProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -182,8 +187,8 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         x <- H.forAll (Gens.genBytes @'P)
         y <- H.forAll (Gens.genBytes @'P)
-        k <- H.forAll SGens.genD
-        l <- H.forAll SGens.genD
+        k <- H.forAll SGens.genNonZero
+        l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
 
 someConvertProps :: TestTree
@@ -245,8 +250,8 @@ someVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         x <- H.forAll Gens.genSomeBytes
         y <- H.forAll Gens.genSomeBytes
-        k <- H.forAll SGens.genD
-        l <- H.forAll SGens.genD
+        k <- H.forAll SGens.genNonZero
+        l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
 
 someNormalizeProps :: TestTree
@@ -257,7 +262,11 @@ someNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         x@(MkSomeSize szx bytes) <- H.forAll Gens.genSomeBytes
         y <- H.forAll Gens.genSomeBytes
         k <- H.forAll SGens.genD
+        nz <- H.forAll SGens.genNonZero
         -- matches underlying bytes
         normalize x === Size.withSingSize szx (normalize bytes)
         -- laws
-        VNormalize.normalizeLaws x y k
+        VNormalize.normalizeLaws x y k nz
+
+nzFromLit :: (Group n, NumLiteral n) => Integer -> NonZero n
+nzFromLit = unsafeNonZero . fromLit
