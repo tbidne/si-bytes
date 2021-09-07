@@ -1,12 +1,12 @@
 -- | Entry point for running the unit test suite
 module Main (main) where
 
-import Data.Proxy (Proxy (..))
 import ByteTypes.Props.Class.Conversion qualified as PConv
 import ByteTypes.Props.Data.Bytes qualified as PBytes
 import ByteTypes.Props.Data.Network.NetBytes qualified as PNetBytes
 import ByteTypes.Props.Data.Network.SomeNetDir qualified as PSomeNetDir
 import ByteTypes.Props.MaxRuns (MaxRuns)
+import Data.Proxy (Proxy (..))
 import Test.Tasty qualified as T
 import Test.Tasty.Options (OptionDescription (..))
 

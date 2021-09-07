@@ -12,8 +12,6 @@ import ByteTypes.Data.Network.NetBytes (NetBytes (..), SomeNetSize (..))
 import ByteTypes.Data.Network.NetBytes qualified as NetBytes
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
-import Hedgehog (PropertyT)
-import Hedgehog qualified as H
 import ByteTypes.Props.Data.Network.Generators qualified as NGens
 import ByteTypes.Props.Data.Size.Generators qualified as SGens
 import ByteTypes.Props.MaxRuns (MaxRuns (..))
@@ -21,6 +19,8 @@ import ByteTypes.Props.Verify.Algebra qualified as VAlgebra
 import ByteTypes.Props.Verify.Conversion (ResultConvs (..))
 import ByteTypes.Props.Verify.Conversion qualified as VConversion
 import ByteTypes.Props.Verify.Normalize qualified as VNormalize
+import Hedgehog (PropertyT, (===))
+import Hedgehog qualified as H
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Test.Tasty.Hedgehog qualified as TH
@@ -34,7 +34,8 @@ props =
 
 netBytesProps :: [TestTree]
 netBytesProps =
-  [ convertProps,
+  [ unNetBytesProps,
+    convertProps,
     normalizeProps,
     netBytesEqProps,
     netBytesOrdProps,
@@ -44,12 +45,21 @@ netBytesProps =
 
 someNetSizeProps :: [TestTree]
 someNetSizeProps =
-  [ someNetSizeEqProps,
+  [ someConvertProps,
+    someNetSizeEqProps,
     someNetSizeOrdProps,
     someNetSizeGroupProps,
     someNetSizeVectorSpaceProps,
     someNetSizeNormalizeProps
   ]
+
+unNetBytesProps :: TestTree
+unNetBytesProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "NetBytes unwrapping + wrap is a no-op" $
+    H.withTests limit $
+      H.property $ do
+        (MkSomeNetSize _ bytes) <- H.forAll NGens.genSomeNetSizeUp
+        bytes === MkNetBytes (NetBytes.unNetBytes bytes)
 
 convertProps :: TestTree
 convertProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -138,6 +148,19 @@ netBytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genD
         VAlgebra.vectorSpaceLaws x y k l
 
+someConvertProps :: TestTree
+someConvertProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeNetSize conversions match underlying NetBytes" $
+    H.withTests limit $
+      H.property $ do
+        someSize@(MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
+        toB someSize === Size.withSingSize sz (toB bytes)
+        toK someSize === Size.withSingSize sz (toK bytes)
+        toM someSize === Size.withSingSize sz (toM bytes)
+        toG someSize === Size.withSingSize sz (toG bytes)
+        toT someSize === Size.withSingSize sz (toT bytes)
+        toP someSize === Size.withSingSize sz (toP bytes)
+
 someNetSizeEqProps :: TestTree
 someNetSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
   TH.testProperty "SomeNetSize Eq laws" $
@@ -181,12 +204,15 @@ someNetSizeVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
 
 someNetSizeNormalizeProps :: TestTree
 someNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeNetSize normalization laws" $
+  TH.testProperty "SomeNetSize normalization" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll NGens.genSomeNetSizeUp
+        x@(MkSomeNetSize szx bytes) <- H.forAll NGens.genSomeNetSizeUp
         y <- H.forAll NGens.genSomeNetSizeUp
         k <- H.forAll SGens.genD
+        -- matches underlying bytes
+        normalize x === Size.withSingSize szx (normalize bytes)
+        -- laws
         VNormalize.normalizeLaws x y k
 
 someSizeToLabel :: SomeNetSize d n -> Size

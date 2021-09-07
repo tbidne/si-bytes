@@ -3,11 +3,11 @@ module ByteTypes.Props.Class.Conversion (props) where
 
 import ByteTypes.Class.Conversion qualified as Conv
 import ByteTypes.Data.Size (Size (..))
+import ByteTypes.Props.Data.Size.Generators qualified as Gens
+import ByteTypes.Props.MaxRuns (MaxRuns (..))
 import GHC.Real (Ratio (..))
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
-import ByteTypes.Props.Data.Size.Generators qualified as Gens
-import ByteTypes.Props.MaxRuns (MaxRuns (..))
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Test.Tasty.Hedgehog qualified as TH

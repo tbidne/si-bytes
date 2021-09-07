@@ -16,9 +16,9 @@ import ByteTypes.Class.Math.Algebra.Group (Group (..))
 import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
+import ByteTypes.Utils ((<=>), (==>))
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
-import ByteTypes.Utils ((<=>), (==>))
 
 -- | Verifies 'Eq' laws for 'BytesEq'.
 eqLaws :: (Eq a, Show a) => a -> a -> a -> PropertyT IO ()

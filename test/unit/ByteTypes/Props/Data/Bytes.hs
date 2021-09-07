@@ -15,8 +15,6 @@ import ByteTypes.Data.Bytes (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
-import Hedgehog (PropertyT, (===))
-import Hedgehog qualified as H
 import ByteTypes.Props.Data.Bytes.Generators qualified as Gens
 import ByteTypes.Props.Data.Size.Generators qualified as SGens
 import ByteTypes.Props.MaxRuns (MaxRuns (..))
@@ -24,6 +22,8 @@ import ByteTypes.Props.Verify.Algebra qualified as VAlgebra
 import ByteTypes.Props.Verify.Conversion (ResultConvs (..))
 import ByteTypes.Props.Verify.Conversion qualified as VConversion
 import ByteTypes.Props.Verify.Normalize qualified as VNormalize
+import Hedgehog (PropertyT, (===))
+import Hedgehog qualified as H
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Test.Tasty.Hedgehog qualified as TH
@@ -37,7 +37,8 @@ props =
 
 bytesProps :: [TestTree]
 bytesProps =
-  [ convertProps,
+  [ unBytesProps,
+    convertProps,
     incProps,
     decProps,
     normalizeProps,
@@ -49,12 +50,21 @@ bytesProps =
 
 someSizeProps :: [TestTree]
 someSizeProps =
-  [ someSizeEqProps,
+  [ someConvertProps,
+    someSizeEqProps,
     someSizeOrdProps,
     someSizeGroupProps,
     someVectorSpaceProps,
     someNormalizeProps
   ]
+
+unBytesProps :: TestTree
+unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "Bytes unwrapping + wrap is a no-op" $
+    H.withTests limit $
+      H.property $ do
+        (MkSomeSize _ bytes) <- H.forAll Gens.genSomeBytes
+        bytes === MkBytes (Bytes.unBytes bytes)
 
 convertProps :: TestTree
 convertProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -176,6 +186,19 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genD
         VAlgebra.vectorSpaceLaws x y k l
 
+someConvertProps :: TestTree
+someConvertProps = T.askOption $ \(MkMaxRuns limit) ->
+  TH.testProperty "SomeSize conversions match underlying Bytes" $
+    H.withTests limit $
+      H.property $ do
+        someSize@(MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
+        toB someSize === Size.withSingSize sz (toB bytes)
+        toK someSize === Size.withSingSize sz (toK bytes)
+        toM someSize === Size.withSingSize sz (toM bytes)
+        toG someSize === Size.withSingSize sz (toG bytes)
+        toT someSize === Size.withSingSize sz (toT bytes)
+        toP someSize === Size.withSingSize sz (toP bytes)
+
 someSizeToLabel :: SomeSize n -> Size
 someSizeToLabel (MkSomeSize sz _) = case sz of
   SB -> B
@@ -228,10 +251,13 @@ someVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
 
 someNormalizeProps :: TestTree
 someNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeSize normalization laws" $
+  TH.testProperty "SomeSize normalization" $
     H.withTests limit $
       H.property $ do
-        x <- H.forAll Gens.genSomeBytes
+        x@(MkSomeSize szx bytes) <- H.forAll Gens.genSomeBytes
         y <- H.forAll Gens.genSomeBytes
         k <- H.forAll SGens.genD
+        -- matches underlying bytes
+        normalize x === Size.withSingSize szx (normalize bytes)
+        -- laws
         VNormalize.normalizeLaws x y k

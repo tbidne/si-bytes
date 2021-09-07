@@ -86,6 +86,7 @@ test-suite unit
     ByteTypes.Props.Class.Conversion
     ByteTypes.Props.Data.Bytes
     ByteTypes.Props.Data.Bytes.Generators
+    ByteTypes.Props.Data.Direction.Generators
     ByteTypes.Props.Data.Network.Generators
     ByteTypes.Props.Data.Network.NetBytes
     ByteTypes.Props.Data.Network.SomeNetDir

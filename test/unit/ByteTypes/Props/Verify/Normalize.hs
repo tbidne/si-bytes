@@ -10,9 +10,9 @@ import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Size (Size (..))
+import ByteTypes.Utils ((<=>))
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
-import ByteTypes.Utils ((<=>))
 
 -- | Verifies that the parameter numberic value is normalized, taking care
 -- to account for special 'B' and 'P' rules.

@@ -8,11 +8,11 @@ where
 
 import ByteTypes.Data.Bytes (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Size (SSize (..), Size (..))
+import ByteTypes.Props.Data.Size.Generators qualified as Gens
 import Data.Ratio ((%))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
 import Hedgehog.Range qualified as HRange
-import ByteTypes.Props.Data.Size.Generators qualified as Gens
 
 -- | Generates 'Bytes' over 'Gens.genBNum'.
 genBytes :: Gen (Bytes s Rational)
