@@ -62,12 +62,15 @@ genNormalizedNetBytes = do
     ST -> MkSomeNetSize ST $ MkNetBytes x
     SP -> MkSomeNetSize SP $ MkNetBytes x
 
+-- | Generates 'SomeNetDir' 'Up' over 'genNet'.
 genSomeNetDirUp :: Gen (SomeNetDir s Rational)
 genSomeNetDirUp = MkSomeNetDir SUp <$> genNet
 
+-- | Generates 'SomeNetDir' 'Down' over 'genNet'.
 genSomeNetDirDown :: Gen (SomeNetDir s Rational)
 genSomeNetDirDown = MkSomeNetDir SDown <$> genNet
 
+-- | Generates 'SomeNet'.
 genSomeNet :: Gen (SomeNet Rational)
 genSomeNet = do
   size <- SGens.genSize

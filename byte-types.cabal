@@ -92,10 +92,10 @@ test-suite unit
     ByteTypes.Props.Data.Network.SomeNetDir
     ByteTypes.Props.Data.Size.Generators
     ByteTypes.Props.MaxRuns
-    ByteTypes.Utils
     ByteTypes.Props.Verify.Algebra
     ByteTypes.Props.Verify.Conversion
     ByteTypes.Props.Verify.Normalize
+    ByteTypes.Utils
 
   build-depends:
     , base
