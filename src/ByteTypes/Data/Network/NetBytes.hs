@@ -35,7 +35,6 @@ import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Control.Applicative (liftA2)
 import Data.Kind (Type)
-import Text.Printf (PrintfArg (..))
 
 -- | Wrapper around the 'Bytes' type that adds the 'Direction' tag.
 type NetBytes :: Direction -> Size -> Type -> Type
@@ -119,7 +118,7 @@ instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (NetBytes d s n
 
 instance
   forall d s n.
-  (PrintfArg n, SingDirection d, SingSize s) =>
+  (PrettyPrint n, SingDirection d, SingSize s) =>
   PrettyPrint (NetBytes d s n)
   where
   pretty (MkNetBytes x) = case singDirection @d of
@@ -218,7 +217,7 @@ instance (Field n, NumLiteral n, Ord n) => Normalize (SomeNetSize d n) where
   type Norm (SomeNetSize d n) = SomeNetSize d n
   normalize (MkSomeNetSize sz x) = Size.withSingSize sz $ normalize x
 
-instance (PrintfArg n, SingDirection d) => PrettyPrint (SomeNetSize d n) where
+instance (PrettyPrint n, SingDirection d) => PrettyPrint (SomeNetSize d n) where
   pretty (MkSomeNetSize sz b) = case sz of
     SB -> pretty b
     SK -> pretty b

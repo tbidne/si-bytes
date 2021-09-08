@@ -33,7 +33,6 @@ import ByteTypes.Data.Network.NetBytes (NetBytes, SomeNetSize (..))
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Data.Kind (Type)
-import Text.Printf (PrintfArg (..))
 
 -- | Wrapper for 'NetBytes', existentially quantifying the direction.
 -- This is useful when a function does not know a priori what
@@ -112,7 +111,7 @@ instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (SomeNetDir s n
     case normalize x of
       MkSomeNetSize sz y -> MkSomeNet dir sz y
 
-instance (PrintfArg n, SingSize s) => PrettyPrint (SomeNetDir s n) where
+instance (PrettyPrint n, SingSize s) => PrettyPrint (SomeNetDir s n) where
   pretty (MkSomeNetDir dir x) =
     Direction.withSingDirection dir $ pretty x
 
@@ -184,7 +183,7 @@ instance (Field n, NumLiteral n, Ord n) => Normalize (SomeNet n) where
     case Size.withSingSize sz normalize x of
       MkSomeNetSize sz' x' -> MkSomeNet dir sz' x'
 
-instance PrintfArg n => PrettyPrint (SomeNet n) where
+instance PrettyPrint n => PrettyPrint (SomeNet n) where
   pretty (MkSomeNet dir sz x) =
     Direction.withSingDirection dir $
       Size.withSingSize sz $ pretty x

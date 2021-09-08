@@ -40,8 +40,6 @@ import ByteTypes.Data.Size
 import ByteTypes.Data.Size qualified as Size
 import Control.Applicative (liftA2)
 import Data.Kind (Type)
-import Text.Printf (PrintfArg (..))
-import Text.Printf qualified as Pf
 
 -- | This is the core type for handling type-safe byte operations. It is
 -- intended to be used as a simple wrapper over some numerical type,
@@ -204,14 +202,16 @@ instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (Bytes s n) whe
       sz = bytesToSSize bytes
       absBytes = gabs bytes
 
-instance (PrintfArg n, SingSize s) => PrettyPrint (Bytes s n) where
+instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
   pretty (MkBytes x) = case singSize @s of
-    SB -> Pf.printf "%.2f" x <> " B"
-    SK -> Pf.printf "%.2f" x <> " K"
-    SM -> Pf.printf "%.2f" x <> " M"
-    SG -> Pf.printf "%.2f" x <> " G"
-    ST -> Pf.printf "%.2f" x <> " T"
-    SP -> Pf.printf "%.2f" x <> " P"
+    SB -> p <> " B"
+    SK -> p <> " K"
+    SM -> p <> " M"
+    SG -> p <> " G"
+    ST -> p <> " T"
+    SP -> p <> " P"
+    where
+      p = pretty x
 
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return, e.g.,
@@ -312,7 +312,7 @@ instance (Field n, NumLiteral n, Ord n) => Normalize (SomeSize n) where
   type Norm (SomeSize n) = SomeSize n
   normalize (MkSomeSize sz x) = Size.withSingSize sz $ normalize x
 
-instance PrintfArg n => PrettyPrint (SomeSize n) where
+instance PrettyPrint n => PrettyPrint (SomeSize n) where
   pretty (MkSomeSize sz b) = Size.withSingSize sz $ pretty b
 
 nzFromLit :: (Group n, NumLiteral n) => Integer -> NonZero n
