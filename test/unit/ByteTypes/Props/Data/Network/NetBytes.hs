@@ -5,8 +5,6 @@ module ByteTypes.Props.Data.Network.NetBytes (props) where
 
 import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Normalize (Normalize (..))
-import ByteTypes.Data.Bytes (Bytes (..))
-import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Direction (Direction (..))
 import ByteTypes.Data.Network.NetBytes (NetBytes (..), SomeNetSize (..))
 import ByteTypes.Data.Network.NetBytes qualified as NetBytes
@@ -59,7 +57,7 @@ unNetBytesProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         (MkSomeNetSize _ bytes) <- H.forAll NGens.genSomeNetSizeUp
-        bytes === MkNetBytes (NetBytes.unNetBytes bytes)
+        bytes === MkNetBytesP (NetBytes.unNetBytesP bytes)
 
 convertProps :: TestTree
 convertProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -84,14 +82,14 @@ convert ::
   NetBytes d s Rational ->
   (ResultConvs Rational -> PropertyT IO ()) ->
   PropertyT IO ()
-convert bytes@(MkNetBytes (MkBytes x)) convertAndTestFn = do
+convert bytes@(MkNetBytesP x) convertAndTestFn = do
   let original = x
-      bRes = Bytes.unBytes $ NetBytes.unNetBytes $ toB bytes
-      kRes = Bytes.unBytes $ NetBytes.unNetBytes $ toK bytes
-      mRes = Bytes.unBytes $ NetBytes.unNetBytes $ toM bytes
-      gRes = Bytes.unBytes $ NetBytes.unNetBytes $ toG bytes
-      tRes = Bytes.unBytes $ NetBytes.unNetBytes $ toT bytes
-      pRes = Bytes.unBytes $ NetBytes.unNetBytes $ toP bytes
+      bRes = NetBytes.unNetBytesP $ toB bytes
+      kRes = NetBytes.unNetBytesP $ toK bytes
+      mRes = NetBytes.unNetBytesP $ toM bytes
+      gRes = NetBytes.unNetBytesP $ toG bytes
+      tRes = NetBytes.unNetBytesP $ toT bytes
+      pRes = NetBytes.unNetBytesP $ toP bytes
   convertAndTestFn MkResultConvs {..}
 
 normalizeProps :: TestTree
@@ -100,7 +98,7 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         (MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
-        let normalized@(MkSomeNetSize _ (MkNetBytes (MkBytes x))) =
+        let normalized@(MkSomeNetSize _ (MkNetBytesP x)) =
               Size.withSingSize sz $ normalize bytes
             label = someSizeToLabel normalized
         H.footnote $ "original: " <> show bytes

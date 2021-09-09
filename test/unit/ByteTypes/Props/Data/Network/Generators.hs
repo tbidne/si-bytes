@@ -12,7 +12,7 @@ where
 
 import ByteTypes.Data.Bytes (SomeSize (..))
 import ByteTypes.Data.Direction (Direction (..), SDirection (..))
-import ByteTypes.Data.Network.NetBytes (NetBytes (..), SomeNetSize (..))
+import ByteTypes.Data.Network.NetBytes.Internal (NetBytes (..), SomeNetSize (..))
 import ByteTypes.Data.Network.SomeNetDir (SomeNet (..), SomeNetDir (..))
 import ByteTypes.Data.Size (SSize (..), Size (..))
 import ByteTypes.Props.Data.Bytes.Generators qualified as BGens
