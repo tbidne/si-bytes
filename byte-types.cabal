@@ -9,10 +9,24 @@ maintainer:         tbidne@prontonmail.com
 homepage:           https://github.com/tbidne/byte-types/
 bug-reports:        https://github.com/tbidne/byte-types/issues
 synopsis:
-  Provides types for safely manipulating byte sizes (e.g. KB, MB, ...)
+  Provides types for safely manipulating byte sizes (e.g. B, KB, MB, ...)
 
 description:
-  Please see the README at https://github.com/tbidne/byte-types/#readme
+  This package provides types for performing type-safe byte operations
+  (e.g. conversions, addition), taking units into account.
+  .
+  The primary module is "ByteTypes.Bytes". The module is sufficient for most
+  purposes, providing types that track units (e.g. B, KB, MB, ...) and allow
+  handling of unknown sizes at runtime.
+  .
+  The other module of interest is "ByteTypes.Network". This module has a
+  virtually identical API to ByteTypes.Bytes, but the types it provides
+  also track /direction/ (i.e. uploaded vs downloaded), for when this
+  distinction is important (e.g. computing total uploaded network traffic).
+  .
+  Each module is self-contained, so it is expected that users will only need
+  to import one module at a time, unless there is a desire to explicitly use
+  network and non-network byte types in the same module.
 
 category:
 extra-source-files:
@@ -53,6 +67,7 @@ common common-exts
 library
   import:           common-exts
   exposed-modules:
+    ByteTypes.Bytes
     ByteTypes.Class.Conversion
     ByteTypes.Class.Math
     ByteTypes.Class.Math.Algebra
@@ -77,6 +92,7 @@ library
     ByteTypes.Data.Network.SomeNetDir
     ByteTypes.Data.Network.SomeNetDir.Internal
     ByteTypes.Data.Size
+    ByteTypes.Network
 
   build-depends:    base ^>=4.14.1.0
   hs-source-dirs:   src

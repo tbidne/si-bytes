@@ -1,0 +1,417 @@
+-- |
+--
+-- Module: ByteTypes.Network
+--
+-- This module serves as an alternative entry point to 'ByteTypes.Bytes', for
+-- when tracking uploaded vs. downloaded bytes is necessary. It provides the
+-- types and operations for typical usage and is usually the only import
+-- required. The core concept is:
+--
+-- 1. Wrapping a numeric value representing bytes in a new type.
+-- 2. Attaching phantom labels representing the units (e.g. B, K, M, ...).
+-- 3. Attaching phantom labels representing the direction (i.e. Down, Up).
+--
+-- This prevents mistakes, such as adding two different byte sizes/directions,
+-- or converting between sizes incorrectly.
+module ByteTypes.Network
+  ( -- * Types
+    -- $types
+    module ByteTypes.Data.Size,
+    module ByteTypes.Data.Direction,
+    module ByteTypes.Data.Network,
+
+    -- * Byte Transformations
+    -- $transformations
+    module ByteTypes.Class.Conversion,
+    module ByteTypes.Class.Normalize,
+    module ByteTypes.Class.PrettyPrint,
+
+    -- * Algebraic Functions
+    -- $algebra
+    module ByteTypes.Class.Math.Algebra.Group,
+    module ByteTypes.Class.Math.Algebra.Ring,
+    module ByteTypes.Class.Math.Algebra.Field,
+    module ByteTypes.Class.Math.Algebra.Module,
+    module ByteTypes.Class.Math.Algebra.VectorSpace,
+
+    -- * Convenient Mathematical Operations
+    -- $othermath
+    module ByteTypes.Class.Math.Literal,
+    module ByteTypes.Class.Math.Scalar.Ord,
+    module ByteTypes.Class.Math.Scalar.Num,
+  )
+where
+
+import ByteTypes.Class.Conversion
+import ByteTypes.Class.Math.Algebra.Field
+import ByteTypes.Class.Math.Algebra.Group
+import ByteTypes.Class.Math.Algebra.Module
+import ByteTypes.Class.Math.Algebra.Ring
+import ByteTypes.Class.Math.Algebra.VectorSpace
+import ByteTypes.Class.Math.Literal
+import ByteTypes.Class.Math.Scalar.Num
+import ByteTypes.Class.Math.Scalar.Ord
+import ByteTypes.Class.Normalize
+import ByteTypes.Class.PrettyPrint
+import ByteTypes.Data.Direction
+import ByteTypes.Data.Network
+import ByteTypes.Data.Size
+
+-- $types
+-- The are six main types exported in this module:
+--
+-- 1. 'Size': These are the size units that can be attached to a numeric bytes.
+--
+--     @
+--     data 'Size' = 'B' | 'K' | 'M' | 'G' | 'T' | 'P'
+--     @
+--
+-- 2. 'Direction': These are the direction units that can be attached to a
+-- numeric bytes.
+--
+--     @
+--     data 'Direction' = 'Down' | 'Up'
+--     @
+--
+-- 3. 'NetBytes': The core type, wraps a numeric value and includes 'Size'
+--    and 'Direction' phantom types.
+--
+--     @
+--     type 'NetBytes' :: 'Direction' -> 'Size' -> 'Data.Kind.Type' -> 'Data.Kind.Type'
+--     newtype 'NetBytes' d s n = 'MkNetBytesP' { 'unNetBytesP' :: n }
+--     @
+--
+-- 4. 'SomeNetSize': A GADT that wraps 'NetBytes' and existentially quantifies
+-- the 'Size'.
+--
+--     @
+--     type 'SomeNetSize' :: 'Direction' -> 'Data.Kind.Type' -> 'Data.Kind.Type'
+--     data 'SomeNetSize' d n
+--
+--     'hideNetSize' :: forall d s n. 'SingSize' s => 'NetBytes' d s n -> 'SomeNetSize' d n
+--     @
+--
+-- 5. 'SomeNetDir': A GADT that wraps 'NetBytes' and existentially quantifies
+-- the 'Direction'.
+--
+--     @
+--     type 'SomeNetDir' :: 'Size' -> 'Data.Kind.Type' -> 'Data.Kind.Type'
+--     data 'SomeNetDir' s n
+--
+--     'hideNetDir' :: forall d s n. 'SingDirection' d => 'NetBytes' d s n -> 'SomeNetDir' s n
+--     @
+--
+-- 6. 'SomeNet': A GADT that wraps 'NetBytes' and existentially quantifies
+-- the 'Direction' and 'Size'.
+--
+--     @
+--     type 'SomeNet' :: 'Data.Kind.Type' -> 'Data.Kind.Type'
+--     data 'SomeNet' n
+--
+--     'hideNetSizeDir' :: forall d s n. ('SingDirection' d, 'SingSize' s) => 'NetBytes' d s n -> 'SomeNet' n
+--     @
+--
+-- Most of the time the 'NetBytes' type should be preferred.
+-- 'SomeNetSize' is useful when we do not know the size at compile-time
+-- (e.g. parsing the output of @ls -lh@ at runtime), or when we use
+-- 'normalize'.
+--
+-- For completeness, we also include the other existential quantification
+-- combinations (i.e. 'SomeNetDir' and 'SomeNet' for when the 'Direction' is
+-- unknown), though these are less likely to be useful.
+--
+-- == Modules
+
+-- $transformations
+--
+-- == Normalization
+--
+-- The primary transformation of interest is 'Normalize'.
+--
+-- @
+-- class 'Normalize' a where
+--   type 'Norm' a
+--   'normalize' :: a -> 'Norm' a
+-- @
+--
+-- This typeclass attempts to \"normalize\" a given 'NetBytes' or 'SomeNetSize' such
+-- that the result is between 1 and 1000, provided this is possible (i.e. we
+-- cannot increase the max or decrease the min). Because the result type is
+-- dependent on the value, 'normalize' necessarily existentially quantifies the
+-- 'Size', i.e., returns 'SomeNetSize'.
+--
+-- >>> let bytes = MkNetBytesP 5000 :: NetBytes 'Down 'M Int
+-- >>> normalize bytes
+-- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 5})
+--
+-- >>> let bytes = MkSomeNetSize ST (MkNetBytesP 0.01 :: NetBytes 'Down 'T Float)
+-- >>> normalize bytes
+-- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 10.0})
+--
+-- == Conversion
+--
+-- The 'Conversion' class allows one to transform 'NetBytes' or 'SomeNetSize' to any
+-- 'Size'. In the case of 'SomeNetSize', we can use this to fix the 'Size' and
+-- \"undo\" the existential quantification.
+--
+-- @
+-- class 'Conversion' a where
+--   type 'Converted' (b :: 'Size') a = r | r -> b
+--
+--   'toB' :: a -> 'Converted' ''B' a
+--   'toK' :: a -> 'Converted' ''K' a
+--   'toM' :: a -> 'Converted' ''M' a
+--   'toG' :: a -> 'Converted' ''G' a
+--   'toT' :: a -> 'Converted' ''T' a
+--   'toP' :: a -> 'Converted' ''P' a
+-- @
+--
+-- >>> let bytes = MkNetBytesP 50_000 :: NetBytes 'Down 'M Int
+-- >>> toG bytes
+-- MkNetBytesP {unNetBytesP = 50}
+--
+-- >>> let bytes = MkSomeNetSize ST (MkNetBytesP 0.2 :: NetBytes 'Down 'T Float)
+-- >>> toM bytes
+-- MkNetBytesP {unNetBytesP = 200000.0}
+--
+-- == Pretty Printing
+--
+-- 'PrettyPrint' is, as the num suggests, used for printing out bytes types
+-- in a prettier manner than 'show' (i.e., no constructors, added units,
+-- rounding).
+--
+-- @
+-- class 'PrettyPrint' a where
+--   'pretty' :: a -> 'String'
+-- @
+--
+-- >>> let bytes = MkNetBytesP 50000 :: NetBytes 'Down 'M Int
+-- >>> pretty bytes
+-- "50000 M Down"
+--
+-- >>> let bytes = MkSomeNetSize ST (MkNetBytesP 20.40684 :: NetBytes 'Down 'T Float)
+-- >>> pretty bytes
+-- "20.41 T Down"
+--
+-- == Modules
+
+-- $algebra
+--
+-- The built-in 'Num' class is abandoned in favor of a custom algebraic
+-- hierarchy. This is motivated by a desire to:
+--
+-- 1. Provide a consistent API.
+-- 2. Avoid 'Num'\'s infelicities (e.g. nonsense multiplication,
+--    dangerous 'fromInteger').
+--
+-- The hierarchy includes:
+--
+-- 1. 'Group'
+--
+--     @
+--     class 'Eq' g => 'Group' g where
+--       '(.+.)' :: g -> g -> g
+--       '(.-.)' :: g -> g -> g
+--       'gid' :: g
+--       'ginv' :: g -> g
+--       'gabs' :: g -> g
+--     @
+--
+-- 2. 'Ring'
+--
+--     @
+--     class 'Group' r => 'Ring' r where
+--       '(.*.)' :: r -> r -> r
+--       'rid' :: r
+--     @
+--
+-- 3. 'Field'
+--
+--     @
+--     class 'Ring' f => 'Field' f where
+--       'finv' :: 'NonZero' f -> 'NonZero' f
+--       '(.%.)' :: f -> 'NonZero' f -> f
+--     @
+--
+-- 4. 'Module'
+--
+--     @
+--     class ('Group' m, 'Ring' r) => 'Module' m r where
+--       '(.*)' :: m -> r -> m
+--       '(*.)' :: r -> m -> m
+--     @
+--
+-- 5. 'VectorSpace'
+--
+--     @
+--     class ('Field' k, 'Module' v k) => 'VectorSpace' v k where
+--       '(.%)' :: v -> 'NonZero' k -> v
+--     @
+--
+-- Built-in numeric types (e.g. 'Integer', 'Double', 'Rational') have been
+-- given 'Group', 'Ring', and 'Field' instances with the obvious addition and
+-- multiplication. 'Integral' and 'Floating' do not follow the field
+-- laws w.r.t. division, but this is a common tradeoff. We take the stance
+-- that it is better to provide an expected, useful notion of division
+-- (albeit one with known limitations) than none.
+--
+-- 'NetBytes' and 'SomeNetSize' are both 'Group's compatible with the above.
+-- A 'Ring' instance is not provided because multiplication is nonsensical:
+--
+-- \[
+-- x \;\textrm{mb} \times y \;\textrm{mb} = xy \;\textrm{mb}^2.
+-- \]
+--
+-- Fortunately, multiplying bytes by some kind of scalar is both useful /and/
+-- has an easy interpretation: Bytes forms a 'Module' over a 'Ring'
+-- (resp. 'VectorSpace' over a 'Field'). This allows us to multiply a 'NetBytes'
+-- or 'SomeNetSize' by a scalar in a manner consistent with the above API.
+--
+-- == Examples
+-- === Addition/Subtraction
+-- >>> let mb1 = MkNetBytesP 20 :: NetBytes 'Down 'M Int
+-- >>> let mb2 = MkNetBytesP 50 :: NetBytes 'Down 'M Int
+-- >>> mb1 .+. mb2
+-- MkNetBytesP {unNetBytesP = 70}
+--
+-- >>> mb1 .-. mb2
+-- MkNetBytesP {unNetBytesP = (-30)}
+--
+-- >>> -- Type error!
+-- >>> let kb = MkNetBytesP 50 :: NetBytes 'Down 'K Int
+-- >>> mb1 .+. kb
+-- Couldn't match type ‘'K’ with ‘'M’
+-- Expected type: NetBytes 'Down 'M Int
+--   Actual type: NetBytes 'Down 'K Int
+--
+-- >>> -- Type error!
+-- >>> let mbUp = MkNetBytesP 50 :: NetBytes 'Up 'M Int
+-- >>> mb1 .+. mbUp
+-- Couldn't match type ‘'Up’ with ‘'Down’
+-- Expected type: NetBytes 'Down 'M Int
+--   Actual type: NetBytes 'Up 'M Int
+--
+-- === Multiplication
+-- >>> mb1 .* (10 :: Int)
+-- MkNetBytesP {unNetBytesP = 200}
+--
+-- === Division
+-- >>> mb1 .% (unsafeNonZero 10 :: NonZero Int)
+-- MkNetBytesP {unNetBytesP = 2}
+--
+-- One may wonder how the 'Group' instance for 'SomeNetSize' could possibly
+-- work. It is possible (indeed, expected) that we could have two 'SomeNetSize's
+-- that have different underlying 'NetBytes' types. To handle this, the
+-- 'SomeNetSize' instance will convert both 'NetBytes' to a 'NetBytes' ''B' before
+-- adding/subtracting. The result will be normalized.
+--
+-- >>> let some1 = MkSomeNetSize SG (MkNetBytesP 1000) :: SomeNetSize 'Down Double
+-- >>> let some2 = MkSomeNetSize SM (MkNetBytesP 500_000) :: SomeNetSize 'Down Double
+-- >>> some1 .+. some2
+-- MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 1.5})
+--
+-- >>> some1 .-. some2
+-- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 500.0})
+--
+-- In fact, this is how 'SomeNetSize'\'s 'Eq' and 'Ord' classes work. They
+-- convert both arguments to ''B' first. This establishes an equivalence
+-- class determined by the numeric value /and/ the size. For example,
+--
+-- >>> let some1 = MkSomeNetSize SG (MkNetBytesP 7 :: NetBytes 'Down 'G Int)
+-- >>> let some2 = MkSomeNetSize SM (MkNetBytesP 7000 :: NetBytes 'Down 'M Int)
+-- >>> some1 == some2
+-- True
+--
+-- >>> let some3 = MkSomeNetSize ST (MkNetBytesP 2 :: NetBytes 'Down 'T Int)
+-- >>> some1 < some3
+-- True
+--
+-- >>> some2 < some3
+-- True
+--
+-- == Modules
+
+-- $othermath
+--
+-- Even with the algebraic classes above, we are still short on replacing some
+-- of 'Num'\'s nice functionality: using numeric literals. With 'Num' this is
+-- achieved through 'fromInteger'; with 'Fractional', 'fromRational'.
+--
+-- To replicate this, we have provided typeclasses that allow us to compare
+-- our types to some kind of scalar. 'ScalarEq' and 'ScalarOrd' replace
+-- 'Eq' and 'Ord', respectively. 'ScalarNum' allows us to add and subtract
+-- numeric literals
+--
+-- @
+-- class 'ScalarEq' a where
+--   '(.=)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar'' a -> 'Bool'
+--   '(=.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar'' a -> a -> 'Bool'
+--   '(./=)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar'' a -> 'Bool'
+--   '(/=.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar'' a -> a -> 'Bool'
+-- @
+--
+-- >>> let bytes = MkNetBytesP 10 :: NetBytes 'Down 'G Int
+-- >>> bytes .= 10
+-- True
+--
+-- >>> bytes ./= 10
+-- False
+--
+-- @
+-- class 'ScalarEq' a => 'ScalarOrd' a where
+--   -- LHS
+--   'lcompare' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Ordering'
+--   '(.<)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Bool'
+--   '(.<=)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Bool'
+--   '(.>)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Bool'
+--   '(.>=)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Bool'
+--
+--   -- RHS
+--   'rcompare' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Ordering'
+--   '(<.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Bool'
+--   '(<=.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Bool'
+--   '(>.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Bool'
+--   '(>=.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Bool'
+-- @
+--
+-- >>> let bytes = MkBytes 400 :: Bytes 'K Int
+-- >>> bytes .< 400
+-- Not in scope: type constructor or class ‘Bytes’
+--
+-- >>> 800 >. bytes
+-- True
+--
+-- >>> lcompare bytes 500
+-- LT
+--
+-- @
+-- class 'ScalarNum' m where
+--   '(.+)' :: m -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' m -> m
+--   '(.-)' :: m -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' m -> m
+--   '(+.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' m -> m -> m
+-- @
+--
+-- >>> let bytes = MkNetBytesP 400 :: NetBytes 'Down 'K Int
+-- >>> bytes .+ 200
+-- MkNetBytesP {unNetBytesP = 600}
+--
+-- >>> bytes .- 300
+-- MkNetBytesP {unNetBytesP = 100}
+--
+-- 'NumLiteral' gives us the 'fromLit' function, which we can use to transform
+-- 'Integer' literals to the expected scalar.
+--
+-- @
+-- class 'NumLiteral' a where
+--   'fromLit' :: 'Integer' -> a
+-- @
+--
+-- This is generally only necessary when writing functions polymorphic over
+-- some numeric type @n@, and we don't have a 'Num' constraint.
+--
+--
+-- >>> let times1000 :: (NumLiteral n, Ring n) => n -> n; times1000 x = x .*. fromLit (1000 :: Integer)
+-- >>> times1000 (5 :: Int)
+-- 5000
+--
+-- == Modules
