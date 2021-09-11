@@ -6,8 +6,8 @@ module ByteTypes.Props.Data.Network.NetBytes (props) where
 import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Direction (Direction (..))
-import ByteTypes.Data.Network.NetBytes (NetBytes (..), SomeNetSize (..))
 import ByteTypes.Data.Network.NetBytes qualified as NetBytes
+import ByteTypes.Data.Network.NetBytes.Internal (NetBytes (..), SomeNetSize (..))
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import ByteTypes.Props.Data.Network.Generators qualified as NGens

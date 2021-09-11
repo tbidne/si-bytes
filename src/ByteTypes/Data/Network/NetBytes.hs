@@ -3,15 +3,17 @@
 module ByteTypes.Data.Network.NetBytes
   ( -- * Network Bytes
     NetBytes (MkNetBytesP),
-    I.unNetBytesP,
-    I.netToSSize,
-    I.netToSDirection,
+    unNetBytesP,
 
     -- * Unknown Size
-    SomeNetSize (..),
-    I.someNetSizeToSDirection,
+    SomeNetSize,
+    hideNetSize,
   )
 where
 
-import ByteTypes.Data.Network.NetBytes.Internal (NetBytes, SomeNetSize (..))
-import ByteTypes.Data.Network.NetBytes.Internal qualified as I
+import ByteTypes.Data.Network.NetBytes.Internal
+  ( NetBytes (MkNetBytesP),
+    SomeNetSize,
+    hideNetSize,
+    unNetBytesP,
+  )

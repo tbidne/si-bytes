@@ -6,7 +6,7 @@ module ByteTypes.Props.Data.Bytes.Generators
   )
 where
 
-import ByteTypes.Data.Bytes (Bytes (..), SomeSize (..))
+import ByteTypes.Data.Bytes.Internal (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Size (SSize (..), Size (..))
 import ByteTypes.Props.Data.Size.Generators qualified as Gens
 import Data.Ratio ((%))

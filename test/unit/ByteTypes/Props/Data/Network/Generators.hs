@@ -10,10 +10,10 @@ module ByteTypes.Props.Data.Network.Generators
   )
 where
 
-import ByteTypes.Data.Bytes (SomeSize (..))
+import ByteTypes.Data.Bytes.Internal (SomeSize (..))
 import ByteTypes.Data.Direction (Direction (..), SDirection (..))
 import ByteTypes.Data.Network.NetBytes.Internal (NetBytes (..), SomeNetSize (..))
-import ByteTypes.Data.Network.SomeNetDir (SomeNet (..), SomeNetDir (..))
+import ByteTypes.Data.Network.SomeNetDir.Internal (SomeNet (..), SomeNetDir (..))
 import ByteTypes.Data.Size (SSize (..), Size (..))
 import ByteTypes.Props.Data.Bytes.Generators qualified as BGens
 import ByteTypes.Props.Data.Direction.Generators qualified as DGens

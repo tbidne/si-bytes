@@ -15,6 +15,7 @@ module ByteTypes.Data.Network.NetBytes.Internal
 
     -- * Unknown Size
     SomeNetSize (..),
+    hideNetSize,
     someNetSizeToSDirection,
   )
 where
@@ -31,7 +32,7 @@ import ByteTypes.Class.Math.Scalar.Ord (ScalarEq (..), ScalarOrd (..))
 import ByteTypes.Class.Math.Scalar.Scalar (Scalar)
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
-import ByteTypes.Data.Bytes (Bytes (..), SomeSize (..))
+import ByteTypes.Data.Bytes.Internal (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Direction
   ( Direction (..),
     SDirection (..),
@@ -41,6 +42,7 @@ import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Control.Applicative (liftA2)
 import Data.Kind (Type)
+import GHC.Show qualified as Show
 
 -- | Wrapper around the 'Bytes' type that adds the 'Direction' tag.
 type NetBytes :: Direction -> Size -> Type -> Type
@@ -62,15 +64,21 @@ pattern MkNetBytesP x <-
 
 {-# COMPLETE MkNetBytesP #-}
 
--- | Retrieves the 'SDirection' witness.
+-- | Retrieves the 'SDirection' witness. Can be used to recover the
+-- 'Direction'.
 netToSDirection :: SingDirection d => NetBytes d s n -> SDirection d
 netToSDirection _ = singDirection
 
--- | Retrieves the 'SingSize' witness.
+-- | Retrieves the 'SingSize' witness. Can be used to recover the 'Size'.
 netToSSize :: SingSize s => NetBytes d s n -> SSize s
 netToSSize _ = singSize
 
-deriving instance Show n => Show (NetBytes d s n)
+instance Show n => Show (NetBytes d s n) where
+  showsPrec p (MkNetBytesP x) =
+    showParen (p > Show.appPrec) $
+      showString "MkNetBytesP {unNetBytesP = "
+        . showsPrec Show.appPrec1 x
+        . showString "}"
 
 deriving instance Functor (NetBytes d s)
 
@@ -165,6 +173,16 @@ type SomeNetSize :: Direction -> Type -> Type
 data SomeNetSize d n where
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 
+-- | Wraps a 'Bytes' in an existentially quantified 'SomeSize'.
+hideNetSize :: forall d s n. SingSize s => NetBytes d s n -> SomeNetSize d n
+hideNetSize bytes = case singSize @s of
+  SB -> MkSomeNetSize SB bytes
+  SK -> MkSomeNetSize SK bytes
+  SM -> MkSomeNetSize SM bytes
+  SG -> MkSomeNetSize SG bytes
+  ST -> MkSomeNetSize ST bytes
+  SP -> MkSomeNetSize SP bytes
+
 deriving instance Show n => Show (SomeNetSize d n)
 
 deriving instance Functor (SomeNetSize d)
@@ -243,6 +261,7 @@ instance (PrettyPrint n, SingDirection d) => PrettyPrint (SomeNetSize d n) where
     ST -> pretty b
     SP -> pretty b
 
--- | Retrieves the 'SingDirection' witness.
+-- | Retrieves the 'SingDirection' witness. Can be used to recover the
+-- 'Direction'.
 someNetSizeToSDirection :: SingDirection d => SomeNetSize d n -> SDirection d
 someNetSizeToSDirection _ = singDirection

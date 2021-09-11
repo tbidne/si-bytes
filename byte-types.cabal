@@ -69,11 +69,13 @@ library
     ByteTypes.Class.Normalize
     ByteTypes.Class.PrettyPrint
     ByteTypes.Data.Bytes
+    ByteTypes.Data.Bytes.Internal
     ByteTypes.Data.Direction
     ByteTypes.Data.Network
     ByteTypes.Data.Network.NetBytes
     ByteTypes.Data.Network.NetBytes.Internal
     ByteTypes.Data.Network.SomeNetDir
+    ByteTypes.Data.Network.SomeNetDir.Internal
     ByteTypes.Data.Size
 
   build-depends:    base ^>=4.14.1.0

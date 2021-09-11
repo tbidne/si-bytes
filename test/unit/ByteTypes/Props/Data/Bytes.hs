@@ -13,8 +13,8 @@ import ByteTypes.Class.Math.Algebra.Group (Group, NonZero, unsafeNonZero)
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
 import ByteTypes.Class.Normalize (Normalize (..))
-import ByteTypes.Data.Bytes (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Bytes qualified as Bytes
+import ByteTypes.Data.Bytes.Internal (Bytes (..), SomeSize (..))
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import ByteTypes.Props.Data.Bytes.Generators qualified as Gens
