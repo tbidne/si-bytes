@@ -9,6 +9,9 @@ module ByteTypes.Props.Verify.Conversion
     convertG,
     convertT,
     convertP,
+    convertE,
+    convertZ,
+    convertY,
   )
 where
 
@@ -25,7 +28,10 @@ data ExpectedConvs n = MkExpectedConvs
     mExp :: n -> n,
     gExp :: n -> n,
     tExp :: n -> n,
-    pExp :: n -> n
+    pExp :: n -> n,
+    eExp :: n -> n,
+    zExp :: n -> n,
+    yExp :: n -> n
   }
 
 -- | Record that holds an \"original value\", along with the result of
@@ -37,7 +43,10 @@ data ResultConvs n = MkResultConvs
     mRes :: n,
     gRes :: n,
     tRes :: n,
-    pRes :: n
+    pRes :: n,
+    eRes :: n,
+    zRes :: n,
+    yRes :: n
   }
 
 -- | Tests that the \"to bytes\" conversion matches expectations.
@@ -49,6 +58,9 @@ convertB results = do
       gExp = (.%. nzFromLit 1_000_000_000)
       tExp = (.%. nzFromLit 1_000_000_000_000)
       pExp = (.%. nzFromLit 1_000_000_000_000_000)
+      eExp = (.%. nzFromLit 1_000_000_000_000_000_000)
+      zExp = (.%. nzFromLit 1_000_000_000_000_000_000_000)
+      yExp = (.%. nzFromLit 1_000_000_000_000_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
@@ -61,6 +73,9 @@ convertK results = do
       gExp = (.%. nzFromLit 1_000_000)
       tExp = (.%. nzFromLit 1_000_000_000)
       pExp = (.%. nzFromLit 1_000_000_000_000)
+      eExp = (.%. nzFromLit 1_000_000_000_000_000)
+      zExp = (.%. nzFromLit 1_000_000_000_000_000_000)
+      yExp = (.%. nzFromLit 1_000_000_000_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
@@ -73,6 +88,9 @@ convertM results = do
       gExp = (.%. nzFromLit 1_000)
       tExp = (.%. nzFromLit 1_000_000)
       pExp = (.%. nzFromLit 1_000_000_000)
+      eExp = (.%. nzFromLit 1_000_000_000_000)
+      zExp = (.%. nzFromLit 1_000_000_000_000_000)
+      yExp = (.%. nzFromLit 1_000_000_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
@@ -85,6 +103,9 @@ convertG results = do
       gExp = id
       tExp = (.%. nzFromLit 1_000)
       pExp = (.%. nzFromLit 1_000_000)
+      eExp = (.%. nzFromLit 1_000_000_000)
+      zExp = (.%. nzFromLit 1_000_000_000_000)
+      yExp = (.%. nzFromLit 1_000_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
@@ -97,6 +118,9 @@ convertT results = do
       gExp = (.*. fromLit 1_000)
       tExp = id
       pExp = (.%. nzFromLit 1_000)
+      eExp = (.%. nzFromLit 1_000_000)
+      zExp = (.%. nzFromLit 1_000_000_000)
+      yExp = (.%. nzFromLit 1_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
@@ -109,6 +133,54 @@ convertP results = do
       gExp = (.*. fromLit 1_000_000)
       tExp = (.*. fromLit 1_000)
       pExp = id
+      eExp = (.%. nzFromLit 1_000)
+      zExp = (.%. nzFromLit 1_000_000)
+      yExp = (.%. nzFromLit 1_000_000_000)
+
+  convert MkExpectedConvs {..} results
+
+-- | Tests that the \"to exabytes\" conversion matches expectations.
+convertE :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertE results = do
+  let bExp = (.*. fromLit 1_000_000_000_000_000_000)
+      kExp = (.*. fromLit 1_000_000_000_000_000)
+      mExp = (.*. fromLit 1_000_000_000_000)
+      gExp = (.*. fromLit 1_000_000_000)
+      tExp = (.*. fromLit 1_000_000)
+      pExp = (.*. fromLit 1_000)
+      eExp = id
+      zExp = (.%. nzFromLit 1_000)
+      yExp = (.%. nzFromLit 1_000_000)
+
+  convert MkExpectedConvs {..} results
+
+-- | Tests that the \"to zettabytes\" conversion matches expectations.
+convertZ :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertZ results = do
+  let bExp = (.*. fromLit 1_000_000_000_000_000_000_000)
+      kExp = (.*. fromLit 1_000_000_000_000_000_000)
+      mExp = (.*. fromLit 1_000_000_000_000_000)
+      gExp = (.*. fromLit 1_000_000_000_000)
+      tExp = (.*. fromLit 1_000_000_000)
+      pExp = (.*. fromLit 1_000_000)
+      eExp = (.*. fromLit 1_000)
+      zExp = id
+      yExp = (.%. nzFromLit 1_000)
+
+  convert MkExpectedConvs {..} results
+
+-- | Tests that the \"to yottabytes\" conversion matches expectations.
+convertY :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertY results = do
+  let bExp = (.*. fromLit 1_000_000_000_000_000_000_000_000)
+      kExp = (.*. fromLit 1_000_000_000_000_000_000_000)
+      mExp = (.*. fromLit 1_000_000_000_000_000_000)
+      gExp = (.*. fromLit 1_000_000_000_000_000)
+      tExp = (.*. fromLit 1_000_000_000_000)
+      pExp = (.*. fromLit 1_000_000_000)
+      eExp = (.*. fromLit 1_000_000)
+      zExp = (.*. fromLit 1_000)
+      yExp = id
 
   convert MkExpectedConvs {..} results
 
@@ -120,6 +192,9 @@ convert MkExpectedConvs {..} MkResultConvs {..} = do
   convertAndTest gExp original gRes "G"
   convertAndTest tExp original tRes "T"
   convertAndTest pExp original pRes "P"
+  convertAndTest eExp original eRes "E"
+  convertAndTest zExp original zRes "Z"
+  convertAndTest yExp original yRes "Y"
 
 convertAndTest ::
   (Eq t, Show t) =>

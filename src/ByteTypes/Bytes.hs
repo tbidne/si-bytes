@@ -59,7 +59,7 @@ import ByteTypes.Data.Size
 -- 1. 'Size': These are the units that can be attached to a numeric bytes.
 --
 --     @
---     data 'Size' = 'B' | 'K' | 'M' | 'G' | 'T' | 'P'
+--     data 'Size' = 'B' | 'K' | 'M' | 'G' | 'T' | 'P' | 'E' | 'Z' | 'Y'
 --     @
 --
 -- 2. 'Bytes': The core type, wraps a numeric value and includes a 'Size'

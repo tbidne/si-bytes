@@ -105,6 +105,9 @@ instance (Field n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) wher
   type Converted 'G (SomeNetDir s n) = SomeNetDir 'G n
   type Converted 'T (SomeNetDir s n) = SomeNetDir 'T n
   type Converted 'P (SomeNetDir s n) = SomeNetDir 'P n
+  type Converted 'E (SomeNetDir s n) = SomeNetDir 'E n
+  type Converted 'Z (SomeNetDir s n) = SomeNetDir 'Z n
+  type Converted 'Y (SomeNetDir s n) = SomeNetDir 'Y n
 
   toB (MkSomeNetDir dir x) = MkSomeNetDir dir $ toB x
   toK (MkSomeNetDir dir x) = MkSomeNetDir dir $ toK x
@@ -112,6 +115,9 @@ instance (Field n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) wher
   toG (MkSomeNetDir dir x) = MkSomeNetDir dir $ toG x
   toT (MkSomeNetDir dir x) = MkSomeNetDir dir $ toT x
   toP (MkSomeNetDir dir x) = MkSomeNetDir dir $ toP x
+  toE (MkSomeNetDir dir x) = MkSomeNetDir dir $ toE x
+  toZ (MkSomeNetDir dir x) = MkSomeNetDir dir $ toZ x
+  toY (MkSomeNetDir dir x) = MkSomeNetDir dir $ toY x
 
 instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
   type Norm (SomeNetDir s n) = SomeNet n
@@ -160,6 +166,9 @@ hideNetSizeDir bytes = case singDirection @d of
       SG -> MkSomeNet SDown SG bytes
       ST -> MkSomeNet SDown ST bytes
       SP -> MkSomeNet SDown SP bytes
+      SE -> MkSomeNet SDown SE bytes
+      SZ -> MkSomeNet SDown SZ bytes
+      SY -> MkSomeNet SDown SY bytes
   SUp ->
     case singSize @s of
       SB -> MkSomeNet SUp SB bytes
@@ -168,6 +177,9 @@ hideNetSizeDir bytes = case singDirection @d of
       SG -> MkSomeNet SUp SG bytes
       ST -> MkSomeNet SUp ST bytes
       SP -> MkSomeNet SUp SP bytes
+      SE -> MkSomeNet SUp SE bytes
+      SZ -> MkSomeNet SUp SZ bytes
+      SY -> MkSomeNet SUp SY bytes
 
 deriving instance Show n => Show (SomeNet n)
 
@@ -197,6 +209,9 @@ instance (Field n, NumLiteral n) => Conversion (SomeNet n) where
   type Converted 'G (SomeNet n) = SomeNetDir 'G n
   type Converted 'T (SomeNet n) = SomeNetDir 'T n
   type Converted 'P (SomeNet n) = SomeNetDir 'P n
+  type Converted 'E (SomeNet n) = SomeNetDir 'E n
+  type Converted 'Z (SomeNet n) = SomeNetDir 'Z n
+  type Converted 'Y (SomeNet n) = SomeNetDir 'Y n
 
   toB (MkSomeNet dir sz x) = Size.withSingSize sz $ toB (MkSomeNetDir dir x)
   toK (MkSomeNet dir sz x) = Size.withSingSize sz $ toK (MkSomeNetDir dir x)
@@ -204,6 +219,9 @@ instance (Field n, NumLiteral n) => Conversion (SomeNet n) where
   toG (MkSomeNet dir sz x) = Size.withSingSize sz $ toG (MkSomeNetDir dir x)
   toT (MkSomeNet dir sz x) = Size.withSingSize sz $ toT (MkSomeNetDir dir x)
   toP (MkSomeNet dir sz x) = Size.withSingSize sz $ toP (MkSomeNetDir dir x)
+  toE (MkSomeNet dir sz x) = Size.withSingSize sz $ toE (MkSomeNetDir dir x)
+  toZ (MkSomeNet dir sz x) = Size.withSingSize sz $ toZ (MkSomeNetDir dir x)
+  toY (MkSomeNet dir sz x) = Size.withSingSize sz $ toY (MkSomeNetDir dir x)
 
 instance (Field n, NumLiteral n, Ord n) => Normalize (SomeNet n) where
   type Norm (SomeNet n) = SomeNet n

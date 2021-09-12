@@ -63,7 +63,7 @@ import ByteTypes.Data.Size
 -- 1. 'Size': These are the size units that can be attached to a numeric bytes.
 --
 --     @
---     data 'Size' = 'B' | 'K' | 'M' | 'G' | 'T' | 'P'
+--     data 'Size' = 'B' | 'K' | 'M' | 'G' | 'T' | 'P' | 'E' | 'Z' | 'Y'
 --     @
 --
 -- 2. 'Direction': These are the direction units that can be attached to a

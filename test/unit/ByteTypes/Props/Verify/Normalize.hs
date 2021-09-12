@@ -24,7 +24,7 @@ isNormalized ::
 isNormalized B x = do
   H.footnoteShow x
   H.assert $ x < 1_000
-isNormalized P x = do
+isNormalized Y x = do
   H.footnoteShow x
   H.assert $ x >= 1
 isNormalized _ x

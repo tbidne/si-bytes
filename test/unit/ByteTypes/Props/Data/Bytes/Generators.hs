@@ -27,7 +27,10 @@ genSomeBytes = do
       MkSomeSize SM <$> genBytes,
       MkSomeSize SG <$> genBytes,
       MkSomeSize ST <$> genBytes,
-      MkSomeSize SP <$> genBytes
+      MkSomeSize SP <$> genBytes,
+      MkSomeSize SE <$> genBytes,
+      MkSomeSize SZ <$> genBytes,
+      MkSomeSize SY <$> genBytes
     ]
 
 -- | Generates a normalized 'Bytes', i.e., the numeric value
@@ -43,6 +46,9 @@ genNormalizedBytes = do
     G -> MkSomeSize SG $ MkBytes num
     T -> MkSomeSize ST $ MkBytes num
     P -> MkSomeSize SP $ MkBytes num
+    E -> MkSomeSize SE $ MkBytes num
+    Z -> MkSomeSize SZ $ MkBytes num
+    Y -> MkSomeSize SY $ MkBytes num
 
 gen_1_000 :: Gen Rational
 gen_1_000 = (% 1) <$> HGen.integral (HRange.linearFrom 500 0 1_000)

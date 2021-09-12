@@ -39,6 +39,9 @@ szToRank M = 2
 szToRank G = 3
 szToRank T = 4
 szToRank P = 5
+szToRank E = 6
+szToRank Z = 7
+szToRank Y = 8
 
 intToMult :: Int -> Rational
 intToMult n

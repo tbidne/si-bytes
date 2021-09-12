@@ -127,6 +127,9 @@ instance (Field n, NumLiteral n, SingSize s) => Conversion (NetBytes d s n) wher
   type Converted 'G (NetBytes d s n) = NetBytes d 'G n
   type Converted 'T (NetBytes d s n) = NetBytes d 'T n
   type Converted 'P (NetBytes d s n) = NetBytes d 'P n
+  type Converted 'E (NetBytes d s n) = NetBytes d 'E n
+  type Converted 'Z (NetBytes d s n) = NetBytes d 'Z n
+  type Converted 'Y (NetBytes d s n) = NetBytes d 'Y n
 
   toB (MkNetBytes b) = MkNetBytes $ toB b
   toK (MkNetBytes b) = MkNetBytes $ toK b
@@ -134,6 +137,9 @@ instance (Field n, NumLiteral n, SingSize s) => Conversion (NetBytes d s n) wher
   toG (MkNetBytes b) = MkNetBytes $ toG b
   toT (MkNetBytes b) = MkNetBytes $ toT b
   toP (MkNetBytes b) = MkNetBytes $ toP b
+  toE (MkNetBytes b) = MkNetBytes $ toE b
+  toZ (MkNetBytes b) = MkNetBytes $ toZ b
+  toY (MkNetBytes b) = MkNetBytes $ toY b
 
 instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (NetBytes d s n) where
   type Norm (NetBytes d s n) = SomeNetSize d n
@@ -182,6 +188,9 @@ hideNetSize bytes = case singSize @s of
   SG -> MkSomeNetSize SG bytes
   ST -> MkSomeNetSize ST bytes
   SP -> MkSomeNetSize SP bytes
+  SE -> MkSomeNetSize SE bytes
+  SZ -> MkSomeNetSize SZ bytes
+  SY -> MkSomeNetSize SY bytes
 
 deriving instance Show n => Show (SomeNetSize d n)
 
@@ -240,6 +249,9 @@ instance (Field n, NumLiteral n) => Conversion (SomeNetSize d n) where
   type Converted 'G (SomeNetSize d n) = NetBytes d 'G n
   type Converted 'T (SomeNetSize d n) = NetBytes d 'T n
   type Converted 'P (SomeNetSize d n) = NetBytes d 'P n
+  type Converted 'E (SomeNetSize d n) = NetBytes d 'E n
+  type Converted 'Z (SomeNetSize d n) = NetBytes d 'Z n
+  type Converted 'Y (SomeNetSize d n) = NetBytes d 'Y n
 
   toB (MkSomeNetSize sz x) = Size.withSingSize sz $ toB x
   toK (MkSomeNetSize sz x) = Size.withSingSize sz $ toK x
@@ -247,19 +259,16 @@ instance (Field n, NumLiteral n) => Conversion (SomeNetSize d n) where
   toG (MkSomeNetSize sz x) = Size.withSingSize sz $ toG x
   toT (MkSomeNetSize sz x) = Size.withSingSize sz $ toT x
   toP (MkSomeNetSize sz x) = Size.withSingSize sz $ toP x
+  toE (MkSomeNetSize sz x) = Size.withSingSize sz $ toE x
+  toZ (MkSomeNetSize sz x) = Size.withSingSize sz $ toZ x
+  toY (MkSomeNetSize sz x) = Size.withSingSize sz $ toY x
 
 instance (Field n, NumLiteral n, Ord n) => Normalize (SomeNetSize d n) where
   type Norm (SomeNetSize d n) = SomeNetSize d n
   normalize (MkSomeNetSize sz x) = Size.withSingSize sz $ normalize x
 
 instance (PrettyPrint n, SingDirection d) => PrettyPrint (SomeNetSize d n) where
-  pretty (MkSomeNetSize sz b) = case sz of
-    SB -> pretty b
-    SK -> pretty b
-    SM -> pretty b
-    SG -> pretty b
-    ST -> pretty b
-    SP -> pretty b
+  pretty (MkSomeNetSize sz b) = Size.withSingSize sz $ pretty b
 
 -- | Retrieves the 'SingDirection' witness. Can be used to recover the
 -- 'Direction'.

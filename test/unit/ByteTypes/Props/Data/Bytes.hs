@@ -79,12 +79,18 @@ convertProps = T.askOption $ \(MkMaxRuns limit) ->
         g <- H.forAll (Gens.genBytes @'G)
         t <- H.forAll (Gens.genBytes @'T)
         p <- H.forAll (Gens.genBytes @'P)
+        e <- H.forAll (Gens.genBytes @'E)
+        z <- H.forAll (Gens.genBytes @'Z)
+        y <- H.forAll (Gens.genBytes @'Y)
         convert b VConversion.convertB
         convert k VConversion.convertK
         convert m VConversion.convertM
         convert g VConversion.convertG
         convert t VConversion.convertT
         convert p VConversion.convertP
+        convert e VConversion.convertE
+        convert z VConversion.convertZ
+        convert y VConversion.convertY
 
 convert ::
   SingSize s =>
@@ -99,6 +105,9 @@ convert bytes@(MkBytes x) convertAndTestFn = do
       gRes = Bytes.unBytes $ toG bytes
       tRes = Bytes.unBytes $ toT bytes
       pRes = Bytes.unBytes $ toP bytes
+      eRes = Bytes.unBytes $ toE bytes
+      zRes = Bytes.unBytes $ toZ bytes
+      yRes = Bytes.unBytes $ toY bytes
   convertAndTestFn MkResultConvs {..}
 
 incProps :: TestTree
@@ -108,12 +117,15 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         (MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
         let (expected, result) :: (Rational, Rational) = case sz of
-              SP -> (x, Bytes.unBytes bytes)
+              SY -> (x, Bytes.unBytes bytes)
               SB -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
               SK -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
               SM -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
               SG -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
               ST -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
+              SP -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
+              SE -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
+              SZ -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -134,6 +146,9 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
               SG -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
               ST -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
               SP -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SE -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SZ -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
+              SY -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
         H.footnote $ "expected: " <> show expected
         H.footnote $ " result: " <> show result
         result === expected
@@ -203,6 +218,9 @@ someConvertProps = T.askOption $ \(MkMaxRuns limit) ->
         toG someSize === Size.withSingSize sz (toG bytes)
         toT someSize === Size.withSingSize sz (toT bytes)
         toP someSize === Size.withSingSize sz (toP bytes)
+        toE someSize === Size.withSingSize sz (toE bytes)
+        toZ someSize === Size.withSingSize sz (toZ bytes)
+        toY someSize === Size.withSingSize sz (toY bytes)
 
 someSizeToLabel :: SomeSize n -> Size
 someSizeToLabel (MkSomeSize sz _) = case sz of
@@ -212,6 +230,9 @@ someSizeToLabel (MkSomeSize sz _) = case sz of
   SG -> G
   ST -> T
   SP -> P
+  SE -> E
+  SZ -> Z
+  SY -> Y
 
 someSizeEqProps :: TestTree
 someSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->

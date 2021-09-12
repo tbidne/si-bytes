@@ -24,6 +24,9 @@ data Size
   | G
   | T
   | P
+  | E
+  | Z
+  | Y
   deriving (Eq, Ord, Show)
 
 -- | Singleton for 'Size'.
@@ -35,6 +38,9 @@ data SSize s where
   SG :: SSize 'G
   ST :: SSize 'T
   SP :: SSize 'P
+  SE :: SSize 'E
+  SZ :: SSize 'Z
+  SY :: SSize 'Y
 
 instance TestEquality SSize where
   testEquality x y = case (x, y) of
@@ -44,6 +50,9 @@ instance TestEquality SSize where
     (SG, SG) -> Just Refl
     (ST, ST) -> Just Refl
     (SP, SP) -> Just Refl
+    (SE, SE) -> Just Refl
+    (SZ, SZ) -> Just Refl
+    (SY, SY) -> Just Refl
     _ -> Nothing
 
 deriving instance Show (SSize s)
@@ -64,6 +73,12 @@ instance SingSize 'T where singSize = ST
 
 instance SingSize 'P where singSize = SP
 
+instance SingSize 'E where singSize = SE
+
+instance SingSize 'Z where singSize = SZ
+
+instance SingSize 'Y where singSize = SY
+
 -- | Singleton \"with\"-style convenience function. Allows us to run a
 -- computation @SingSize d => r@ without explicitly pattern-matching
 -- every time.
@@ -75,6 +90,9 @@ withSingSize s x = case s of
   SG -> x
   ST -> x
   SP -> x
+  SE -> x
+  SZ -> x
+  SY -> x
 
 -- | Type family that relates units to the next larger one.
 type NextSize :: forall k. k -> k
@@ -90,6 +108,12 @@ type instance NextSize 'G = 'T
 
 type instance NextSize 'T = 'P
 
+type instance NextSize 'P = 'E
+
+type instance NextSize 'E = 'Z
+
+type instance NextSize 'Z = 'Y
+
 -- | Type family that relates units to the previous smaller one.
 type PrevSize :: forall k. k -> k
 type family PrevSize a = r | r -> a
@@ -103,3 +127,9 @@ type instance PrevSize 'G = 'M
 type instance PrevSize 'T = 'G
 
 type instance PrevSize 'P = 'T
+
+type instance PrevSize 'E = 'P
+
+type instance PrevSize 'Z = 'E
+
+type instance PrevSize 'Y = 'Z

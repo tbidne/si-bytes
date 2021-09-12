@@ -34,7 +34,10 @@ genSomeNetSizeDown =
       MkSomeNetSize SM <$> genNet,
       MkSomeNetSize SG <$> genNet,
       MkSomeNetSize ST <$> genNet,
-      MkSomeNetSize SP <$> genNet
+      MkSomeNetSize SP <$> genNet,
+      MkSomeNetSize SE <$> genNet,
+      MkSomeNetSize SZ <$> genNet,
+      MkSomeNetSize SY <$> genNet
     ]
 
 -- | Generates 'SomeNetSize' 'Up' over 'BGens.genNet'.
@@ -46,7 +49,10 @@ genSomeNetSizeUp =
       MkSomeNetSize SM <$> genNet,
       MkSomeNetSize SG <$> genNet,
       MkSomeNetSize ST <$> genNet,
-      MkSomeNetSize SP <$> genNet
+      MkSomeNetSize SP <$> genNet,
+      MkSomeNetSize SE <$> genNet,
+      MkSomeNetSize SZ <$> genNet,
+      MkSomeNetSize SY <$> genNet
     ]
 
 -- | Generates a normalized 'Bytes', i.e., the numeric value
@@ -61,6 +67,9 @@ genNormalizedNetBytes = do
     SG -> MkSomeNetSize SG $ MkNetBytes x
     ST -> MkSomeNetSize ST $ MkNetBytes x
     SP -> MkSomeNetSize SP $ MkNetBytes x
+    SE -> MkSomeNetSize SE $ MkNetBytes x
+    SZ -> MkSomeNetSize SZ $ MkNetBytes x
+    SY -> MkSomeNetSize SY $ MkNetBytes x
 
 -- | Generates 'SomeNetDir' 'Up' over 'genNet'.
 genSomeNetDirUp :: Gen (SomeNetDir s Rational)
@@ -94,3 +103,12 @@ genSomeNet = do
     P -> case dir of
       Down -> MkSomeNet SDown SP <$> genNet
       Up -> MkSomeNet SUp SP <$> genNet
+    E -> case dir of
+      Down -> MkSomeNet SDown SE <$> genNet
+      Up -> MkSomeNet SUp SE <$> genNet
+    Z -> case dir of
+      Down -> MkSomeNet SDown SZ <$> genNet
+      Up -> MkSomeNet SUp SZ <$> genNet
+    Y -> case dir of
+      Down -> MkSomeNet SDown SY <$> genNet
+      Up -> MkSomeNet SUp SY <$> genNet

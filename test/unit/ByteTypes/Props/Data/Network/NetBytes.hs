@@ -70,12 +70,18 @@ convertProps = T.askOption $ \(MkMaxRuns limit) ->
         g <- H.forAll (NGens.genNet @'Up @'G)
         t <- H.forAll (NGens.genNet @'Up @'T)
         p <- H.forAll (NGens.genNet @'Up @'P)
+        e <- H.forAll (NGens.genNet @'Up @'E)
+        z <- H.forAll (NGens.genNet @'Up @'Z)
+        y <- H.forAll (NGens.genNet @'Up @'Y)
         convert b VConversion.convertB
         convert k VConversion.convertK
         convert m VConversion.convertM
         convert g VConversion.convertG
         convert t VConversion.convertT
         convert p VConversion.convertP
+        convert e VConversion.convertE
+        convert z VConversion.convertZ
+        convert y VConversion.convertY
 
 convert ::
   SingSize s =>
@@ -90,6 +96,9 @@ convert bytes@(MkNetBytesP x) convertAndTestFn = do
       gRes = NetBytes.unNetBytesP $ toG bytes
       tRes = NetBytes.unNetBytesP $ toT bytes
       pRes = NetBytes.unNetBytesP $ toP bytes
+      eRes = NetBytes.unNetBytesP $ toE bytes
+      zRes = NetBytes.unNetBytesP $ toZ bytes
+      yRes = NetBytes.unNetBytesP $ toY bytes
   convertAndTestFn MkResultConvs {..}
 
 normalizeProps :: TestTree
@@ -158,6 +167,9 @@ someConvertProps = T.askOption $ \(MkMaxRuns limit) ->
         toG someSize === Size.withSingSize sz (toG bytes)
         toT someSize === Size.withSingSize sz (toT bytes)
         toP someSize === Size.withSingSize sz (toP bytes)
+        toE someSize === Size.withSingSize sz (toE bytes)
+        toZ someSize === Size.withSingSize sz (toZ bytes)
+        toY someSize === Size.withSingSize sz (toY bytes)
 
 someNetSizeEqProps :: TestTree
 someNetSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -222,3 +234,6 @@ someSizeToLabel (MkSomeNetSize sz _) = case sz of
   SG -> G
   ST -> T
   SP -> P
+  SE -> E
+  SZ -> Z
+  SY -> Y

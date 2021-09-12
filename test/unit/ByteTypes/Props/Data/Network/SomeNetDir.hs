@@ -53,12 +53,18 @@ convertSomeNetDirProps = T.askOption $ \(MkMaxRuns limit) ->
         g <- H.forAll (NGens.genSomeNetDirUp @'G)
         t <- H.forAll (NGens.genSomeNetDirUp @'T)
         p <- H.forAll (NGens.genSomeNetDirUp @'P)
+        e <- H.forAll (NGens.genSomeNetDirUp @'E)
+        z <- H.forAll (NGens.genSomeNetDirUp @'Z)
+        y <- H.forAll (NGens.genSomeNetDirUp @'Y)
         convert b VConversion.convertB
         convert k VConversion.convertK
         convert m VConversion.convertM
         convert g VConversion.convertG
         convert t VConversion.convertT
         convert p VConversion.convertP
+        convert e VConversion.convertE
+        convert z VConversion.convertZ
+        convert y VConversion.convertY
 
 convert ::
   SingSize s =>
@@ -73,6 +79,9 @@ convert bytes@(MkSomeNetDir _ (MkNetBytesP x)) convertAndTestFn = do
       (MkSomeNetDir _ (MkNetBytesP gRes)) = toG bytes
       (MkSomeNetDir _ (MkNetBytesP tRes)) = toT bytes
       (MkSomeNetDir _ (MkNetBytesP pRes)) = toP bytes
+      (MkSomeNetDir _ (MkNetBytesP eRes)) = toE bytes
+      (MkSomeNetDir _ (MkNetBytesP zRes)) = toZ bytes
+      (MkSomeNetDir _ (MkNetBytesP yRes)) = toY bytes
   convertAndTestFn MkResultConvs {..}
 
 normalizeSomeNetDirProps :: TestTree
@@ -110,6 +119,9 @@ convertSomeNetProps = T.askOption $ \(MkMaxRuns limit) ->
         toG someSize === MkSomeNetDir dir (Size.withSingSize sz (toG bytes))
         toT someSize === MkSomeNetDir dir (Size.withSingSize sz (toT bytes))
         toP someSize === MkSomeNetDir dir (Size.withSingSize sz (toP bytes))
+        toE someSize === MkSomeNetDir dir (Size.withSingSize sz (toE bytes))
+        toZ someSize === MkSomeNetDir dir (Size.withSingSize sz (toZ bytes))
+        toY someSize === MkSomeNetDir dir (Size.withSingSize sz (toY bytes))
 
 normalizeSomeNetProps :: TestTree
 normalizeSomeNetProps = T.askOption $ \(MkMaxRuns limit) ->
