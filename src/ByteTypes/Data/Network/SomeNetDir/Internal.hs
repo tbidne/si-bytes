@@ -22,11 +22,7 @@ where
 
 import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Math.Algebra.Field (Field (..))
-import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
-import ByteTypes.Class.Math.Scalar.Num (ScalarNum (..))
-import ByteTypes.Class.Math.Scalar.Ord (ScalarEq (..), ScalarOrd (..))
-import ByteTypes.Class.Math.Scalar.Scalar (Scalar)
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Direction (SDirection (..), SingDirection (..))
@@ -85,18 +81,6 @@ instance (Eq n, Field n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
       (SDown, SDown) -> x == y
       (SUp, SUp) -> x == y
       _ -> False
-
-type instance Scalar (SomeNetDir s n) = n
-
-instance Eq n => ScalarEq (SomeNetDir s n) where
-  MkSomeNetDir _ x .= k = x .= k
-
-instance Ord n => ScalarOrd (SomeNetDir s n) where
-  MkSomeNetDir _ x .<= k = x .<= k
-
-instance Ring n => ScalarNum (SomeNetDir s n) where
-  MkSomeNetDir sz x .+ k = MkSomeNetDir sz $ x .+ k
-  MkSomeNetDir sz x .- k = MkSomeNetDir sz $ x .- k
 
 instance (Field n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) where
   type Converted 'B (SomeNetDir s n) = SomeNetDir 'B n

@@ -30,7 +30,7 @@ import ByteTypes.Class.Math.Algebra.Module (Module (..))
 -- the type providing a 'VectorSpace' instance is ever used with integers,
 -- it should explicitly override this function (presumably using a sensible
 -- instance for '(.%.)').
-class (Field k, Module v k) => VectorSpace v k where
+class (Field k, Module v k) => VectorSpace v k | v -> k where
   (.%) :: v -> NonZero k -> v
   x .% k = x .* unNonZero (finv k)
 

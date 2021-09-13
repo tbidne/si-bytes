@@ -8,7 +8,7 @@ import ByteTypes.Class.Math.Algebra.Group (Group)
 import ByteTypes.Class.Math.Algebra.Ring (Ring)
 
 -- | Defines an algebraic module over a ring.
-class (Group m, Ring r) => Module m r where
+class (Group m, Ring r) => Module m r | m -> r where
   (.*) :: m -> r -> m
   (.*) = flip (*.)
 

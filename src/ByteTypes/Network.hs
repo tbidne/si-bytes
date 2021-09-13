@@ -2,7 +2,7 @@
 --
 -- Module: ByteTypes.Network
 --
--- This module serves as an alternative entry point to 'ByteTypes.Bytes', for
+-- This module serves as an alternative entry point to "ByteTypes.Bytes", for
 -- when tracking uploaded vs. downloaded bytes is necessary. It provides the
 -- types and operations for typical usage and is usually the only import
 -- required. The core concept is:
@@ -33,12 +33,6 @@ module ByteTypes.Network
     module ByteTypes.Class.Math.Algebra.Field,
     module ByteTypes.Class.Math.Algebra.Module,
     module ByteTypes.Class.Math.Algebra.VectorSpace,
-
-    -- * Convenient Mathematical Operations
-    -- $othermath
-    module ByteTypes.Class.Math.Literal,
-    module ByteTypes.Class.Math.Scalar.Ord,
-    module ByteTypes.Class.Math.Scalar.Num,
   )
 where
 
@@ -48,9 +42,6 @@ import ByteTypes.Class.Math.Algebra.Group
 import ByteTypes.Class.Math.Algebra.Module
 import ByteTypes.Class.Math.Algebra.Ring
 import ByteTypes.Class.Math.Algebra.VectorSpace
-import ByteTypes.Class.Math.Literal
-import ByteTypes.Class.Math.Scalar.Num
-import ByteTypes.Class.Math.Scalar.Ord
 import ByteTypes.Class.Normalize
 import ByteTypes.Class.PrettyPrint
 import ByteTypes.Data.Direction
@@ -111,10 +102,27 @@ import ByteTypes.Data.Size
 --     'hideNetSizeDir' :: forall d s n. ('SingDirection' d, 'SingSize' s) => 'NetBytes' d s n -> 'SomeNet' n
 --     @
 --
--- Most of the time the 'NetBytes' type should be preferred.
--- 'SomeNetSize' is useful when we do not know the size at compile-time
--- (e.g. parsing the output of @ls -lh@ at runtime), or when we use
--- 'normalize'.
+-- Types that hide the 'Size' (i.e. 'SomeNetSize' and 'SomeNet') define an
+-- equivalence class that takes units into account. For instance,
+--
+-- >>> let some1 = hideNetSize (MkNetBytesP 7 :: NetBytes 'Up 'G Int)
+-- >>> let some2 = hideNetSize (MkNetBytesP 7000 :: NetBytes 'Up 'M Int)
+-- >>> let some3 = hideNetSize (MkNetBytesP 2 :: NetBytes 'Up 'T Int)
+-- >>> some1 == some2
+-- >>> some2 < some3
+-- True
+-- True
+--
+-- Most of the time the 'NetBytes' type should be preferred. 'SomeNetSize'
+-- is useful when we do not know the 'Size' at compile-time (e.g. parsing the
+-- output of @ls -lh@ at runtime), or when we use 'normalize'. In general,
+-- once we wrap a 'NetBytes' in a 'SomeNetSize' we should think of the 'Size'
+-- as being \"lost\", unless we explicitly recover it with a 'Conversion'
+-- function. This is necessary for 'SomeNetSize'\'s algebraic instances
+-- (e.g. 'Eq', 'Group') to be lawful, as functions that inspect the underlying
+-- size or numeric value can break the equivalence class. Nevertheless,
+-- 'SomeNetSize'\'s internal representation can be used to recover the size,
+-- in case this is needed (see: "ByteTypes.Data.NetBytes.Internal").
 --
 -- For completeness, we also include the other existential quantification
 -- combinations (i.e. 'SomeNetDir' and 'SomeNet' for when the 'Direction' is
@@ -124,9 +132,25 @@ import ByteTypes.Data.Size
 
 -- $transformations
 --
--- == Normalization
+-- == Pretty Printing
 --
--- The primary transformation of interest is 'Normalize'.
+-- 'PrettyPrint', as the name suggests, is used for printing out bytes types
+-- in a prettier manner than 'show' (i.e., no constructors, added units,
+-- rounding).
+--
+-- @
+-- class 'PrettyPrint' a where
+--   'pretty' :: a -> 'String'
+-- @
+--
+-- >>> let b1 = MkNetBytesP 50000 :: NetBytes 'Down 'M Int
+-- >>> let b2 = hideNetSize (MkNetBytesP 20.40684 :: NetBytes 'Down 'T Float)
+-- >>> b1
+-- >>> b2
+-- MkNetBytesP {unNetBytesP = 50000}
+-- MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 20.40684})
+--
+-- == Normalization
 --
 -- @
 -- class 'Normalize' a where
@@ -134,25 +158,25 @@ import ByteTypes.Data.Size
 --   'normalize' :: a -> 'Norm' a
 -- @
 --
--- This typeclass attempts to \"normalize\" a given 'NetBytes' or 'SomeNetSize' such
+-- This typeclass attempts to \"normalize\" a given bytes type such
 -- that the result is between 1 and 1000, provided this is possible (i.e. we
 -- cannot increase the max or decrease the min). Because the result type is
 -- dependent on the value, 'normalize' necessarily existentially quantifies the
--- 'Size', i.e., returns 'SomeNetSize'.
+-- 'Size', i.e., returns 'SomeNetSize' (or 'SomeNet', in the case of 'SomeNetDir').
 --
 -- >>> let bytes = MkNetBytesP 5000 :: NetBytes 'Down 'M Int
 -- >>> normalize bytes
 -- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 5})
 --
--- >>> let bytes = MkSomeNetSize ST (MkNetBytesP 0.01 :: NetBytes 'Down 'T Float)
+-- >>> let bytes = hideNetSize (MkNetBytesP 0.01 :: NetBytes 'Up 'T Float)
 -- >>> normalize bytes
 -- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 10.0})
 --
 -- == Conversion
 --
--- The 'Conversion' class allows one to transform 'NetBytes' or 'SomeNetSize' to any
--- 'Size'. In the case of 'SomeNetSize', we can use this to fix the 'Size' and
--- \"undo\" the existential quantification.
+-- The 'Conversion' class allows one to transform a bytes type to any
+-- 'Size'. In the case of a type that has hidden the 'Size', we can use this
+-- to fix the 'Size' and \"undo\" the existential quantification.
 --
 -- @
 -- class 'Conversion' a where
@@ -164,34 +188,24 @@ import ByteTypes.Data.Size
 --   'toG' :: a -> 'Converted' ''G' a
 --   'toT' :: a -> 'Converted' ''T' a
 --   'toP' :: a -> 'Converted' ''P' a
+--   'toE' :: a -> 'Converted' ''E' a
+--   'toZ' :: a -> 'Converted' ''Z' a
+--   'toY' :: a -> 'Converted' ''Y' a
 -- @
 --
 -- >>> let bytes = MkNetBytesP 50_000 :: NetBytes 'Down 'M Int
--- >>> toG bytes
+-- >>> let gBytes = toG bytes
+-- >>> :type gBytes
+-- >>> gBytes
+-- gBytes :: NetBytes 'Down 'G Int
 -- MkNetBytesP {unNetBytesP = 50}
 --
--- >>> let bytes = MkSomeNetSize ST (MkNetBytesP 0.2 :: NetBytes 'Down 'T Float)
--- >>> toM bytes
+-- >>> let bytes = hideNetSize (MkNetBytesP 0.2 :: NetBytes 'Up 'T Float)
+-- >>> let mBytes = toM bytes
+-- >>> :type mBytes
+-- >>> mBytes
+-- mBytes :: NetBytes 'Up 'M Float
 -- MkNetBytesP {unNetBytesP = 200000.0}
---
--- == Pretty Printing
---
--- 'PrettyPrint' is, as the num suggests, used for printing out bytes types
--- in a prettier manner than 'show' (i.e., no constructors, added units,
--- rounding).
---
--- @
--- class 'PrettyPrint' a where
---   'pretty' :: a -> 'String'
--- @
---
--- >>> let bytes = MkNetBytesP 50000 :: NetBytes 'Down 'M Int
--- >>> pretty bytes
--- "50000 M Down"
---
--- >>> let bytes = MkSomeNetSize ST (MkNetBytesP 20.40684 :: NetBytes 'Down 'T Float)
--- >>> pretty bytes
--- "20.41 T Down"
 --
 -- == Modules
 
@@ -236,7 +250,7 @@ import ByteTypes.Data.Size
 -- 4. 'Module'
 --
 --     @
---     class ('Group' m, 'Ring' r) => 'Module' m r where
+--     class ('Group' m, 'Ring' r) => 'Module' m r | m -> r where
 --       '(.*)' :: m -> r -> m
 --       '(*.)' :: r -> m -> m
 --     @
@@ -244,7 +258,7 @@ import ByteTypes.Data.Size
 -- 5. 'VectorSpace'
 --
 --     @
---     class ('Field' k, 'Module' v k) => 'VectorSpace' v k where
+--     class ('Field' k, 'Module' v k) => 'VectorSpace' v k | v -> k where
 --       '(.%)' :: v -> 'NonZero' k -> v
 --     @
 --
@@ -272,9 +286,8 @@ import ByteTypes.Data.Size
 -- >>> let mb1 = MkNetBytesP 20 :: NetBytes 'Down 'M Int
 -- >>> let mb2 = MkNetBytesP 50 :: NetBytes 'Down 'M Int
 -- >>> mb1 .+. mb2
--- MkNetBytesP {unNetBytesP = 70}
---
 -- >>> mb1 .-. mb2
+-- MkNetBytesP {unNetBytesP = 70}
 -- MkNetBytesP {unNetBytesP = (-30)}
 --
 -- >>> -- Type error!
@@ -292,11 +305,11 @@ import ByteTypes.Data.Size
 --   Actual type: NetBytes 'Up 'M Int
 --
 -- === Multiplication
--- >>> mb1 .* (10 :: Int)
+-- >>> mb1 .* 10
 -- MkNetBytesP {unNetBytesP = 200}
 --
 -- === Division
--- >>> mb1 .% (unsafeNonZero 10 :: NonZero Int)
+-- >>> mb1 .% (unsafeNonZero 10)
 -- MkNetBytesP {unNetBytesP = 2}
 --
 -- One may wonder how the 'Group' instance for 'SomeNetSize' could possibly
@@ -305,113 +318,11 @@ import ByteTypes.Data.Size
 -- 'SomeNetSize' instance will convert both 'NetBytes' to a 'NetBytes' ''B' before
 -- adding/subtracting. The result will be normalized.
 --
--- >>> let some1 = MkSomeNetSize SG (MkNetBytesP 1000) :: SomeNetSize 'Down Double
--- >>> let some2 = MkSomeNetSize SM (MkNetBytesP 500_000) :: SomeNetSize 'Down Double
+-- >>> let some1 = hideNetSize (MkNetBytesP 1000 :: NetBytes 'Down 'G Double)
+-- >>> let some2 = hideNetSize (MkNetBytesP 500_000 :: NetBytes 'Down 'M Double)
 -- >>> some1 .+. some2
--- MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 1.5})
---
 -- >>> some1 .-. some2
+-- MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 1.5})
 -- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 500.0})
---
--- In fact, this is how 'SomeNetSize'\'s 'Eq' and 'Ord' classes work. They
--- convert both arguments to ''B' first. This establishes an equivalence
--- class determined by the numeric value /and/ the size. For example,
---
--- >>> let some1 = MkSomeNetSize SG (MkNetBytesP 7 :: NetBytes 'Down 'G Int)
--- >>> let some2 = MkSomeNetSize SM (MkNetBytesP 7000 :: NetBytes 'Down 'M Int)
--- >>> some1 == some2
--- True
---
--- >>> let some3 = MkSomeNetSize ST (MkNetBytesP 2 :: NetBytes 'Down 'T Int)
--- >>> some1 < some3
--- True
---
--- >>> some2 < some3
--- True
---
--- == Modules
-
--- $othermath
---
--- Even with the algebraic classes above, we are still short on replacing some
--- of 'Num'\'s nice functionality: using numeric literals. With 'Num' this is
--- achieved through 'fromInteger'; with 'Fractional', 'fromRational'.
---
--- To replicate this, we have provided typeclasses that allow us to compare
--- our types to some kind of scalar. 'ScalarEq' and 'ScalarOrd' replace
--- 'Eq' and 'Ord', respectively. 'ScalarNum' allows us to add and subtract
--- numeric literals
---
--- @
--- class 'ScalarEq' a where
---   '(.=)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar'' a -> 'Bool'
---   '(=.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar'' a -> a -> 'Bool'
---   '(./=)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar'' a -> 'Bool'
---   '(/=.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar'' a -> a -> 'Bool'
--- @
---
--- >>> let bytes = MkNetBytesP 10 :: NetBytes 'Down 'G Int
--- >>> bytes .= 10
--- True
---
--- >>> bytes ./= 10
--- False
---
--- @
--- class 'ScalarEq' a => 'ScalarOrd' a where
---   -- LHS
---   'lcompare' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Ordering'
---   '(.<)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Bool'
---   '(.<=)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Bool'
---   '(.>)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Bool'
---   '(.>=)' :: a -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> 'Bool'
---
---   -- RHS
---   'rcompare' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Ordering'
---   '(<.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Bool'
---   '(<=.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Bool'
---   '(>.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Bool'
---   '(>=.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' a -> a -> 'Bool'
--- @
---
--- >>> let bytes = MkBytes 400 :: Bytes 'K Int
--- >>> bytes .< 400
--- Not in scope: type constructor or class ‘Bytes’
---
--- >>> 800 >. bytes
--- True
---
--- >>> lcompare bytes 500
--- LT
---
--- @
--- class 'ScalarNum' m where
---   '(.+)' :: m -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' m -> m
---   '(.-)' :: m -> 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' m -> m
---   '(+.)' :: 'ByteTypes.Class.Math.Scalar.Scalar.Scalar' m -> m -> m
--- @
---
--- >>> let bytes = MkNetBytesP 400 :: NetBytes 'Down 'K Int
--- >>> bytes .+ 200
--- MkNetBytesP {unNetBytesP = 600}
---
--- >>> bytes .- 300
--- MkNetBytesP {unNetBytesP = 100}
---
--- 'NumLiteral' gives us the 'fromLit' function, which we can use to transform
--- 'Integer' literals to the expected scalar.
---
--- @
--- class 'NumLiteral' a where
---   'fromLit' :: 'Integer' -> a
--- @
---
--- This is generally only necessary when writing functions polymorphic over
--- some numeric type @n@, and we don't have a 'Num' constraint.
---
---
--- >>> let times1000 :: (NumLiteral n, Ring n) => n -> n; times1000 x = x .*. fromLit (1000 :: Integer)
--- >>> times1000 (5 :: Int)
--- 5000
 --
 -- == Modules

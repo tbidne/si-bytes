@@ -6,4 +6,3 @@ where
 
 import ByteTypes.Class.Math.Algebra as M
 import ByteTypes.Class.Math.Literal as M
-import ByteTypes.Class.Math.Scalar as M

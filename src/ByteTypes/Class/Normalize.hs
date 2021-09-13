@@ -33,7 +33,7 @@ where
 -- 'ByteTypes.Class.Algebra.Module' scalar multiplication. On
 -- the other hand, any functions that inspect the underlying numeric value or
 -- Bytes types could easily break this law. As such they should be treated
--- with suspicion.
+-- with suspicion, at least when used in conjunction with 'normalize'.
 --
 -- The other consideration we must keep in mind is that the final result of a
 -- series of computations may not be normalized. If this is desired, then

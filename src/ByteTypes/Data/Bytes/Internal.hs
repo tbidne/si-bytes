@@ -1,7 +1,15 @@
--- | The main entry point to the library. Provides the types and classes for
--- working with different byte sizes (e.g. B, K, M ...). See
+-- | This is the main entry point to the library. Provides the types and
+-- classes for working with different byte sizes (e.g. B, K, M ...). See
 -- 'ByteTypes.Data.Network' if there is a need to distinguish between
 -- downloaded and uploaded bytes.
+--
+-- The primary difference between this \"Internal\" module and the \"public\"
+-- one, "ByteTypes.Data.Bytes", is that this module exports functions and
+-- constructors that allow one to recover the 'Size'. For example, we expose
+-- 'bytesToSSize' and 'SomeSize'\'s actual constructor, 'MkSomeSize', which
+-- includes a runtime witness 'SSize'. These are hidden by default as they
+-- complicate the API, and the latter can be used to break 'SomeSize'\'s
+-- equivalence-class based 'Eq'.
 module ByteTypes.Data.Bytes.Internal
   ( -- * Bytes
     Bytes (..),
@@ -25,9 +33,6 @@ import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
-import ByteTypes.Class.Math.Scalar.Num (ScalarNum (..))
-import ByteTypes.Class.Math.Scalar.Ord (ScalarEq (..), ScalarOrd (..))
-import ByteTypes.Class.Math.Scalar.Scalar (Scalar)
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Size
@@ -77,18 +82,6 @@ instance Eq n => Eq (Bytes s n) where
 
 instance Ord n => Ord (Bytes s n) where
   MkBytes x <= MkBytes y = x <= y
-
-type instance Scalar (Bytes s n) = n
-
-instance Eq n => ScalarEq (Bytes s n) where
-  MkBytes x .= k = x == k
-
-instance Ord n => ScalarOrd (Bytes s n) where
-  MkBytes x .<= k = x <= k
-
-instance Ring n => ScalarNum (Bytes s n) where
-  MkBytes x .+ k = MkBytes $ x .+. k
-  MkBytes x .- k = MkBytes $ x .-. k
 
 instance Group n => Group (Bytes s n) where
   (.+.) = liftA2 (.+.)
@@ -207,45 +200,45 @@ instance (NumLiteral n, Ring n) => DecSize (Bytes 'Y n) where
 instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (Bytes s n) where
   type Norm (Bytes s n) = SomeSize n
 
-  normalize bytes =
+  normalize bytes@(MkBytes x) =
     case bytesToSSize bytes of
       SB
-        | absBytes .< fromLit 1_000 -> MkSomeSize SB bytes
+        | absBytes < fromLit 1_000 -> MkSomeSize SB bytes
         | otherwise -> normalize $ next bytes
       SY
-        | absBytes .>= fromLit 1 -> MkSomeSize SY bytes
+        | absBytes >= fromLit 1 -> MkSomeSize SY bytes
         | otherwise -> normalize $ prev bytes
       SK
-        | absBytes .< fromLit 1 -> normalize $ prev bytes
-        | absBytes .>= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ prev bytes
+        | absBytes >= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkSomeSize sz bytes
       SM
-        | absBytes .< fromLit 1 -> normalize $ prev bytes
-        | absBytes .>= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ prev bytes
+        | absBytes >= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkSomeSize sz bytes
       SG
-        | absBytes .< fromLit 1 -> normalize $ prev bytes
-        | absBytes .>= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ prev bytes
+        | absBytes >= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkSomeSize sz bytes
       ST
-        | absBytes .< fromLit 1 -> normalize $ prev bytes
-        | absBytes .>= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ prev bytes
+        | absBytes >= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkSomeSize sz bytes
       SP
-        | absBytes .< fromLit 1 -> normalize $ prev bytes
-        | absBytes .>= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ prev bytes
+        | absBytes >= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkSomeSize sz bytes
       SE
-        | absBytes .< fromLit 1 -> normalize $ prev bytes
-        | absBytes .>= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ prev bytes
+        | absBytes >= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkSomeSize sz bytes
       SZ
-        | absBytes .< fromLit 1 -> normalize $ prev bytes
-        | absBytes .>= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ prev bytes
+        | absBytes >= fromLit 1_000 -> normalize $ next bytes
         | otherwise -> MkSomeSize sz bytes
     where
       sz = bytesToSSize bytes
-      absBytes = gabs bytes
+      absBytes = gabs x
 
 instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
   pretty (MkBytes x) = case singSize @s of

@@ -6,6 +6,14 @@
 -- 'unNetBytes'. That 'NetBytes' is implemented in terms of
 -- 'ByteTypes.Data.Bytes' is largely an implementation detail, thus
 -- 'MkNetBytesP' and 'unNetBytesP' should be preferred.
+--
+-- The primary difference between this \"Internal\" module and the \"public\"
+-- one, "ByteTypes.Data.Network.NetBytes", is that this module exports
+-- functions and constructors that allow one to recover the 'Size'. For
+-- example, we expose 'netToSSize' and 'SomeNetSize'\'s actual constructor,
+-- 'MkSomeNetSize', which includes a runtime witness 'SSize'. These are hidden
+-- by default as they complicate the API, and the latter can be used to break
+-- 'SomeNetSize'\'s equivalence-class based 'Eq'.
 module ByteTypes.Data.Network.NetBytes.Internal
   ( -- * Network Bytes
     NetBytes (.., MkNetBytesP),
@@ -27,9 +35,6 @@ import ByteTypes.Class.Math.Algebra.Module (Module (..))
 import ByteTypes.Class.Math.Algebra.Ring (Ring (..))
 import ByteTypes.Class.Math.Algebra.VectorSpace (VectorSpace (..))
 import ByteTypes.Class.Math.Literal (NumLiteral (..))
-import ByteTypes.Class.Math.Scalar.Num (ScalarNum (..))
-import ByteTypes.Class.Math.Scalar.Ord (ScalarEq (..), ScalarOrd (..))
-import ByteTypes.Class.Math.Scalar.Scalar (Scalar)
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Bytes.Internal (Bytes (..), SomeSize (..))
@@ -94,18 +99,6 @@ instance Eq n => Eq (NetBytes d s n) where
 
 instance Ord n => Ord (NetBytes d s n) where
   MkNetBytes x <= MkNetBytes y = x <= y
-
-type instance Scalar (NetBytes d s n) = n
-
-instance Eq n => ScalarEq (NetBytes d s n) where
-  MkNetBytes x .= k = x .= k
-
-instance Ord n => ScalarOrd (NetBytes d s n) where
-  MkNetBytes x .<= k = x .<= k
-
-instance Ring n => ScalarNum (NetBytes d s n) where
-  MkNetBytes x .+ k = MkNetBytes $ x .+ k
-  MkNetBytes x .- k = MkNetBytes $ x .- k
 
 instance Group n => Group (NetBytes d s n) where
   (.+.) = liftA2 (.+.)
