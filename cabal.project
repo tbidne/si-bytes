@@ -6,3 +6,8 @@ package byte-types
     -Wincomplete-record-updates -Wincomplete-uni-patterns
     -Wmissing-home-modules -Wmissing-export-lists -Wpartial-fields
     -Wredundant-constraints
+
+source-repository-package
+    type: git
+    location: https://github.com/tbidne/algebra-simple.git
+    tag: 5fe2e2de9bc37b13e5d8d9765b15a0a98037bc08
