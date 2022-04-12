@@ -20,6 +20,7 @@ import ByteTypes.Props.Verify.Algebra qualified as VAlgebra
 import ByteTypes.Props.Verify.Conversion (ResultConvs (..))
 import ByteTypes.Props.Verify.Conversion qualified as VConversion
 import ByteTypes.Props.Verify.Normalize qualified as VNormalize
+import ByteTypes.Utils qualified as U
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
 import Numeric.Algebra (Field, MGroup (..), MSemigroup (..))
@@ -28,7 +29,6 @@ import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (NonZero)
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
-import Test.Tasty.Hedgehog qualified as TH
 
 -- | 'TestTree' of properties.
 props :: TestTree
@@ -62,7 +62,7 @@ someSizeProps =
 
 unBytesProps :: TestTree
 unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes unwrapping + wrap is a no-op" $
+  U.testPropertyCompat "Bytes unwrapping + wrap is a no-op" "unBytesProps" $
     H.withTests limit $
       H.property $ do
         (MkSomeSize _ bytes) <- H.forAll Gens.genSomeBytes
@@ -70,7 +70,7 @@ unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
 
 convertProps :: TestTree
 convertProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes Conversions" $
+  U.testPropertyCompat "Bytes Conversions" "convertProps" $
     H.withTests limit $
       H.property $ do
         b <- H.forAll (Gens.genBytes @'B)
@@ -112,7 +112,7 @@ convert bytes@(MkBytes x) convertAndTestFn = do
 
 incProps :: TestTree
 incProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes increasing label reduces size by 1,000" $
+  U.testPropertyCompat "Bytes increasing label reduces size by 1,000" "incProps" $
     H.withTests limit $
       H.property $ do
         (MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
@@ -135,7 +135,7 @@ incProps = T.askOption $ \(MkMaxRuns limit) ->
 
 decProps :: TestTree
 decProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes decreasing label multiplies size by 1,000" $
+  U.testPropertyCompat "Bytes decreasing label multiplies size by 1,000" "decProps" $
     H.withTests limit $
       H.property $ do
         (MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
@@ -155,7 +155,7 @@ decProps = T.askOption $ \(MkMaxRuns limit) ->
 
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes normalizes" $
+  U.testPropertyCompat "Bytes normalizes" "normalizeProps" $
     H.withTests limit $
       H.property $ do
         (MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
@@ -167,7 +167,7 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
 
 bytesEqProps :: TestTree
 bytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes Eq laws" $
+  U.testPropertyCompat "Bytes Eq laws" "bytesEqProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll (Gens.genBytes @'P)
@@ -177,7 +177,7 @@ bytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
 
 bytesOrdProps :: TestTree
 bytesOrdProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes Ord laws" $
+  U.testPropertyCompat "Bytes Ord laws" "bytesOrdProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll (Gens.genBytes @'P)
@@ -187,7 +187,7 @@ bytesOrdProps = T.askOption $ \(MkMaxRuns limit) ->
 
 bytesGroupProps :: TestTree
 bytesGroupProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes Group laws" $
+  U.testPropertyCompat "Bytes Group laws" "bytesGroupProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll (Gens.genBytes @'P)
@@ -197,7 +197,7 @@ bytesGroupProps = T.askOption $ \(MkMaxRuns limit) ->
 
 bytesVectorSpaceProps :: TestTree
 bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "Bytes Vector Space laws" $
+  U.testPropertyCompat "Bytes Vector Space laws" "bytesVectorSpaceProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll (Gens.genBytes @'P)
@@ -208,7 +208,7 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
 
 someConvertProps :: TestTree
 someConvertProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeSize conversions match underlying Bytes" $
+  U.testPropertyCompat "SomeSize conversions match underlying Bytes" "someConvertProps" $
     H.withTests limit $
       H.property $ do
         someSize@(MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
@@ -236,7 +236,7 @@ someSizeToLabel (MkSomeSize sz _) = case sz of
 
 someSizeEqProps :: TestTree
 someSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeSize Eq laws" $
+  U.testPropertyCompat "SomeSize Eq laws" "someSizeEqProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll Gens.genSomeBytes
@@ -246,7 +246,7 @@ someSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
 
 someSizeOrdProps :: TestTree
 someSizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeSize Ord laws" $
+  U.testPropertyCompat "SomeSize Ord laws" "someSizeOrdProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll Gens.genSomeBytes
@@ -256,7 +256,7 @@ someSizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
 
 someSizeGroupProps :: TestTree
 someSizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeSize Group laws" $
+  U.testPropertyCompat "SomeSize Group laws" "someSizeGroupProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll Gens.genSomeBytes
@@ -266,7 +266,7 @@ someSizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
 
 someVectorSpaceProps :: TestTree
 someVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeSize Vector Space laws" $
+  U.testPropertyCompat "SomeSize Vector Space laws" "someVectorSpaceProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll Gens.genSomeBytes
@@ -277,7 +277,7 @@ someVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
 
 someNormalizeProps :: TestTree
 someNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeSize normalization" $
+  U.testPropertyCompat "SomeSize normalization" "someNormalizeProps" $
     H.withTests limit $
       H.property $ do
         x@(MkSomeSize szx bytes) <- H.forAll Gens.genSomeBytes

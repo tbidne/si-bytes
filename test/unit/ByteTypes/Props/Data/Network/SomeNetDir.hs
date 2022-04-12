@@ -15,11 +15,11 @@ import ByteTypes.Props.MaxRuns (MaxRuns (..))
 import ByteTypes.Props.Verify.Algebra qualified as VAlgebra
 import ByteTypes.Props.Verify.Conversion (ResultConvs (..))
 import ByteTypes.Props.Verify.Conversion qualified as VConversion
+import ByteTypes.Utils qualified as U
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
-import Test.Tasty.Hedgehog qualified as TH
 
 -- | 'TestTree' of properties.
 props :: TestTree
@@ -44,7 +44,7 @@ someNetBytesProps =
 
 convertSomeNetDirProps :: TestTree
 convertSomeNetDirProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeNetDir Conversions" $
+  U.testPropertyCompat "SomeNetDir Conversions" "convertSomeNetDirProps" $
     H.withTests limit $
       H.property $ do
         b <- H.forAll (NGens.genSomeNetDirUp @'B)
@@ -86,7 +86,7 @@ convert bytes@(MkSomeNetDir _ (MkNetBytesP x)) convertAndTestFn = do
 
 normalizeSomeNetDirProps :: TestTree
 normalizeSomeNetDirProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeNetDir normalizes matches NetBytes" $
+  U.testPropertyCompat "SomeNetDir normalizes matches NetBytes" "normalizeSomeNetDirProps" $
     H.withTests limit $
       H.property $ do
         (MkSomeNet dir szx originalBytes) <- H.forAll NGens.genSomeNet
@@ -99,7 +99,7 @@ normalizeSomeNetDirProps = T.askOption $ \(MkMaxRuns limit) ->
 
 someNetDirEqProps :: TestTree
 someNetDirEqProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeNetDir Eq laws" $
+  U.testPropertyCompat "SomeNetDir Eq laws" "someNetDirEqProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll $ NGens.genSomeNetDirDown @'P
@@ -109,7 +109,7 @@ someNetDirEqProps = T.askOption $ \(MkMaxRuns limit) ->
 
 convertSomeNetProps :: TestTree
 convertSomeNetProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeNetDir Conversions" $
+  U.testPropertyCompat "SomeNetDir Conversions" "convertSomeNetProps" $
     H.withTests limit $
       H.property $ do
         someSize@(MkSomeNet dir sz bytes) <- H.forAll NGens.genSomeNet
@@ -125,7 +125,7 @@ convertSomeNetProps = T.askOption $ \(MkMaxRuns limit) ->
 
 normalizeSomeNetProps :: TestTree
 normalizeSomeNetProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeNet normalizes matches NetBytes" $
+  U.testPropertyCompat "SomeNet normalizes matches NetBytes" "normalizeSomeNetProps" $
     H.withTests limit $
       H.property $ do
         someNet@(MkSomeNet _ szx originalBytes) <- H.forAll NGens.genSomeNet
@@ -137,7 +137,7 @@ normalizeSomeNetProps = T.askOption $ \(MkMaxRuns limit) ->
 
 someNetEqProps :: TestTree
 someNetEqProps = T.askOption $ \(MkMaxRuns limit) ->
-  TH.testProperty "SomeNet Eq laws" $
+  U.testPropertyCompat "SomeNet Eq laws" "someNetEqProps" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll NGens.genSomeNet
