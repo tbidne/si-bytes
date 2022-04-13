@@ -431,11 +431,11 @@ instance (Field n, NumLiteral n, Ord n) => AGroup (SomeSize n) where
 
 -- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => Module (SomeSize n) n where
-  MkSomeSize sz x .* k = MkSomeSize sz $ x .* k
+  MkSomeSize sz x .* k = normalize $ MkSomeSize sz $ x .* k
 
 -- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => VectorSpace (SomeSize n) n where
-  MkSomeSize sz x .% k = MkSomeSize sz $ x .% k
+  MkSomeSize sz x .% k = normalize $ MkSomeSize sz $ x .% k
 
 -- | @since 0.1
 instance (Field n, NumLiteral n) => Conversion (SomeSize n) where

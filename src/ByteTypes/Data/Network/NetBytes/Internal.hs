@@ -287,11 +287,11 @@ instance (Field n, NumLiteral n, Ord n) => AGroup (SomeNetSize d n) where
 
 -- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => Module (SomeNetSize d n) n where
-  MkSomeNetSize sz x .* k = MkSomeNetSize sz $ x .* k
+  MkSomeNetSize sz x .* k = normalize $ MkSomeNetSize sz $ x .* k
 
 -- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => VectorSpace (SomeNetSize d n) n where
-  MkSomeNetSize sz x .% k = MkSomeNetSize sz $ x .% k
+  MkSomeNetSize sz x .% k = normalize $ MkSomeNetSize sz $ x .% k
 
 -- | @since 0.1
 instance (Field n, NumLiteral n) => Conversion (SomeNetSize d n) where
