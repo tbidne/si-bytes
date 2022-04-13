@@ -36,6 +36,10 @@ import Data.Kind (Type)
 import Numeric.Algebra.Field (Field)
 import Numeric.Class.Literal (NumLiteral (..))
 
+-- $setup
+-- >>> import ByteTypes.Data.Direction (Direction (..))
+-- >>> import ByteTypes.Data.Network.NetBytes.Internal (NetBytes (..))
+
 -- | Wrapper for 'NetBytes', existentially quantifying the direction.
 -- This is useful when a function does not know a priori what
 -- direction it should return,
@@ -60,10 +64,11 @@ import Numeric.Class.Literal (NumLiteral (..))
 -- Equality is determined by the usual equivalence class -- that takes units
 -- into account -- and by considering the direction.
 --
--- @
--- MkSomeNetDir SK (MkNetBytes @Up (MkBytes 1000)) == MkSomeNetDir SM (MkNetBytes @Up (MkBytes 1))
--- MkSomeNetDir SK (MkNetBytes @Up (MkBytes 1000)) /= MkSomeNetDir SM (MkNetBytes @Down (MkBytes 1))
--- @
+--
+-- >>> MkSomeNetDir SUp (MkNetBytesP @_ @K 1000) == MkSomeNetDir SUp (MkNetBytesP @_ @K 1000)
+-- True
+-- >>> MkSomeNetDir SUp (MkNetBytesP @_ @K 1000) /= MkSomeNetDir SDown (MkNetBytesP @_ @K 1000)
+-- True
 --
 -- Notice no 'Ord' instance is provided, as we provide no ordering for
 -- 'ByteTypes.Data.Direction.Direction'.
@@ -153,10 +158,12 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (SomeNetDir s n) where
 -- w.r.t the size, and also includes an equality check on the direction.
 -- Thus we have, for instance,
 --
--- @
--- MkSomeNet 'Up 'K (MkNetBytes 1_000) == MkSomeNet 'Up 'M (MkNetBytes 1)
--- MkSomeNet 'Up 'K (MkNetBytes 1_000) /= MkSomeNet 'Down 'M (MkNetBytes 1)
--- @
+--
+-- >>> MkSomeNet SUp SK (MkNetBytesP 1_000) == MkSomeNet SUp SM (MkNetBytesP 1)
+-- True
+--
+-- >>> MkSomeNet SUp SK (MkNetBytesP 1_000) /= MkSomeNet SDown SM (MkNetBytesP 1)
+-- True
 --
 -- @since 0.1
 type SomeNet :: Type -> Type

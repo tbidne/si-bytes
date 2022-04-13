@@ -17,6 +17,10 @@ files :: [String]
 files =
   [ "-isrc",
     "src/ByteTypes/Bytes.hs",
+    "src/ByteTypes/Class/Conversion.hs",
+    "src/ByteTypes/Data/Bytes/Internal.hs",
+    "src/ByteTypes/Data/Network/NetBytes/Internal.hs",
+    "src/ByteTypes/Data/Network/SomeNetDir/Internal.hs",
     "src/ByteTypes/Network.hs"
   ]
 

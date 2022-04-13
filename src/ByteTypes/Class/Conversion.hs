@@ -69,9 +69,10 @@ class Conversion a where
 
 -- | Low level function for converting a numeric literal /from/ the inferred
 -- 'SingSize' /to/ the parameter 'Size'. For instance,
--- @
--- convertWitness @SK 'M 5_000 == 5
--- @
+--
+-- >>> convertWitness @K M 5_000
+-- 5
+--
 --
 -- This is slightly more principled than 'convert', but the higher level
 -- byte types and functions should still be preferred

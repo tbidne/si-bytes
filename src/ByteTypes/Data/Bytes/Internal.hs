@@ -93,6 +93,9 @@ resizeBytes (MkBytes x) = MkBytes x
 
 -- | Retrieves the 'SSize' witness. Can be used to recover the 'Size'.
 --
+-- >>> bytesToSSize (MkBytes @K @Int 7)
+-- SK
+--
 -- @since 0.1
 bytesToSSize :: SingSize s => Bytes s n -> SSize s
 bytesToSSize _ = singSize
@@ -360,9 +363,8 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
 -- We define an equivalence relation on 'SomeSize' that takes units into
 -- account. For instance,
 --
--- @
--- MkSomeSize SK (MkBytes 1000) == MkSomeSize SM (MkBytes 1).
--- @
+-- >>> MkSomeSize SK (MkBytes 1000) == MkSomeSize SM (MkBytes 1)
+-- True
 --
 -- Because we expose the underlying @Bytes@ in several ways (e.g. 'Show',
 -- the 'SSize' witness), this is technically unlawful for equality

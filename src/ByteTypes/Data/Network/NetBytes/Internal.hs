@@ -88,7 +88,7 @@ unNetBytesP (MkNetBytesP x) = x
 -- | Pattern for de/constructing 'NetBytes'.
 --
 -- @since 0.1
-pattern MkNetBytesP :: n -> NetBytes d s n
+pattern MkNetBytesP :: forall d s n. n -> NetBytes d s n
 pattern MkNetBytesP x <-
   MkNetBytes (MkBytes x)
   where
@@ -99,11 +99,17 @@ pattern MkNetBytesP x <-
 -- | Retrieves the 'SDirection' witness. Can be used to recover the
 -- 'Direction'.
 --
+-- >>> netToSDirection (MkNetBytesP @Up @K @Int 7)
+-- SUp
+--
 -- @since 0.1
 netToSDirection :: SingDirection d => NetBytes d s n -> SDirection d
 netToSDirection _ = singDirection
 
 -- | Retrieves the 'SingSize' witness. Can be used to recover the 'Size'.
+--
+-- >>> netToSSize (MkNetBytesP @Down @K @Int 7)
+-- SK
 --
 -- @since 0.1
 netToSSize :: SingSize s => NetBytes d s n -> SSize s
@@ -216,9 +222,8 @@ instance
 -- We defined an equivalence relation on 'SomeNetSize' that takes units into
 -- account. For instance,
 --
--- @
--- MkSomeNetSize SK (MkNetBytesP 1000) == MkSomeNetSize SM (MkNetBytesP 1).
--- @
+-- >>> MkSomeNetSize SK (MkNetBytesP 1000) == MkSomeNetSize SM (MkNetBytesP 1)
+-- True
 --
 -- Because we expose the underlying @NetBytes@ in several ways (e.g. 'Show',
 -- the 'SSize' witness), this is technically unlawful for equality
