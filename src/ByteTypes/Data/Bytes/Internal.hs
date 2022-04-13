@@ -12,6 +12,8 @@
 -- includes a runtime witness 'SSize'. These are hidden by default as they
 -- complicate the API, and the latter can be used to break 'SomeSize'\'s
 -- equivalence-class based 'Eq'.
+--
+-- @since 0.1
 module ByteTypes.Data.Bytes.Internal
   ( -- * Bytes
     Bytes (..),
@@ -62,53 +64,73 @@ import Numeric.Data.NonZero (NonZero (..))
 --
 -- To take full advantage of the API (e.g. `normalize`), the underlying
 -- numerical type should implement 'Field'.
+--
+-- @since 0.1
 type Bytes :: Size -> Type -> Type
 newtype Bytes s n = MkBytes
   { -- | Unwraps the 'Bytes'.
+    --
+    -- @since 0.1
     unBytes :: n
   }
 
 -- | Changes the 'Size' tag.
+--
+-- @since 0.1
 resizeBytes :: Bytes s n -> Bytes t n
 resizeBytes (MkBytes x) = MkBytes x
 
 -- | Retrieves the 'SSize' witness. Can be used to recover the 'Size'.
+--
+-- @since 0.1
 bytesToSSize :: SingSize s => Bytes s n -> SSize s
 bytesToSSize _ = singSize
 
-deriving instance Show n => Show (Bytes s n)
+-- | @since 0.1
+deriving stock instance Show n => Show (Bytes s n)
 
-deriving instance Functor (Bytes s)
+-- | @since 0.1
+deriving stock instance Functor (Bytes s)
 
+-- | @since 0.1
 instance Applicative (Bytes s) where
   pure = MkBytes
   MkBytes f <*> MkBytes x = MkBytes $ f x
 
+-- | @since 0.1
 instance Monad (Bytes s) where
   MkBytes x >>= f = f x
 
+-- | @since 0.1
 instance Eq n => Eq (Bytes s n) where
   MkBytes x == MkBytes y = x == y
 
+-- | @since 0.1
 instance Ord n => Ord (Bytes s n) where
   MkBytes x <= MkBytes y = x <= y
 
+-- | @since 0.1
 instance ASemigroup n => ASemigroup (Bytes s n) where
   (.+.) = liftA2 (.+.)
 
+-- | @since 0.1
 instance AMonoid n => AMonoid (Bytes s n) where
   zero = MkBytes zero
 
+-- | @since 0.1
 instance AGroup n => AGroup (Bytes s n) where
   (.-.) = liftA2 (.-.)
   aabs = fmap aabs
 
+-- | @since 0.1
 instance Ring n => Module (Bytes s n) n where
   MkBytes x .* k = MkBytes $ x .*. k
 
+-- | @since 0.1
 instance Field n => VectorSpace (Bytes s n) n where
   MkBytes x .% k = MkBytes $ x .%. k
 
+-- | @since 0.1
 instance
   ( AMonoid n,
     NumLiteral n,
@@ -137,86 +159,119 @@ instance
   toZ (MkBytes x) = MkBytes $ Conv.convertWitness @s Z x
   toY (MkBytes x) = MkBytes $ Conv.convertWitness @s Y x
 
+-- | @since 0.1
 type instance NextSize (Bytes 'B n) = Bytes 'K n
 
+-- | @since 0.1
 type instance NextSize (Bytes 'K n) = Bytes 'M n
 
+-- | @since 0.1
 type instance NextSize (Bytes 'M n) = Bytes 'G n
 
+-- | @since 0.1
 type instance NextSize (Bytes 'G n) = Bytes 'T n
 
+-- | @since 0.1
 type instance NextSize (Bytes 'T n) = Bytes 'P n
 
+-- | @since 0.1
 type instance NextSize (Bytes 'P n) = Bytes 'E n
 
+-- | @since 0.1
 type instance NextSize (Bytes 'E n) = Bytes 'Z n
 
+-- | @since 0.1
 type instance NextSize (Bytes 'Z n) = Bytes 'Y n
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => IncSize (Bytes 'B n) where
   next x = resizeBytes $ x .% nzFromLit @n 1_000
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => IncSize (Bytes 'K n) where
   next x = resizeBytes $ x .% nzFromLit @n 1_000
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => IncSize (Bytes 'M n) where
   next x = resizeBytes $ x .% nzFromLit @n 1_000
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => IncSize (Bytes 'G n) where
   next x = resizeBytes $ x .% nzFromLit @n 1_000
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => IncSize (Bytes 'T n) where
   next x = resizeBytes $ x .% nzFromLit @n 1_000
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => IncSize (Bytes 'P n) where
   next x = resizeBytes $ x .% nzFromLit @n 1_000
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => IncSize (Bytes 'E n) where
   next x = resizeBytes $ x .% nzFromLit @n 1_000
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => IncSize (Bytes 'Z n) where
   next x = resizeBytes $ x .% nzFromLit @n 1_000
 
+-- | @since 0.1
 type instance PrevSize (Bytes 'K n) = Bytes 'B n
 
+-- | @since 0.1
 type instance PrevSize (Bytes 'M n) = Bytes 'K n
 
+-- | @since 0.1
 type instance PrevSize (Bytes 'G n) = Bytes 'M n
 
+-- | @since 0.1
 type instance PrevSize (Bytes 'T n) = Bytes 'G n
 
+-- | @since 0.1
 type instance PrevSize (Bytes 'P n) = Bytes 'T n
 
+-- | @since 0.1
 type instance PrevSize (Bytes 'E n) = Bytes 'P n
 
+-- | @since 0.1
 type instance PrevSize (Bytes 'Z n) = Bytes 'E n
 
+-- | @since 0.1
 type instance PrevSize (Bytes 'Y n) = Bytes 'Z n
 
+-- | @since 0.1
 instance (NumLiteral n, Ring n) => DecSize (Bytes 'K n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
+-- | @since 0.1
 instance (NumLiteral n, Ring n) => DecSize (Bytes 'M n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
+-- | @since 0.1
 instance (NumLiteral n, Ring n) => DecSize (Bytes 'G n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
+-- | @since 0.1
 instance (NumLiteral n, Ring n) => DecSize (Bytes 'T n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
+-- | @since 0.1
 instance (NumLiteral n, Ring n) => DecSize (Bytes 'P n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
+-- | @since 0.1
 instance (NumLiteral n, Ring n) => DecSize (Bytes 'E n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
+-- | @since 0.1
 instance (NumLiteral n, Ring n) => DecSize (Bytes 'Z n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
+-- | @since 0.1
 instance (NumLiteral n, Ring n) => DecSize (Bytes 'Y n) where
   prev x = resizeBytes $ x .* fromLit @n 1_000
 
+-- | @since 0.1
 instance forall n s. (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (Bytes s n) where
   type Norm (Bytes s n) = SomeSize n
 
@@ -260,6 +315,7 @@ instance forall n s. (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (By
       sz = bytesToSSize bytes
       absBytes = aabs x
 
+-- | @since 0.1
 instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
   pretty (MkBytes x) = case singSize @s of
     SB -> p <> " B"
@@ -313,11 +369,16 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
 -- x == y
 -- isK x /= isK y
 -- @
+--
+-- @since 0.1
 type SomeSize :: Type -> Type
 data SomeSize n where
+  -- | @since 0.1
   MkSomeSize :: SSize s -> Bytes s n -> SomeSize n
 
 -- | Wraps a 'Bytes' in an existentially quantified 'SomeSize'.
+--
+-- @since 0.1
 hideSize :: forall s n. SingSize s => Bytes s n -> SomeSize n
 hideSize bytes = case singSize @s of
   SB -> MkSomeSize SB bytes
@@ -330,32 +391,42 @@ hideSize bytes = case singSize @s of
   SZ -> MkSomeSize SZ bytes
   SY -> MkSomeSize SY bytes
 
-deriving instance Show n => Show (SomeSize n)
+-- | @since 0.1
+deriving stock instance Show n => Show (SomeSize n)
 
-deriving instance Functor SomeSize
+-- | @since 0.1
+deriving stock instance Functor SomeSize
 
+-- | @since 0.1
 instance (Eq n, Field n, NumLiteral n) => Eq (SomeSize n) where
   x == y = toB x == toB y
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => Ord (SomeSize n) where
   x <= y = toB x <= toB y
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => ASemigroup (SomeSize n) where
   x .+. y = normalize $ toB x .+. toB y
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => AMonoid (SomeSize n) where
   zero = MkSomeSize SB zero
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => AGroup (SomeSize n) where
   x .-. y = normalize $ toB x .-. toB y
   aabs = fmap aabs
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => Module (SomeSize n) n where
   MkSomeSize sz x .* k = MkSomeSize sz $ x .* k
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => VectorSpace (SomeSize n) n where
   MkSomeSize sz x .% k = MkSomeSize sz $ x .% k
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => Conversion (SomeSize n) where
   type Converted 'B (SomeSize n) = Bytes 'B n
   type Converted 'K (SomeSize n) = Bytes 'K n
@@ -377,10 +448,12 @@ instance (Field n, NumLiteral n) => Conversion (SomeSize n) where
   toZ (MkSomeSize sz x) = Size.withSingSize sz $ toZ x
   toY (MkSomeSize sz x) = Size.withSingSize sz $ toY x
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => Normalize (SomeSize n) where
   type Norm (SomeSize n) = SomeSize n
   normalize (MkSomeSize sz x) = Size.withSingSize sz $ normalize x
 
+-- | @since 0.1
 instance PrettyPrint n => PrettyPrint (SomeSize n) where
   pretty (MkSomeSize sz b) = Size.withSingSize sz $ pretty b
 

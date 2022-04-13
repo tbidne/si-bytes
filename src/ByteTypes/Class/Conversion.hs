@@ -2,6 +2,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 -- | Provides typeclasses for convert between byte sizes.
+--
+-- @since 0.1
 module ByteTypes.Class.Conversion
   ( DecSize (..),
     IncSize (..),
@@ -18,25 +20,51 @@ import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (NonZero (..))
 
 -- | Typeclass for decrementing bytes to the next units.
+--
+-- @since 0.1
 class DecSize a where
+  -- | @since 0.1
   prev :: a -> PrevSize a
 
 -- | Typeclass for increasing bytes to the next units.
+--
+-- @since 0.1
 class IncSize a where
+  -- | @since 0.1
   next :: a -> NextSize a
 
 -- | Provides a common interface for converting between byte sizes.
+--
+-- @since 0.1
 class Conversion a where
+  -- | @since 0.1
   type Converted (b :: Size) a = r | r -> b
 
+  -- | @since 0.1
   toB :: a -> Converted 'B a
+
+  -- | @since 0.1
   toK :: a -> Converted 'K a
+
+  -- | @since 0.1
   toM :: a -> Converted 'M a
+
+  -- | @since 0.1
   toG :: a -> Converted 'G a
+
+  -- | @since 0.1
   toT :: a -> Converted 'T a
+
+  -- | @since 0.1
   toP :: a -> Converted 'P a
+
+  -- | @since 0.1
   toE :: a -> Converted 'E a
+
+  -- | @since 0.1
   toZ :: a -> Converted 'Z a
+
+  -- | @since 0.1
   toY :: a -> Converted 'Y a
 
 -- | Low level function for converting a numeric literal /from/ the inferred
@@ -48,6 +76,8 @@ class Conversion a where
 -- This is slightly more principled than 'convert', but the higher level
 -- byte types and functions should still be preferred
 -- (e.g. 'ByteTypes.Data.Bytes', 'ByteTypes.Class.Normalize').
+--
+-- @since 0.1
 convertWitness ::
   forall s n.
   ( AMonoid n,
@@ -75,6 +105,8 @@ convertWitness toUnits n = case singSize @s of
 -- byte types and functions should be preferred
 -- (e.g. 'ByteTypes.Data.Bytes', 'ByteTypes.Class.Normalize'), but this is
 -- here when it is needed.
+--
+-- @since 0.1
 convert ::
   forall n.
   ( AMonoid n,

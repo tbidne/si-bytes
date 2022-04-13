@@ -1,6 +1,6 @@
 cabal-version:      2.4
 name:               byte-types
-version:            0.1.0.0
+version:            0.1
 license:            BSD-3-Clause
 license-file:       LICENSE
 copyright:          2021 Thomas Bidne
@@ -39,6 +39,7 @@ source-repository head
 common common-exts
   default-extensions:
     DataKinds
+    DefaultSignatures
     DeriveFunctor
     DerivingStrategies
     DerivingVia

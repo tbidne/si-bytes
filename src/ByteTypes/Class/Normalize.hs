@@ -1,4 +1,6 @@
 -- | Provides the 'Normalize' typeclass.
+--
+-- @since 0.1
 module ByteTypes.Class.Normalize
   ( Normalize (..),
   )
@@ -29,8 +31,8 @@ where
 -- \[ x = y \implies f(x) = f(y). \]
 --
 -- This is certainly true for all the usual mathematical operations we would
--- normally use, e.g., 'Simple.Algebra.Group' addition,
--- 'ByteTypes.Class.Algebra.Module' scalar multiplication. On
+-- normally use, e.g., 'Numeric.Algebra.Additive.AGroup.AGroup' addition,
+-- 'Numeric.Algebra.Module' scalar multiplication. On
 -- the other hand, any functions that inspect the underlying numeric value or
 -- Bytes types could easily break this law. As such they should be treated
 -- with suspicion, at least when used in conjunction with 'normalize'.
@@ -40,6 +42,11 @@ where
 -- @normalize@ should be the /last/ operation performed. Using @normalize@ in
 -- the middle would not cause any harm (other than, perhaps, impacting
 -- efficiency), but it would not guarantee the final result is normalized.
+--
+-- @since 0.1
 class Normalize a where
+  -- | @since 0.1
   type Norm a
+
+  -- | @since 0.1
   normalize :: a -> Norm a

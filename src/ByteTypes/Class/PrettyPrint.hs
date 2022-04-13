@@ -1,4 +1,6 @@
 -- | Provides the 'PrettyPrint' typeclass.
+--
+-- @since 0.1
 module ByteTypes.Class.PrettyPrint
   ( PrettyPrint (..),
   )
@@ -11,35 +13,55 @@ import GHC.Natural (Natural)
 import Text.Printf qualified as Pf
 
 -- | Typeclass for pretty printing.
+--
+-- @since 0.1
 class PrettyPrint a where
+  -- | @since 0.1
   pretty :: a -> String
+  default pretty :: Show a => a -> String
+  pretty = show
 
+-- | @since 0.1
 instance PrettyPrint Double where pretty = Pf.printf "%.2f"
 
+-- | @since 0.1
 instance PrettyPrint Float where pretty = Pf.printf "%.2f"
 
-instance PrettyPrint Int where pretty = show
+-- | @since 0.1
+instance PrettyPrint Int
 
-instance PrettyPrint Int8 where pretty = show
+-- | @since 0.1
+instance PrettyPrint Int8
 
-instance PrettyPrint Int16 where pretty = show
+-- | @since 0.1
+instance PrettyPrint Int16
 
-instance PrettyPrint Int32 where pretty = show
+-- | @since 0.1
+instance PrettyPrint Int32
 
-instance PrettyPrint Int64 where pretty = show
+-- | @since 0.1
+instance PrettyPrint Int64
 
-instance PrettyPrint Integer where pretty = show
+-- | @since 0.1
+instance PrettyPrint Integer
 
-instance PrettyPrint Natural where pretty = show
+-- | @since 0.1
+instance PrettyPrint Natural
 
-instance PrettyPrint Word where pretty = show
+-- | @since 0.1
+instance PrettyPrint Word
 
-instance PrettyPrint Word8 where pretty = show
+-- | @since 0.1
+instance PrettyPrint Word8
 
-instance PrettyPrint Word16 where pretty = show
+-- | @since 0.1
+instance PrettyPrint Word16
 
-instance PrettyPrint Word32 where pretty = show
+-- | @since 0.1
+instance PrettyPrint Word32
 
-instance PrettyPrint Word64 where pretty = show
+-- | @since 0.1
+instance PrettyPrint Word64
 
-instance Show a => PrettyPrint (Ratio a) where pretty = show
+-- | @since 0.1
+instance Show a => PrettyPrint (Ratio a)

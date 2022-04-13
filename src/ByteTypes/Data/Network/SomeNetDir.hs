@@ -14,6 +14,8 @@
 -- \"forget\" the direction tag by dropping to 'ByteTypes.Data.Bytes'),
 -- we are much more limited in what we can do. For example, we lose instances
 -- like 'Applicative', "Numeric.Algebra".
+--
+-- @since 0.1
 module ByteTypes.Data.Network.SomeNetDir
   ( SomeNetDir,
     hideNetDir,

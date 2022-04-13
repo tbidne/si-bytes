@@ -11,6 +11,8 @@
 --
 -- This prevents mistakes, such as adding two different byte sizes/directions,
 -- or converting between sizes incorrectly.
+--
+-- @since 0.1
 module ByteTypes.Network
   ( -- * Types
     -- $types

@@ -16,6 +16,8 @@
 -- 'MkSomeNetSize', which includes a runtime witness 'SSize'. These are hidden
 -- by default as they complicate the API, and the latter can be used to break
 -- 'SomeNetSize'\'s equivalence-class based 'Eq'.
+--
+-- @since 0.1
 module ByteTypes.Data.Network.NetBytes.Internal
   ( -- * Network Bytes
     NetBytes (.., MkNetBytesP),
@@ -56,17 +58,25 @@ import Numeric.Algebra
 import Numeric.Class.Literal (NumLiteral (..))
 
 -- | Wrapper around the 'Bytes' type that adds the 'Direction' tag.
+--
+-- @since 0.1
 type NetBytes :: Direction -> Size -> Type -> Type
 newtype NetBytes d s n = MkNetBytes
   { -- | Unwraps the 'NetBytes'.
+    --
+    -- @since 0.1
     unNetBytes :: Bytes s n
   }
 
 -- | Convenience function using 'MkNetBytesP'.
+--
+-- @since 0.1
 unNetBytesP :: NetBytes d s n -> n
 unNetBytesP (MkNetBytesP x) = x
 
 -- | Pattern for de/constructing 'NetBytes'.
+--
+-- @since 0.1
 pattern MkNetBytesP :: n -> NetBytes d s n
 pattern MkNetBytesP x <-
   MkNetBytes (MkBytes x)
@@ -77,13 +87,18 @@ pattern MkNetBytesP x <-
 
 -- | Retrieves the 'SDirection' witness. Can be used to recover the
 -- 'Direction'.
+--
+-- @since 0.1
 netToSDirection :: SingDirection d => NetBytes d s n -> SDirection d
 netToSDirection _ = singDirection
 
 -- | Retrieves the 'SingSize' witness. Can be used to recover the 'Size'.
+--
+-- @since 0.1
 netToSSize :: SingSize s => NetBytes d s n -> SSize s
 netToSSize _ = singSize
 
+-- | @since 0.1
 instance Show n => Show (NetBytes d s n) where
   showsPrec p (MkNetBytesP x) =
     showParen (p > Show.appPrec) $
@@ -91,37 +106,48 @@ instance Show n => Show (NetBytes d s n) where
         . showsPrec Show.appPrec1 x
         . showString "}"
 
-deriving instance Functor (NetBytes d s)
+-- | @since 0.1
+deriving stock instance Functor (NetBytes d s)
 
+-- | @since 0.1
 instance Applicative (NetBytes d s) where
   pure = MkNetBytes . pure
   MkNetBytes f <*> MkNetBytes x = MkNetBytes $ f <*> x
 
+-- | @since 0.1
 instance Monad (NetBytes d s) where
   MkNetBytes x >>= f = MkNetBytes $ x >>= (unNetBytes . f)
 
+-- | @since 0.1
 instance Eq n => Eq (NetBytes d s n) where
   MkNetBytes x == MkNetBytes y = x == y
 
+-- | @since 0.1
 instance Ord n => Ord (NetBytes d s n) where
   MkNetBytes x <= MkNetBytes y = x <= y
 
+-- | @since 0.1
 instance ASemigroup n => ASemigroup (NetBytes d s n) where
   (.+.) = liftA2 (.+.)
 
+-- | @since 0.1
 instance AMonoid n => AMonoid (NetBytes d s n) where
   zero = MkNetBytes zero
 
+-- | @since 0.1
 instance AGroup n => AGroup (NetBytes d s n) where
   (.-.) = liftA2 (.-.)
   aabs = fmap aabs
 
+-- | @since 0.1
 instance Ring n => Module (NetBytes d s n) n where
   MkNetBytes x .* k = MkNetBytes $ x .* k
 
+-- | @since 0.1
 instance Field n => VectorSpace (NetBytes d s n) n where
   MkNetBytes x .% k = MkNetBytes $ x .% k
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, SingSize s) => Conversion (NetBytes d s n) where
   type Converted 'B (NetBytes d s n) = NetBytes d 'B n
   type Converted 'K (NetBytes d s n) = NetBytes d 'K n
@@ -143,12 +169,14 @@ instance (Field n, NumLiteral n, SingSize s) => Conversion (NetBytes d s n) wher
   toZ (MkNetBytes b) = MkNetBytes $ toZ b
   toY (MkNetBytes b) = MkNetBytes $ toY b
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (NetBytes d s n) where
   type Norm (NetBytes d s n) = SomeNetSize d n
 
   normalize (MkNetBytes bytes) = case normalize bytes of
     MkSomeSize sz bytes' -> MkSomeNetSize sz $ MkNetBytes bytes'
 
+-- | @since 0.1
 instance
   forall d s n.
   (PrettyPrint n, SingDirection d, SingSize s) =>
@@ -197,11 +225,16 @@ instance
 -- x == y
 -- isK x /= isK y
 -- @
+--
+-- @since 0.1
 type SomeNetSize :: Direction -> Type -> Type
 data SomeNetSize d n where
+  -- | @since 0.1
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 
 -- | Wraps a 'Bytes' in an existentially quantified 'SomeSize'.
+--
+-- @since 0.1
 hideNetSize :: forall d s n. SingSize s => NetBytes d s n -> SomeNetSize d n
 hideNetSize bytes = case singSize @s of
   SB -> MkSomeNetSize SB bytes
@@ -214,32 +247,42 @@ hideNetSize bytes = case singSize @s of
   SZ -> MkSomeNetSize SZ bytes
   SY -> MkSomeNetSize SY bytes
 
-deriving instance Show n => Show (SomeNetSize d n)
+-- | @since 0.1
+deriving stock instance Show n => Show (SomeNetSize d n)
 
-deriving instance Functor (SomeNetSize d)
+-- | @since 0.1
+deriving stock instance Functor (SomeNetSize d)
 
+-- | @since 0.1
 instance (Eq n, Field n, NumLiteral n) => Eq (SomeNetSize d n) where
   x == y = toB x == toB y
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => Ord (SomeNetSize d n) where
   x <= y = toB x <= toB y
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => ASemigroup (SomeNetSize d n) where
   x .+. y = normalize $ toB x .+. toB y
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => AMonoid (SomeNetSize d n) where
   zero = MkSomeNetSize SB zero
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => AGroup (SomeNetSize d n) where
   x .-. y = normalize $ toB x .-. toB y
   aabs = fmap aabs
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => Module (SomeNetSize d n) n where
   MkSomeNetSize sz x .* k = MkSomeNetSize sz $ x .* k
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => VectorSpace (SomeNetSize d n) n where
   MkSomeNetSize sz x .% k = MkSomeNetSize sz $ x .% k
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => Conversion (SomeNetSize d n) where
   type Converted 'B (SomeNetSize d n) = NetBytes d 'B n
   type Converted 'K (SomeNetSize d n) = NetBytes d 'K n
@@ -261,14 +304,18 @@ instance (Field n, NumLiteral n) => Conversion (SomeNetSize d n) where
   toZ (MkSomeNetSize sz x) = Size.withSingSize sz $ toZ x
   toY (MkSomeNetSize sz x) = Size.withSingSize sz $ toY x
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => Normalize (SomeNetSize d n) where
   type Norm (SomeNetSize d n) = SomeNetSize d n
   normalize (MkSomeNetSize sz x) = Size.withSingSize sz $ normalize x
 
+-- | @since 0.1
 instance (PrettyPrint n, SingDirection d) => PrettyPrint (SomeNetSize d n) where
   pretty (MkSomeNetSize sz b) = Size.withSingSize sz $ pretty b
 
 -- | Retrieves the 'SingDirection' witness. Can be used to recover the
 -- 'Direction'.
+--
+-- @since 0.1
 someNetSizeToSDirection :: SingDirection d => SomeNetSize d n -> SDirection d
 someNetSizeToSDirection _ = singDirection

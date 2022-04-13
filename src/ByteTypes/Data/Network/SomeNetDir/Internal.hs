@@ -14,6 +14,8 @@
 -- \"forget\" the direction tag by dropping to 'ByteTypes.Data.Bytes'),
 -- we are much more limited in what we can do. For example, we lose instances
 -- like 'Applicative', "Numeric.Algebra".
+--
+-- @since 0.1
 module ByteTypes.Data.Network.SomeNetDir.Internal
   ( SomeNetDir (..),
     hideNetDir,
@@ -65,20 +67,28 @@ import Numeric.Class.Literal (NumLiteral (..))
 --
 -- Notice no 'Ord' instance is provided, as we provide no ordering for
 -- 'ByteTypes.Data.Direction.Direction'.
+--
+-- @since 0.1
 type SomeNetDir :: Size -> Type -> Type
 data SomeNetDir s n where
+  -- | @since 0.1
   MkSomeNetDir :: SDirection d -> NetBytes d s n -> SomeNetDir s n
 
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetDir'.
+--
+-- @since 0.1
 hideNetDir :: forall d s n. SingDirection d => NetBytes d s n -> SomeNetDir s n
 hideNetDir bytes = case singDirection @d of
   SDown -> MkSomeNetDir SDown bytes
   SUp -> MkSomeNetDir SUp bytes
 
-deriving instance Show n => Show (SomeNetDir s n)
+-- | @since 0.1
+deriving stock instance Show n => Show (SomeNetDir s n)
 
-deriving instance Functor (SomeNetDir s)
+-- | @since 0.1
+deriving stock instance Functor (SomeNetDir s)
 
+-- | @since 0.1
 instance (Eq n, Field n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
   MkSomeNetDir dx x == MkSomeNetDir dy y =
     case (dx, dy) of
@@ -86,6 +96,7 @@ instance (Eq n, Field n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
       (SUp, SUp) -> x == y
       _ -> False
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) where
   type Converted 'B (SomeNetDir s n) = SomeNetDir 'B n
   type Converted 'K (SomeNetDir s n) = SomeNetDir 'K n
@@ -107,12 +118,14 @@ instance (Field n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) wher
   toZ (MkSomeNetDir dir x) = MkSomeNetDir dir $ toZ x
   toY (MkSomeNetDir dir x) = MkSomeNetDir dir $ toY x
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
   type Norm (SomeNetDir s n) = SomeNet n
   normalize (MkSomeNetDir dir x) =
     case normalize x of
       MkSomeNetSize sz y -> MkSomeNet dir sz y
 
+-- | @since 0.1
 instance (PrettyPrint n, SingSize s) => PrettyPrint (SomeNetDir s n) where
   pretty (MkSomeNetDir dir x) =
     Direction.withSingDirection dir $ pretty x
@@ -144,11 +157,16 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (SomeNetDir s n) where
 -- MkSomeNet 'Up 'K (MkNetBytes 1_000) == MkSomeNet 'Up 'M (MkNetBytes 1)
 -- MkSomeNet 'Up 'K (MkNetBytes 1_000) /= MkSomeNet 'Down 'M (MkNetBytes 1)
 -- @
+--
+-- @since 0.1
 type SomeNet :: Type -> Type
 data SomeNet n where
+  -- | @since 0.1
   MkSomeNet :: SDirection d -> SSize s -> NetBytes d s n -> SomeNet n
 
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNet'.
+--
+-- @since 0.1
 hideNetSizeDir :: forall d s n. (SingDirection d, SingSize s) => NetBytes d s n -> SomeNet n
 hideNetSizeDir bytes = case singDirection @d of
   SDown ->
@@ -174,10 +192,13 @@ hideNetSizeDir bytes = case singDirection @d of
       SZ -> MkSomeNet SUp SZ bytes
       SY -> MkSomeNet SUp SY bytes
 
-deriving instance Show n => Show (SomeNet n)
+-- | @since 0.1
+deriving stock instance Show n => Show (SomeNet n)
 
-deriving instance Functor SomeNet
+-- | @since 0.1
+deriving stock instance Functor SomeNet
 
+-- | @since 0.1
 instance (Eq n, Field n, NumLiteral n) => Eq (SomeNet n) where
   MkSomeNet dx szx x == MkSomeNet dy szy y =
     Size.withSingSize szx $
@@ -187,6 +208,7 @@ instance (Eq n, Field n, NumLiteral n) => Eq (SomeNet n) where
           (SUp, SUp) -> toB x == toB y
           _ -> False
 
+-- | @since 0.1
 instance (Field n, NumLiteral n) => Conversion (SomeNet n) where
   type Converted 'B (SomeNet n) = SomeNetDir 'B n
   type Converted 'K (SomeNet n) = SomeNetDir 'K n
@@ -208,12 +230,14 @@ instance (Field n, NumLiteral n) => Conversion (SomeNet n) where
   toZ (MkSomeNet dir sz x) = Size.withSingSize sz $ toZ (MkSomeNetDir dir x)
   toY (MkSomeNet dir sz x) = Size.withSingSize sz $ toY (MkSomeNetDir dir x)
 
+-- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => Normalize (SomeNet n) where
   type Norm (SomeNet n) = SomeNet n
   normalize (MkSomeNet dir sz x) =
     case Size.withSingSize sz normalize x of
       MkSomeNetSize sz' x' -> MkSomeNet dir sz' x'
 
+-- | @since 0.1
 instance PrettyPrint n => PrettyPrint (SomeNet n) where
   pretty (MkSomeNet dir sz x) =
     Direction.withSingDirection dir $

@@ -9,6 +9,8 @@
 --
 -- This prevents mistakes, such as adding two different byte sizes or
 -- converting between sizes incorrectly.
+--
+-- @since 0.1
 module ByteTypes.Bytes
   ( -- * Types
     -- $types
