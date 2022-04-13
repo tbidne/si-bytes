@@ -39,7 +39,11 @@ import ByteTypes.Data.Network
 import ByteTypes.Data.Size
 
 -- $setup
--- >>> import Simple.Algebra.Data.NonNat
+-- >>> import Numeric.Algebra.Additive.ASemigroup (ASemigroup (..))
+-- >>> import Numeric.Algebra.Additive.AGroup (AGroup (..))
+-- >>> import Numeric.Algebra.Module (Module (..))
+-- >>> import Numeric.Algebra.VectorSpace (VectorSpace (..))
+-- >>> import Numeric.Data.NonZero (unsafeNonZero)
 
 -- $types
 -- The are six main types exported in this module:
@@ -102,8 +106,8 @@ import ByteTypes.Data.Size
 -- >>> let some2 = hideNetSize (MkNetBytesP 7000 :: NetBytes 'Up 'M Int)
 -- >>> let some3 = hideNetSize (MkNetBytesP 2 :: NetBytes 'Up 'T Int)
 -- >>> some1 == some2
--- >>> some2 < some3
 -- True
+-- >>> some2 < some3
 -- True
 --
 -- Most of the time the 'NetBytes' type should be preferred. 'SomeNetSize'
@@ -140,8 +144,8 @@ import ByteTypes.Data.Size
 -- >>> let b1 = MkNetBytesP 50000 :: NetBytes 'Down 'M Int
 -- >>> let b2 = hideNetSize (MkNetBytesP 20.40684 :: NetBytes 'Down 'T Float)
 -- >>> pretty b1
--- >>> pretty b2
 -- "50000 M Down"
+-- >>> pretty b2
 -- "20.41 T Down"
 --
 -- == Normalization
@@ -190,15 +194,15 @@ import ByteTypes.Data.Size
 -- >>> let bytes = MkNetBytesP 50_000 :: NetBytes 'Down 'M Int
 -- >>> let gBytes = toG bytes
 -- >>> :type gBytes
--- >>> gBytes
 -- gBytes :: NetBytes 'Down 'G Int
+-- >>> gBytes
 -- MkNetBytesP {unNetBytesP = 50}
 --
 -- >>> let bytes = hideNetSize (MkNetBytesP 0.2 :: NetBytes 'Up 'T Float)
 -- >>> let mBytes = toM bytes
 -- >>> :type mBytes
--- >>> mBytes
 -- mBytes :: NetBytes 'Up 'M Float
+-- >>> mBytes
 -- MkNetBytesP {unNetBytesP = 200000.0}
 --
 -- == Modules
@@ -234,23 +238,15 @@ import ByteTypes.Data.Size
 -- >>> let mb1 = MkNetBytesP 20 :: NetBytes 'Down 'M Int
 -- >>> let mb2 = MkNetBytesP 50 :: NetBytes 'Down 'M Int
 -- >>> mb1 .+. mb2
--- >>> mb1 .-. mb2
 -- MkNetBytesP {unNetBytesP = 70}
+-- >>> mb1 .-. mb2
 -- MkNetBytesP {unNetBytesP = (-30)}
 --
--- >>> -- Type error!
 -- >>> let kb = MkNetBytesP 50 :: NetBytes 'Down 'K Int
--- >>> mb1 .+. kb
--- Couldn't match type ‘'K’ with ‘'M’
--- Expected type: NetBytes 'Down 'M Int
---   Actual type: NetBytes 'Down 'K Int
+-- >>> -- mb1 .+. kb -- This would be a type error
 --
--- >>> -- Type error!
 -- >>> let mbUp = MkNetBytesP 50 :: NetBytes 'Up 'M Int
--- >>> mb1 .+. mbUp
--- Couldn't match type ‘'Up’ with ‘'Down’
--- Expected type: NetBytes 'Down 'M Int
---   Actual type: NetBytes 'Up 'M Int
+-- >>> -- mb1 .+. mbUp -- This would be a type error
 --
 -- === Multiplication
 -- >>> mb1 .* 10
@@ -270,6 +266,6 @@ import ByteTypes.Data.Size
 -- >>> let some1 = hideNetSize (MkNetBytesP 1000 :: NetBytes 'Down 'G Double)
 -- >>> let some2 = hideNetSize (MkNetBytesP 500_000 :: NetBytes 'Down 'M Double)
 -- >>> some1 .+. some2
--- >>> some1 .-. some2
 -- MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 1.5})
+-- >>> some1 .-. some2
 -- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 500.0})
