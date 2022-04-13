@@ -1,6 +1,4 @@
--- |
---
--- Module: ByteTypes.Bytes
+-- | Module: ByteTypes.Bytes
 --
 -- This module serves as the main entry point for the library. It provides
 -- the types and operations for typical usage and is usually the only import
@@ -22,6 +20,9 @@ module ByteTypes.Bytes
     module ByteTypes.Class.Conversion,
     module ByteTypes.Class.Normalize,
     module ByteTypes.Class.PrettyPrint,
+
+    -- * Algebra
+    -- $algebra
   )
 where
 
@@ -74,11 +75,12 @@ import ByteTypes.Data.Size
 -- @ls -lh@ at runtime), or when we use 'normalize'. In general, once we wrap
 -- a 'Bytes' in a 'SomeSize' we should think of the 'Size' as being \"lost\",
 -- unless we explicitly recover it with a 'Conversion' function. This is
--- necessary for 'SomeSize'\'s algebraic instances (e.g. 'Eq', 'Group') to be
--- lawful, as functions that inspect the underlying size or numeric value
--- can break the equivalence class. Nevertheless, 'SomeSize'\'s internal
--- representation can be used to recover the size, in case this is
--- needed (see: "ByteTypes.Data.Bytes.Internal").
+-- necessary for 'SomeSize'\'s algebraic instances (e.g. 'Eq',
+-- 'Numeric.Algebra.Additive.AGroup.AGroup') to be lawful, as functions that
+-- inspect the underlying size or numeric value can break the equivalence
+-- class. Nevertheless, 'SomeSize'\'s internal representation can be used to
+-- recover the size, in case this is needed
+-- (see: "ByteTypes.Data.Bytes.Internal").
 --
 -- == Modules
 
@@ -114,7 +116,7 @@ import ByteTypes.Data.Size
 -- that the result is between 1 and 1000, provided this is possible (i.e. we
 -- cannot increase the max or decrease the min). Because the result type is
 -- dependent on the value, 'normalize' necessarily existentially quantifies the
--- 'Size', i.e., returns 'SomeSize'.
+-- 'Size' i.e. returns 'SomeSize'.
 --
 -- >>> let bytes = MkBytes 5000 :: Bytes 'M Int
 -- >>> normalize bytes
@@ -164,7 +166,7 @@ import ByteTypes.Data.Size
 -- $algebra
 --
 -- The built-in 'Num' class is abandoned in favor of
--- [simple-algebra](https://github.com/tbidne/simple-algebra/)'s
+-- [algebra-simple](https://github.com/tbidne/algebra-simple/)'s
 -- algebraic hierarchy based on abstract algebra. This is motivated by a
 -- desire to:
 --
@@ -172,18 +174,20 @@ import ByteTypes.Data.Size
 -- 2. Avoid 'Num'\'s infelicities (e.g. nonsense multiplication,
 --    dangerous 'fromInteger').
 --
--- 'Bytes' and 'SomeSize' are both 'Group's.
--- A 'Simple.Algebra.Ring' instance is not provided because multiplication is nonsensical:
+-- 'Bytes' and 'SomeSize' are both 'Numeric.Algebra.Additive.AGroup.AGroup's.
+-- A 'Numeric.Algebra.Ring.Ring' instance is not provided because
+-- multiplication is nonsensical:
 --
 -- \[
 -- x \;\textrm{mb} \times y \;\textrm{mb} = xy \;\textrm{mb}^2.
 -- \]
 --
 -- Fortunately, multiplying bytes by some kind of scalar is both useful /and/
--- has an easy interpretation: Bytes forms a 'Module' over a
--- 'Simple.Algebra.Ring' (resp. 'VectorSpace' over a 'Simple.Algebra.Field').
--- This allows us to multiply a 'Bytes' or 'SomeSize' by a scalar in a
--- manner consistent with the above API.
+-- has an easy interpretation: 'Bytes' forms a 'Numeric.Algebra.Module.Module'
+-- over a 'Numeric.Algebra.Ring.Ring'
+-- (resp. 'Numeric.Algebra.VectorSpace.VectorSpace' over a
+-- 'Simple.Algebra.Field.Field'). This allows us to multiply a 'Bytes' or
+-- 'SomeSize' by a scalar in a manner consistent with the above API.
 --
 -- == Examples
 -- === Addition/Subtraction
@@ -209,11 +213,11 @@ import ByteTypes.Data.Size
 -- >>> mb1 .% (unsafeNonZero 10)
 -- MkBytes {unBytes = 2}
 --
--- One may wonder how the 'Group' instance for 'SomeSize' could possibly
--- work. It is possible (indeed, expected) that we could have two 'SomeSize's
--- that have different underlying 'Bytes' types. To handle this, the
--- 'SomeSize' instance will convert both 'Bytes' to a 'Bytes' ''B' before
--- adding/subtracting. The result will be normalized.
+-- One may wonder how the 'Numeric.Algebra.Additive.AGroup.AGroup' instance
+-- for 'SomeSize' could possibly work. It is possible (indeed, expected) that
+-- we could have two 'SomeSize's that have different underlying 'Bytes' types.
+-- To handle this, the 'SomeSize' instance will convert both 'Bytes' to a
+-- 'Bytes' ''B' before adding/subtracting. The result will be normalized.
 --
 -- >>> let some1 = hideSize (MkBytes 1000 :: Bytes 'G Double)
 -- >>> let some2 = hideSize (MkBytes 500_000 :: Bytes 'M Double)
@@ -223,5 +227,3 @@ import ByteTypes.Data.Size
 -- MkSomeSize SG (MkBytes {unBytes = 500.0})
 --
 -- This respects 'SomeSize'\'s equivalence-class based 'Eq'.
---
--- == Modules

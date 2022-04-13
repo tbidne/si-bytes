@@ -288,11 +288,31 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
 -- @
 --
 -- 'SomeSize' carries along an 'SSize' runtime witness for when we
--- need the size. Its 'Group' functions are 'normalize'd.
+-- need the size. Its 'Numeric.Algebra' functions are 'normalize'd.
 --
--- N.B. 'SomeSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord',
--- 'Group') are themselves lawful w.r.t. the notion of equivalence defined
--- in its 'Eq' instance.
+-- We define an equivalence relation on 'SomeSize' that takes units into
+-- account. For instance,
+--
+-- @
+-- MkSomeSize SK (MkBytes 1000) == MkSomeSize SM (MkBytes 1).
+-- @
+--
+-- Because we expose the underlying @Bytes@ in several ways (e.g. 'Show',
+-- the 'SSize' witness), this is technically unlawful for equality
+-- as it breaks the extensionality law:
+--
+-- \[
+-- x = y \implies f(x) = f(y).
+-- \]
+--
+-- For instance:
+--
+-- @
+-- let x = MkSomeSize SK (MkBytes 1000)
+-- let y = MkSomeSize SM (MkBytes 1)
+-- x == y
+-- isK x /= isK y
+-- @
 type SomeSize :: Type -> Type
 data SomeSize n where
   MkSomeSize :: SSize s -> Bytes s n -> SomeSize n
@@ -314,43 +334,9 @@ deriving instance Show n => Show (SomeSize n)
 
 deriving instance Functor SomeSize
 
--- | Note: This instance defines an equivalence relation on 'SomeSize' that
--- takes units into account. For instance,
---
--- @
--- MkSomeSize SK (MkBytes 1000) == MkSomeSize SM (MkBytes 1).
--- @
---
--- Because we expose the underlying @Bytes@ in several ways (e.g. 'Show',
--- the 'SSize' witness), this is technically unlawful for equality
--- as it breaks the substitutivity law:
---
--- \[
--- x = y \implies f(x) = f(y).
--- \]
---
--- For instance:
---
--- @
--- let x = MkSomeSize SK (MkBytes 1000)
--- let y = MkSomeSize SM (MkBytes 1)
--- x == y
--- isK x /= isK y
--- @
---
--- With apologies to Leibniz, such comparisons are too useful to ignore
--- and enable us to implement other lawful classes (e.g. 'Group') that respect
--- this notion of equivalence.
 instance (Eq n, Field n, NumLiteral n) => Eq (SomeSize n) where
   x == y = toB x == toB y
 
--- | Like the 'Eq' instance, this instance compares both the numeric value
--- __and__ label, so that, e.g.,
---
--- @
--- MkSomeSize SK (MkBytes 5_000) <= MkSomeSize SM (MkBytes 8)
--- MkSomeSize SM (MkBytes 2) <= MkSomeSize SK (MkBytes 5_000)
--- @
 instance (Field n, NumLiteral n, Ord n) => Ord (SomeSize n) where
   x <= y = toB x <= toB y
 

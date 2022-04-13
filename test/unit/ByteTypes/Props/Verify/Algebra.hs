@@ -55,7 +55,7 @@ ordLaws x y z = do
   H.assert $ x < y <=> x <= y && x /= y
   H.assert $ x < y <=> y > x
 
--- | Verify 'Group' laws.
+-- | Verify 'AGroup' laws.
 groupLaws :: (AGroup a, Show a) => a -> a -> a -> PropertyT IO ()
 groupLaws x y z = do
   H.annotateShow x

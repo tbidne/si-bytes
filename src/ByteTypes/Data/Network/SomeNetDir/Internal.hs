@@ -13,7 +13,7 @@
 -- While the witnesses allows us to recover the types at will (and we can
 -- \"forget\" the direction tag by dropping to 'ByteTypes.Data.Bytes'),
 -- we are much more limited in what we can do. For example, we lose instances
--- like 'Applicative', 'Simple.Algebra.Group'.
+-- like 'Applicative', "Numeric.Algebra".
 module ByteTypes.Data.Network.SomeNetDir.Internal
   ( SomeNetDir (..),
     hideNetDir,
@@ -53,6 +53,18 @@ import Numeric.Class.Literal (NumLiteral (..))
 -- used to combine arbitrary 'SomeNetDir's (e.g. 'Applicative',
 -- 'Simple.Algebra.Group'), as that would defeat the purpose of
 -- enforcing the distinction between upload and downloaded bytes.
+--
+--
+-- Equality is determined by the usual equivalence class -- that takes units
+-- into account -- and by considering the direction.
+--
+-- @
+-- MkSomeNetDir SK (MkNetBytes @Up (MkBytes 1000)) == MkSomeNetDir SM (MkNetBytes @Up (MkBytes 1))
+-- MkSomeNetDir SK (MkNetBytes @Up (MkBytes 1000)) /= MkSomeNetDir SM (MkNetBytes @Down (MkBytes 1))
+-- @
+--
+-- Notice no 'Ord' instance is provided, as we provide no ordering for
+-- 'ByteTypes.Data.Direction.Direction'.
 type SomeNetDir :: Size -> Type -> Type
 data SomeNetDir s n where
   MkSomeNetDir :: SDirection d -> NetBytes d s n -> SomeNetDir s n
@@ -67,16 +79,6 @@ deriving instance Show n => Show (SomeNetDir s n)
 
 deriving instance Functor (SomeNetDir s)
 
--- | Returns true when the two @SomeNetDir@ have the same @Direction@
--- /and/ the underlying @NetBytes@ has the same value.
---
--- @
--- MkSomeNetDir SK (MkNetBytes @Up (MkBytes 1000)) == MkSomeNetDir SM (MkNetBytes @Up (MkBytes 1))
--- MkSomeNetDir SK (MkNetBytes @Up (MkBytes 1000)) /= MkSomeNetDir SM (MkNetBytes @Down (MkBytes 1))
--- @
---
--- Notice no 'Ord' instance is provided, as we provide no ordering for
--- 'ByteTypes.Data.Direction.Direction'.
 instance (Eq n, Field n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
   MkSomeNetDir dx x == MkSomeNetDir dy y =
     case (dx, dy) of
@@ -134,9 +136,14 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (SomeNetDir s n) where
 -- for recovering the 'ByteTypes.Data.Direction.Direction'
 -- and 'Size', respectively.
 --
--- N.B. 'SomeNetSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord')
--- are themselves lawful w.r.t. the notion of equivalence defined
--- in its 'Eq' instance.
+-- This instance uses the same equivalence relation from 'SomeNetSize'
+-- w.r.t the size, and also includes an equality check on the direction.
+-- Thus we have, for instance,
+--
+-- @
+-- MkSomeNet 'Up 'K (MkNetBytes 1_000) == MkSomeNet 'Up 'M (MkNetBytes 1)
+-- MkSomeNet 'Up 'K (MkNetBytes 1_000) /= MkSomeNet 'Down 'M (MkNetBytes 1)
+-- @
 type SomeNet :: Type -> Type
 data SomeNet n where
   MkSomeNet :: SDirection d -> SSize s -> NetBytes d s n -> SomeNet n
@@ -171,14 +178,6 @@ deriving instance Show n => Show (SomeNet n)
 
 deriving instance Functor SomeNet
 
--- | Note: This instance uses the same equivalence relation from 'SomeNetSize'
--- w.r.t the size, and also includes an equality check on the direction.
--- Thus we have, for instance,
---
--- @
--- MkSomeNet 'Up 'K (MkNetBytes 1_000) == MkSomeNet 'Up 'M (MkNetBytes 1)
--- MkSomeNet 'Up 'K (MkNetBytes 1_000) /= MkSomeNet 'Down 'M (MkNetBytes 1)
--- @
 instance (Eq n, Field n, NumLiteral n) => Eq (SomeNet n) where
   MkSomeNet dx szx x == MkSomeNet dy szy y =
     Size.withSingSize szx $

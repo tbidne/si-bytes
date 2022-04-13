@@ -1,6 +1,4 @@
--- |
---
--- Module: ByteTypes.Network
+-- | Module: ByteTypes.Network
 --
 -- This module serves as an alternative entry point to "ByteTypes.Bytes", for
 -- when tracking uploaded vs. downloaded bytes is necessary. It provides the
@@ -25,6 +23,9 @@ module ByteTypes.Network
     module ByteTypes.Class.Conversion,
     module ByteTypes.Class.Normalize,
     module ByteTypes.Class.PrettyPrint,
+
+    -- * Algebra
+    -- $algebra
   )
 where
 
@@ -109,10 +110,11 @@ import ByteTypes.Data.Size
 -- once we wrap a 'NetBytes' in a 'SomeNetSize' we should think of the 'Size'
 -- as being \"lost\", unless we explicitly recover it with a 'Conversion'
 -- function. This is necessary for 'SomeNetSize'\'s algebraic instances
--- (e.g. 'Eq', 'Group') to be lawful, as functions that inspect the underlying
--- size or numeric value can break the equivalence class. Nevertheless,
--- 'SomeNetSize'\'s internal representation can be used to recover the size,
--- in case this is needed (see: "ByteTypes.Data.NetBytes.Internal").
+-- (e.g. 'Eq', 'Numeric.Algebra.Additive.AGroup.AGroup') to be lawful, as
+-- functions that inspect the underlying size or numeric value can break the
+-- equivalence class. Nevertheless, 'SomeNetSize'\'s internal representation
+-- can be used to recover the size, in case this is needed
+-- (see: "ByteTypes.Data.NetBytes.Internal").
 --
 -- For completeness, we also include the other existential quantification
 -- combinations (i.e. 'SomeNetDir' and 'SomeNet' for when the 'Direction' is
@@ -125,7 +127,7 @@ import ByteTypes.Data.Size
 -- == Pretty Printing
 --
 -- 'PrettyPrint', as the name suggests, is used for printing out bytes types
--- in a prettier manner than 'show' (i.e., no constructors, added units,
+-- in a prettier manner than 'show' (i.e. no constructors, added units,
 -- rounding).
 --
 -- @
@@ -152,7 +154,7 @@ import ByteTypes.Data.Size
 -- that the result is between 1 and 1000, provided this is possible (i.e. we
 -- cannot increase the max or decrease the min). Because the result type is
 -- dependent on the value, 'normalize' necessarily existentially quantifies the
--- 'Size', i.e., returns 'SomeNetSize' (or 'SomeNet', in the case of 'SomeNetDir').
+-- 'Size' i.e. returns 'SomeNetSize' (or 'SomeNet', in the case of 'SomeNetDir').
 --
 -- >>> let bytes = MkNetBytesP 5000 :: NetBytes 'Down 'M Int
 -- >>> normalize bytes
@@ -202,7 +204,7 @@ import ByteTypes.Data.Size
 -- $algebra
 --
 -- The built-in 'Num' class is abandoned in favor of
--- [simple-algebra](https://github.com/tbidne/simple-algebra/)'s
+-- [algebra-simple](https://github.com/tbidne/algebra-simple/)'s
 -- algebraic hierarchy based on abstract algebra. This is motivated by a
 -- desire to:
 --
@@ -210,18 +212,20 @@ import ByteTypes.Data.Size
 -- 2. Avoid 'Num'\'s infelicities (e.g. nonsense multiplication,
 --    dangerous 'fromInteger').
 --
--- 'NetBytes' and 'SomeNetSize' are both 'Group's.
--- A 'Simple.Algebra.Ring' instance is not provided because multiplication is nonsensical:
+-- 'NetBytes' and 'SomeNetSize' are both
+-- 'Numeric.Algebra.Additive.AGroup.AGroup's. A 'Numeric.Algebra.Ring.Ring'
+-- instance is not provided because multiplication is nonsensical:
 --
 -- \[
 -- x \;\textrm{mb} \times y \;\textrm{mb} = xy \;\textrm{mb}^2.
 -- \]
 --
 -- Fortunately, multiplying bytes by some kind of scalar is both useful /and/
--- has an easy interpretation: Bytes forms a 'Module' over a
--- 'Simple.Algebra.Ring' (resp. 'VectorSpace' over a 'Simple.Algebra.Field').
--- This allows us to multiply a 'NetBytes' or 'SomeNetSize' by a scalar in a
--- manner consistent with the above API.
+-- has an easy interpretation: 'NetBytes' forms a
+-- 'Numeric.Algebra.Module.Module' over a 'Numeric.Algebra.Ring.Ring'
+-- (resp. 'Numeric.Algebra.VectorSpace.VectorSpace' over a
+-- 'Numeric.Algebra.Field.Field'). This allows us to multiply a 'NetBytes' or
+-- 'SomeNetSize' by a scalar in a manner consistent with the above API.
 --
 -- == Examples
 -- === Addition/Subtraction
@@ -254,11 +258,12 @@ import ByteTypes.Data.Size
 -- >>> mb1 .% (unsafeNonZero 10)
 -- MkNetBytesP {unNetBytesP = 2}
 --
--- One may wonder how the 'Group' instance for 'SomeNetSize' could possibly
--- work. It is possible (indeed, expected) that we could have two 'SomeNetSize's
--- that have different underlying 'NetBytes' types. To handle this, the
--- 'SomeNetSize' instance will convert both 'NetBytes' to a 'NetBytes' ''B' before
--- adding/subtracting. The result will be normalized.
+-- One may wonder how the 'Numeric.Algebra.Additive.AGroup.AGroup' instance
+-- for 'SomeNetSize' could possibly work. It is possible (indeed, expected)
+-- that we could have two 'SomeNetSize's that have different underlying
+-- 'NetBytes' types. To handle this, the 'SomeNetSize' instance will convert
+-- both 'NetBytes' to a 'NetBytes' ''B' before adding/subtracting. The result
+-- will be normalized.
 --
 -- >>> let some1 = hideNetSize (MkNetBytesP 1000 :: NetBytes 'Down 'G Double)
 -- >>> let some2 = hideNetSize (MkNetBytesP 500_000 :: NetBytes 'Down 'M Double)
@@ -266,5 +271,3 @@ import ByteTypes.Data.Size
 -- >>> some1 .-. some2
 -- MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 1.5})
 -- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 500.0})
---
--- == Modules

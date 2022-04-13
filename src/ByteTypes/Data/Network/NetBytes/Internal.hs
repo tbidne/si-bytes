@@ -172,11 +172,31 @@ instance
 -- @
 --
 -- 'SomeNetSize' carries along an 'SSize' runtime witness for when we
--- need the size. Its 'Group' functions are 'normalize'd.
+-- need the size. Its 'Numeric.Algebra' functions are 'normalize'd.
 --
--- N.B. 'SomeNetSize'\'s instances for lawful typeclasses (e.g. 'Eq', 'Ord',
--- 'Group') are themselves lawful w.r.t. the notion of equivalence defined
--- in its 'Eq' instance.
+-- We defined an equivalence relation on 'SomeNetSize' that takes units into
+-- account. For instance,
+--
+-- @
+-- MkSomeNetSize SK (MkNetBytesP 1000) == MkSomeNetSize SM (MkNetBytesP 1).
+-- @
+--
+-- Because we expose the underlying @NetBytes@ in several ways (e.g. 'Show',
+-- the 'SSize' witness), this is technically unlawful for equality
+-- as it breaks the extensionality law:
+--
+-- \[
+-- x = y \implies f(x) = f(y).
+-- \]
+--
+-- For instance:
+--
+-- @
+-- let x = MkSomeNetSize SK (MkNetBytesP 1000)
+-- let y = MkSomeNetSize SM (MkNetBytesP 1)
+-- x == y
+-- isK x /= isK y
+-- @
 type SomeNetSize :: Direction -> Type -> Type
 data SomeNetSize d n where
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
@@ -198,33 +218,6 @@ deriving instance Show n => Show (SomeNetSize d n)
 
 deriving instance Functor (SomeNetSize d)
 
--- | Note: This instance defines an equivalence relation on 'SomeNetSize' that
--- takes units into account. For instance,
---
--- @
--- MkSomeNetSize SK (MkNetBytesP 1000) == MkSomeNetSize SM (MkNetBytesP 1).
--- @
---
--- Because we expose the underlying @NetBytes@ in several ways (e.g. 'Show',
--- the 'SSize' witness), this is technically unlawful for equality
--- as it breaks the substitutivity law:
---
--- \[
--- x = y \implies f(x) = f(y).
--- \]
---
--- For instance:
---
--- @
--- let x = MkSomeNetSize SK (MkNetBytesP 1000)
--- let y = MkSomeNetSize SM (MkNetBytesP 1)
--- x == y
--- isK x /= isK y
--- @
---
--- With apologies to Leibniz, such comparisons are too useful to ignore
--- and enable us to implement other lawful classes (e.g. 'Group') that respect
--- this notion of equivalence.
 instance (Eq n, Field n, NumLiteral n) => Eq (SomeNetSize d n) where
   x == y = toB x == toB y
 

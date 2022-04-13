@@ -13,7 +13,7 @@
 -- While the witnesses allows us to recover the types at will (and we can
 -- \"forget\" the direction tag by dropping to 'ByteTypes.Data.Bytes'),
 -- we are much more limited in what we can do. For example, we lose instances
--- like 'Applicative', 'Simple.Algebra.Group'.
+-- like 'Applicative', "Numeric.Algebra".
 module ByteTypes.Data.Network.SomeNetDir
   ( SomeNetDir,
     hideNetDir,
