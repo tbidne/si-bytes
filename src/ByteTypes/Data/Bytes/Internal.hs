@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | This is the main entry point to the library. Provides the types and
@@ -42,7 +43,9 @@ import ByteTypes.Data.Size
   )
 import ByteTypes.Data.Size qualified as Size
 import Control.Applicative (liftA2)
+import Control.DeepSeq (NFData)
 import Data.Kind (Type)
+import GHC.Generics (Generic)
 import Numeric.Algebra
   ( AGroup (..),
     AMonoid (..),
@@ -73,6 +76,14 @@ newtype Bytes s n = MkBytes
     -- @since 0.1
     unBytes :: n
   }
+  deriving stock
+    ( -- | @since 0.1
+      Generic
+    )
+  deriving anyclass
+    ( -- | @since 0.1
+      NFData
+    )
 
 -- | Changes the 'Size' tag.
 --

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Provides the core alternative to 'ByteTypes.Data.Bytes', for when there
@@ -44,7 +45,9 @@ import ByteTypes.Data.Direction
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Control.Applicative (liftA2)
+import Control.DeepSeq (NFData)
 import Data.Kind (Type)
+import GHC.Generics (Generic)
 import GHC.Show qualified as Show
 import Numeric.Algebra
   ( AGroup (..),
@@ -67,6 +70,14 @@ newtype NetBytes d s n = MkNetBytes
     -- @since 0.1
     unNetBytes :: Bytes s n
   }
+  deriving stock
+    ( -- | @since 0.1
+      Generic
+    )
+  deriving anyclass
+    ( -- | @since 0.1
+      NFData
+    )
 
 -- | Convenience function using 'MkNetBytesP'.
 --

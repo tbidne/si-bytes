@@ -41,6 +41,7 @@ common common-exts
     DataKinds
     DefaultSignatures
     DeriveFunctor
+    DeriveGeneric
     DerivingStrategies
     DerivingVia
     FlexibleContexts
@@ -86,6 +87,7 @@ library
   build-depends:
     , algebra-simple  ^>=0.1
     , base            >=4.14.1.0 && <4.17
+    , deepseq         ^>=1.4.4.0
 
   hs-source-dirs:   src
   default-language: Haskell2010
