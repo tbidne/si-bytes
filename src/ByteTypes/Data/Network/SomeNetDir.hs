@@ -2,7 +2,7 @@
 -- 'ByteTypes.Data.Direction.Direction' on
 -- 'ByteTypes.Data.Network.NetBytes'.
 --
--- This paradigm differs from the previous size hiding
+-- This paradigm differs from the previous size hiding of
 -- 'ByteTypes.Data.Bytes.SomeSize' and
 -- 'ByteTypes.Data.Network.SomeNetSize' in that because we had
 -- sensible ways to convert between sizes (e.g. K -> G), we could

@@ -1,18 +1,12 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE UndecidableInstances #-}
 
--- | This is the main entry point to the library. Provides the types and
--- classes for working with different byte sizes (e.g. B, K, M ...). See
--- 'ByteTypes.Data.Network' if there is a need to distinguish between
--- downloaded and uploaded bytes.
---
--- The primary difference between this \"Internal\" module and the \"public\"
--- one, "ByteTypes.Data.Bytes", is that this module exports functions and
--- constructors that allow one to recover the 'Size'. For example, we expose
--- 'bytesToSSize' and 'SomeSize'\'s actual constructor, 'MkSomeSize', which
--- includes a runtime witness 'SSize'. These are hidden by default as they
--- complicate the API, and the latter can be used to break 'SomeSize'\'s
--- equivalence-class based 'Eq'.
+-- | Internal module for "ByteTypes.Data.Bytes". The primary difference is
+-- this module exposes some underlying details that allow one to recover
+-- the 'Size'. For example, we expose 'bytesToSSize' and 'SomeSize'\'s actual
+-- constructor, 'MkSomeSize', which includes a runtime witness 'SSize'. These
+-- are hidden by default as they complicate the API, and the latter can be
+-- used to break 'SomeSize'\'s equivalence-class based 'Eq'.
 --
 -- @since 0.1
 module ByteTypes.Data.Bytes.Internal
@@ -61,12 +55,19 @@ import Numeric.Algebra qualified as Algebra
 import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (NonZero (..))
 
+-- $setup
+-- >>> getRawFileSize _ = pure (40, "K")
+
 -- | This is the core type for handling type-safe byte operations. It is
--- intended to be used as a simple wrapper over some numerical type,
--- equipped with a unit tag.
+-- intended to be used as a simple wrapper over some numeric type,
+-- equipped with a 'Size' tag.
 --
 -- To take full advantage of the API (e.g. `normalize`), the underlying
--- numerical type should implement 'Field'.
+-- numeric type should implement 'Field'.
+--
+-- ==== __Examples__
+-- >>> MkBytes @M 1000
+-- MkBytes {unBytes = 1000}
 --
 -- @since 0.1
 type Bytes :: Size -> Type -> Type
@@ -345,17 +346,18 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
       p = pretty x
 
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
--- when a function does not know a priori what size it should return, e.g.,
+-- when a function does not know a priori what size it should return e.g.
 --
--- @
---   getFileSize :: IO (SomeSize Float)
+-- >>> :{
+--   getFileSize :: FilePath -> IO (SomeSize Float)
 --   getFileSize path = do
+--     -- getRawFileSize :: FilePath -> IO (Float, String)
 --     (bytes, units) <- getRawFileSize path
---     case units of
---       \"B\" -> MkSomeSize SB $ MkBytes bytes
---       \"K\" -> MkSomeSize SK $ MkBytes bytes
---       ...
--- @
+--     pure $ case units of
+--       "B" -> hideSize $ MkBytes @B bytes
+--       "K" -> hideSize $ MkBytes @K bytes
+--       _ -> error "todo"
+-- :}
 --
 -- 'SomeSize' carries along an 'SSize' runtime witness for when we
 -- need the size. Its 'Numeric.Algebra' functions are 'normalize'd.
@@ -363,7 +365,7 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
 -- We define an equivalence relation on 'SomeSize' that takes units into
 -- account. For instance,
 --
--- >>> MkSomeSize SK (MkBytes 1000) == MkSomeSize SM (MkBytes 1)
+-- >>> hideSize (MkBytes @G 7) == hideSize (MkBytes @M 7_000)
 -- True
 --
 -- Because we expose the underlying @Bytes@ in several ways (e.g. 'Show',
@@ -373,15 +375,6 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
 -- \[
 -- x = y \implies f(x) = f(y).
 -- \]
---
--- For instance:
---
--- @
--- let x = MkSomeSize SK (MkBytes 1000)
--- let y = MkSomeSize SM (MkBytes 1)
--- x == y
--- isK x /= isK y
--- @
 --
 -- @since 0.1
 type SomeSize :: Type -> Type

@@ -1,22 +1,13 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Provides the core alternative to 'ByteTypes.Data.Bytes', for when there
--- is a need to distinguish between downloaded and uploaded bytes.
---
--- This module differs from 'ByteTypes.Data.Network.NetBytes' only in that
--- the former exports the real constructor 'MkNetBytes' and corresponding
--- 'unNetBytes'. That 'NetBytes' is implemented in terms of
--- 'ByteTypes.Data.Bytes' is largely an implementation detail, thus
--- 'MkNetBytesP' and 'unNetBytesP' should be preferred.
---
--- The primary difference between this \"Internal\" module and the \"public\"
--- one, "ByteTypes.Data.Network.NetBytes", is that this module exports
--- functions and constructors that allow one to recover the 'Size'. For
--- example, we expose 'netToSSize' and 'SomeNetSize'\'s actual constructor,
--- 'MkSomeNetSize', which includes a runtime witness 'SSize'. These are hidden
--- by default as they complicate the API, and the latter can be used to break
--- 'SomeNetSize'\'s equivalence-class based 'Eq'.
+-- | Internal module for "ByteTypes.Data.Network.NetBytes". The primary
+-- difference is this module exposes some underlying details that allow one to
+-- recover the 'Size'. For example, we expose 'netToSSize' and
+-- 'SomeNetSize'\'s actual constructor, 'MkSomeNetSize', which includes a
+-- runtime witness 'SSize'. These are hidden by default as they complicate the
+-- API, and the latter can be used to break 'SomeNetSize'\'s equivalence-class
+-- based 'Eq'.
 --
 -- @since 0.1
 module ByteTypes.Data.Network.NetBytes.Internal
@@ -60,7 +51,14 @@ import Numeric.Algebra
   )
 import Numeric.Class.Literal (NumLiteral (..))
 
+-- $setup
+-- >>> getUpTrafficRaw = pure (40, "K")
+
 -- | Wrapper around the 'Bytes' type that adds the 'Direction' tag.
+--
+-- ==== __Examples__
+-- >>> MkNetBytesP @Up @M 1000
+-- MkNetBytesP {unNetBytesP = 1000}
 --
 -- @since 0.1
 type NetBytes :: Direction -> Size -> Type -> Type
@@ -204,25 +202,26 @@ instance
     SUp -> pretty x <> " Up"
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size. This is useful
--- when a function does not know a priori what size it should return, e.g.,
+-- when a function does not know a priori what size it should return e.g.
 --
--- @
+-- >>> :{
 --   getUpTraffic :: IO (SomeNetSize Up Float)
 --   getUpTraffic = do
+--     -- getUpTrafficRaw :: IO (Float, String)
 --     (bytes, units) <- getUpTrafficRaw
---     case units of
---       \"B\" -> MkSomeNetSize SUp $ MkNetBytesP \@B bytes
---       \"K\" -> MkSomeNetSize SUp $ MkNetBytesP \@K bytes
---       ...
--- @
+--     pure $ case units of
+--       "B" -> hideNetSize $ MkNetBytesP @Up @B bytes
+--       "K" -> hideNetSize $ MkNetBytesP @Up @K bytes
+--       _ -> error "todo"
+-- :}
 --
 -- 'SomeNetSize' carries along an 'SSize' runtime witness for when we
 -- need the size. Its 'Numeric.Algebra' functions are 'normalize'd.
 --
--- We defined an equivalence relation on 'SomeNetSize' that takes units into
+-- We define an equivalence relation on 'SomeNetSize' that takes units into
 -- account. For instance,
 --
--- >>> MkSomeNetSize SK (MkNetBytesP 1000) == MkSomeNetSize SM (MkNetBytesP 1)
+-- >>> hideNetSize (MkNetBytesP @Up @K 1000) == hideNetSize (MkNetBytesP @Up @M 1)
 -- True
 --
 -- Because we expose the underlying @NetBytes@ in several ways (e.g. 'Show',
@@ -233,22 +232,13 @@ instance
 -- x = y \implies f(x) = f(y).
 -- \]
 --
--- For instance:
---
--- @
--- let x = MkSomeNetSize SK (MkNetBytesP 1000)
--- let y = MkSomeNetSize SM (MkNetBytesP 1)
--- x == y
--- isK x /= isK y
--- @
---
 -- @since 0.1
 type SomeNetSize :: Direction -> Type -> Type
 data SomeNetSize d n where
   -- | @since 0.1
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 
--- | Wraps a 'Bytes' in an existentially quantified 'SomeSize'.
+-- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetSize'.
 --
 -- @since 0.1
 hideNetSize :: forall d s n. SingSize s => NetBytes d s n -> SomeNetSize d n

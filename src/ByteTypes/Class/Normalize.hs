@@ -9,7 +9,7 @@ where
 -- | Used for normalizing bytes @b@ such that
 --
 -- \[
---  1 \le \text{normalize}(b) < 1000 \iff 1\text{ B} \le b < 1000\text{ P}.
+--  1 \le \text{normalize}(b) < 1000 \iff 1\text{ B} \le b < 1000\text{ Y}.
 -- \]
 --
 -- In the strictest sense, \(\textrm{normalize} : \mathcal{C} \rightarrow \mathcal{C}\)
@@ -19,7 +19,7 @@ where
 -- However, because the normalized units varies with the value, @normalize@
 -- always returns a type that existentially quantifies the size
 -- (e.g. 'BytesTypes.Data.Bytes.SomeSize'). 'Eq' for these types is defined in
--- terms of an equivalence class that takes units into account, e.g.,
+-- terms of an equivalence class that takes units into account e.g.
 -- @1 P = 1,000 T = 1,000,000 G ...@. Viewed this way, @normalize@ is actually
 -- an /isomorphism/, as it is essentially a no-op, never leaving the
 -- equivalence class.

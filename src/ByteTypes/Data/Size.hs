@@ -22,23 +22,41 @@ import Data.Type.Equality (TestEquality (..), (:~:) (..))
 --
 -- @since 0.1
 data Size
-  = -- | @since 0.1
+  = -- | Bytes
+    --
+    -- @since 0.1
     B
-  | -- | @since 0.1
+  | -- | Kilobytes
+    --
+    -- @since 0.1
     K
-  | -- | @since 0.1
+  | -- | Megabytes
+    --
+    -- @since 0.1
     M
-  | -- | @since 0.1
+  | -- | Gigabytes
+    --
+    -- @since 0.1
     G
-  | -- | @since 0.1
+  | -- | Terabytes
+    --
+    -- @since 0.1
     T
-  | -- | @since 0.1
+  | -- | Petabytes
+    --
+    -- @since 0.1
     P
-  | -- | @since 0.1
+  | -- | Exabytes
+    --
+    -- @since 0.1
     E
-  | -- | @since 0.1
+  | -- | Zettabytes
+    --
+    -- @since 0.1
     Z
-  | -- | @since 0.1
+  | -- | Yottabytes
+    --
+    -- @since 0.1
     Y
   deriving
     ( -- | @since 0.1

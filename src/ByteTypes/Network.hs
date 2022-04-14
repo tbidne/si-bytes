@@ -15,28 +15,55 @@
 -- @since 0.1
 module ByteTypes.Network
   ( -- * Types
-    -- $types
-    module ByteTypes.Data.Size,
-    module ByteTypes.Data.Direction,
-    module ByteTypes.Data.Network,
 
-    -- * Byte Transformations
-    -- $transformations
-    module ByteTypes.Class.Conversion,
-    module ByteTypes.Class.Normalize,
-    module ByteTypes.Class.PrettyPrint,
+    -- ** Units
+    Size (..),
+    Direction (..),
+
+    -- ** Bytes
+    NetBytes (..),
+    SomeNetSize,
+    hideNetSize,
+    SomeNetDir,
+    hideNetDir,
+    SomeNet,
+    hideNetSizeDir,
+
+    -- * Transformations
+
+    -- ** Pretty Printing
+    -- $pretty
+    PrettyPrint (..),
+
+    -- ** Converting Units
+    -- $convert
+    Conversion (..),
+
+    -- ** Normalization
+    -- $normalize
+    Normalize (..),
 
     -- * Algebra
     -- $algebra
   )
 where
 
-import ByteTypes.Class.Conversion
-import ByteTypes.Class.Normalize
-import ByteTypes.Class.PrettyPrint
-import ByteTypes.Data.Direction
-import ByteTypes.Data.Network
-import ByteTypes.Data.Size
+import ByteTypes.Class.Conversion (Conversion (..))
+import ByteTypes.Class.Normalize (Normalize (..))
+import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
+import ByteTypes.Data.Direction (Direction (..))
+import ByteTypes.Data.Network.NetBytes.Internal
+  ( NetBytes (..),
+    SomeNetSize,
+    hideNetSize,
+  )
+import ByteTypes.Data.Network.SomeNetDir.Internal
+  ( SomeNet,
+    SomeNetDir,
+    hideNetDir,
+    hideNetSizeDir,
+  )
+import ByteTypes.Data.Size (Size (..))
 
 -- $setup
 -- >>> import Numeric.Algebra.Additive.ASemigroup (ASemigroup (..))
@@ -45,101 +72,11 @@ import ByteTypes.Data.Size
 -- >>> import Numeric.Algebra.VectorSpace (VectorSpace (..))
 -- >>> import Numeric.Data.NonZero (unsafeNonZero)
 
--- $types
--- The are six main types exported in this module:
---
--- 1. 'Size': These are the size units that can be attached to a numeric bytes.
---
---     @
---     data 'Size' = 'B' | 'K' | 'M' | 'G' | 'T' | 'P' | 'E' | 'Z' | 'Y'
---     @
---
--- 2. 'Direction': These are the direction units that can be attached to a
--- numeric bytes.
---
---     @
---     data 'Direction' = 'Down' | 'Up'
---     @
---
--- 3. 'NetBytes': The core type, wraps a numeric value and includes 'Size'
---    and 'Direction' phantom types.
---
---     @
---     type 'NetBytes' :: 'Direction' -> 'Size' -> 'Data.Kind.Type' -> 'Data.Kind.Type'
---     newtype 'NetBytes' d s n = 'MkNetBytesP' { 'unNetBytesP' :: n }
---     @
---
--- 4. 'SomeNetSize': A GADT that wraps 'NetBytes' and existentially quantifies
--- the 'Size'.
---
---     @
---     type 'SomeNetSize' :: 'Direction' -> 'Data.Kind.Type' -> 'Data.Kind.Type'
---     data 'SomeNetSize' d n
---
---     'hideNetSize' :: forall d s n. 'SingSize' s => 'NetBytes' d s n -> 'SomeNetSize' d n
---     @
---
--- 5. 'SomeNetDir': A GADT that wraps 'NetBytes' and existentially quantifies
--- the 'Direction'.
---
---     @
---     type 'SomeNetDir' :: 'Size' -> 'Data.Kind.Type' -> 'Data.Kind.Type'
---     data 'SomeNetDir' s n
---
---     'hideNetDir' :: forall d s n. 'SingDirection' d => 'NetBytes' d s n -> 'SomeNetDir' s n
---     @
---
--- 6. 'SomeNet': A GADT that wraps 'NetBytes' and existentially quantifies
--- the 'Direction' and 'Size'.
---
---     @
---     type 'SomeNet' :: 'Data.Kind.Type' -> 'Data.Kind.Type'
---     data 'SomeNet' n
---
---     'hideNetSizeDir' :: forall d s n. ('SingDirection' d, 'SingSize' s) => 'NetBytes' d s n -> 'SomeNet' n
---     @
---
--- Types that hide the 'Size' (i.e. 'SomeNetSize' and 'SomeNet') define an
--- equivalence class that takes units into account. For instance,
---
--- >>> let some1 = hideNetSize (MkNetBytesP 7 :: NetBytes 'Up 'G Int)
--- >>> let some2 = hideNetSize (MkNetBytesP 7000 :: NetBytes 'Up 'M Int)
--- >>> let some3 = hideNetSize (MkNetBytesP 2 :: NetBytes 'Up 'T Int)
--- >>> some1 == some2
--- True
--- >>> some2 < some3
--- True
---
--- Most of the time the 'NetBytes' type should be preferred. 'SomeNetSize'
--- is useful when we do not know the 'Size' at compile-time (e.g. parsing the
--- output of @ls -lh@ at runtime), or when we use 'normalize'. In general,
--- once we wrap a 'NetBytes' in a 'SomeNetSize' we should think of the 'Size'
--- as being \"lost\", unless we explicitly recover it with a 'Conversion'
--- function. This is necessary for 'SomeNetSize'\'s algebraic instances
--- (e.g. 'Eq', 'Numeric.Algebra.Additive.AGroup.AGroup') to be lawful, as
--- functions that inspect the underlying size or numeric value can break the
--- equivalence class. Nevertheless, 'SomeNetSize'\'s internal representation
--- can be used to recover the size, in case this is needed
--- (see: "ByteTypes.Data.NetBytes.Internal").
---
--- For completeness, we also include the other existential quantification
--- combinations (i.e. 'SomeNetDir' and 'SomeNet' for when the 'Direction' is
--- unknown), though these are less likely to be useful.
---
--- == Modules
-
--- $transformations
---
--- == Pretty Printing
+-- $pretty
 --
 -- 'PrettyPrint', as the name suggests, is used for printing out bytes types
 -- in a prettier manner than 'show' (i.e. no constructors, added units,
 -- rounding).
---
--- @
--- class 'PrettyPrint' a where
---   'pretty' :: a -> 'String'
--- @
 --
 -- >>> let b1 = MkNetBytesP 50000 :: NetBytes 'Down 'M Int
 -- >>> let b2 = hideNetSize (MkNetBytesP 20.40684 :: NetBytes 'Down 'T Float)
@@ -147,15 +84,8 @@ import ByteTypes.Data.Size
 -- "50000 M Down"
 -- >>> pretty b2
 -- "20.41 T Down"
---
--- == Normalization
---
--- @
--- class 'Normalize' a where
---   type 'Norm' a
---   'normalize' :: a -> 'Norm' a
--- @
---
+
+-- $normalize
 -- This typeclass attempts to \"normalize\" a given bytes type such
 -- that the result is between 1 and 1000, provided this is possible (i.e. we
 -- cannot increase the max or decrease the min). Because the result type is
@@ -169,27 +99,11 @@ import ByteTypes.Data.Size
 -- >>> let bytes = hideNetSize (MkNetBytesP 0.01 :: NetBytes 'Up 'T Float)
 -- >>> normalize bytes
 -- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 10.0})
---
--- == Conversion
---
+
+-- $convert
 -- The 'Conversion' class allows one to transform a bytes type to any
 -- 'Size'. In the case of a type that has hidden the 'Size', we can use this
 -- to fix the 'Size' and \"undo\" the existential quantification.
---
--- @
--- class 'Conversion' a where
---   type 'Converted' (b :: 'Size') a = r | r -> b
---
---   'toB' :: a -> 'Converted' ''B' a
---   'toK' :: a -> 'Converted' ''K' a
---   'toM' :: a -> 'Converted' ''M' a
---   'toG' :: a -> 'Converted' ''G' a
---   'toT' :: a -> 'Converted' ''T' a
---   'toP' :: a -> 'Converted' ''P' a
---   'toE' :: a -> 'Converted' ''E' a
---   'toZ' :: a -> 'Converted' ''Z' a
---   'toY' :: a -> 'Converted' ''Y' a
--- @
 --
 -- >>> let bytes = MkNetBytesP 50_000 :: NetBytes 'Down 'M Int
 -- >>> let gBytes = toG bytes
@@ -204,8 +118,6 @@ import ByteTypes.Data.Size
 -- mBytes :: NetBytes 'Up 'M Float
 -- >>> mBytes
 -- MkNetBytesP {unNetBytesP = 200000.0}
---
--- == Modules
 
 -- $algebra
 --

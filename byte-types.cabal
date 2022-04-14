@@ -18,7 +18,7 @@ description:
   handling of unknown sizes at runtime.
   .
   The other module of interest is "ByteTypes.Network". This module has a
-  virtually identical API to ByteTypes.Bytes, but the types it provides
+  virtually identical API to "ByteTypes.Bytes", but the types it provides
   also track /direction/ (i.e. uploaded vs downloaded), for when this
   distinction is important (e.g. computing total uploaded network traffic).
   .

@@ -1,24 +1,18 @@
 {-# LANGUAGE UndecidableInstances #-}
 
--- | This module provides types for hiding the
--- 'ByteTypes.Data.Direction.Direction' on 'NetBytes'.
---
--- This paradigm differs from the previous size hiding
--- 'ByteTypes.Data.Bytes.SomeSize' and 'SomeNetSize' in that because we had
--- sensible ways to convert between sizes (e.g. K -> G), we could
--- combine arbitrary byte types by first converting to a common type.
---
--- Here, there is no sensible way to convert between uploaded and downloaded
--- byte directions by design. These units are meant to be kept separate.
--- While the witnesses allows us to recover the types at will (and we can
--- \"forget\" the direction tag by dropping to 'ByteTypes.Data.Bytes'),
--- we are much more limited in what we can do. For example, we lose instances
--- like 'Applicative', "Numeric.Algebra".
+-- | Internal module for "ByteTypes.Data.Network.SomeNetDir". The primary
+-- difference is this module exposes some underlying details that allow one to
+-- recover the 'Size'. For example, we expose 'someNetDirToSSize' and
+-- constructors 'MkSomeNetDir', 'MkSomeNet', which includes runtime witnesses
+-- 'SSize' and 'SDirection'. These are hidden by default as they complicate the
+-- API, and the latter can be used to break the equivalence-class
+-- based 'Eq'.
 --
 -- @since 0.1
 module ByteTypes.Data.Network.SomeNetDir.Internal
   ( SomeNetDir (..),
     hideNetDir,
+    someNetDirToSSize,
     SomeNet (..),
     hideNetSizeDir,
   )
@@ -39,35 +33,35 @@ import Numeric.Class.Literal (NumLiteral (..))
 -- $setup
 -- >>> import ByteTypes.Data.Direction (Direction (..))
 -- >>> import ByteTypes.Data.Network.NetBytes.Internal (NetBytes (..))
+-- >>> getMaxTrafficKRaw = pure (40, "Up")
+-- >>> getMaxTrafficRaw = pure (40, "Up", "M")
 
 -- | Wrapper for 'NetBytes', existentially quantifying the direction.
 -- This is useful when a function does not know a priori what
--- direction it should return,
--- e.g.,
+-- direction it should return e.g.
 --
--- @
+-- >>> :{
 --   getMaxTraffic :: IO (SomeNetDir K Double)
 --   getMaxTraffic = do
---     (bytes, direction) <- getMaxTrafficRaw
---     case direction of
---       "Down" -> hideNetDir @Down bytes
---       "Up" -> hideNetDir @Up bytes
---       ...
--- @
+--     -- getMaxTrafficKRaw :: IO (Double, String)
+--     (bytes, direction) <- getMaxTrafficKRaw
+--     pure $ case direction of
+--       "down" -> hideNetDir $ MkNetBytesP @Down bytes
+--       "up" -> hideNetDir $ MkNetBytesP @Up bytes
+--       _ -> error "bad direction"
+-- :}
 --
 -- We deliberately do not provide instances for SomeX classes that could be
 -- used to combine arbitrary 'SomeNetDir's (e.g. 'Applicative',
--- 'Simple.Algebra.Group'), as that would defeat the purpose of
--- enforcing the distinction between upload and downloaded bytes.
---
+-- 'Numeric.Algebra.Additive.AGroup.AGroup'), as that would defeat the purpose
+-- of enforcing the distinction between upload and downloaded bytes.
 --
 -- Equality is determined by the usual equivalence class -- that takes units
 -- into account -- and by considering the direction.
 --
---
--- >>> MkSomeNetDir SUp (MkNetBytesP @_ @K 1000) == MkSomeNetDir SUp (MkNetBytesP @_ @K 1000)
+-- >>> hideNetDir (MkNetBytesP @Up @K 1000) == hideNetDir (MkNetBytesP @Up @K 1000)
 -- True
--- >>> MkSomeNetDir SUp (MkNetBytesP @_ @K 1000) /= MkSomeNetDir SDown (MkNetBytesP @_ @K 1000)
+-- >>> hideNetDir (MkNetBytesP @Up @K 1000) /= hideNetDir (MkNetBytesP @Down @K 1000)
 -- True
 --
 -- Notice no 'Ord' instance is provided, as we provide no ordering for
@@ -78,6 +72,13 @@ type SomeNetDir :: Size -> Type -> Type
 data SomeNetDir s n where
   -- | @since 0.1
   MkSomeNetDir :: SDirection d -> NetBytes d s n -> SomeNetDir s n
+
+-- | Retrieves the 'SingSize' witness. Can be used to recover the
+-- 'Size'.
+--
+-- @since 0.1
+someNetDirToSSize :: SingSize s => SomeNetDir s n -> SSize s
+someNetDirToSSize _ = singSize
 
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetDir'.
 --
@@ -137,18 +138,18 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (SomeNetDir s n) where
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size /and/
 -- direction. This is useful when a function does not know a priori what
--- size or direction it should return,
--- e.g.,
+-- size or direction it should return e.g.
 --
--- @
+-- >>> :{
 --   getMaxTraffic :: IO (SomeNet Double)
 --   getMaxTraffic = do
+--     -- getMaxTrafficRaw :: IO (Double, String, String)
 --     (bytes, direction, size) <- getMaxTrafficRaw
---     case (direction, size) of
---       ("Down", "K") -> hideNetSizeDir @SDown @SK $ MkNetBytesP bytes
---       ("Up", "M") -> hideNetSizeDir @SUp @SM $ MkNetBytesP bytes
---       ...
--- @
+--     pure $ case (direction, size) of
+--       ("Down", "K") -> hideNetSizeDir $ MkNetBytesP @Down @K bytes
+--       ("Up", "M") -> hideNetSizeDir $ MkNetBytesP @Up @M bytes
+--       _ -> error "todo"
+-- :}
 --
 -- 'SomeNet' carries along 'SDirection' and 'SSize' runtime witnesses
 -- for recovering the 'ByteTypes.Data.Direction.Direction'
@@ -158,11 +159,10 @@ instance (PrettyPrint n, SingSize s) => PrettyPrint (SomeNetDir s n) where
 -- w.r.t the size, and also includes an equality check on the direction.
 -- Thus we have, for instance,
 --
---
--- >>> MkSomeNet SUp SK (MkNetBytesP 1_000) == MkSomeNet SUp SM (MkNetBytesP 1)
+-- >>> hideNetSizeDir (MkNetBytesP @Up @K 1_000) == hideNetSizeDir (MkNetBytesP @Up @M 1)
 -- True
 --
--- >>> MkSomeNet SUp SK (MkNetBytesP 1_000) /= MkSomeNet SDown SM (MkNetBytesP 1)
+-- >>> hideNetSizeDir (MkNetBytesP @Up @K 1_000) /= hideNetSizeDir (MkNetBytesP @Down @M 1)
 -- True
 --
 -- @since 0.1
