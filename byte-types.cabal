@@ -3,6 +3,7 @@ name:               byte-types
 version:            0.1
 license:            BSD-3-Clause
 license-file:       LICENSE
+tested-with:        GHC ==8.10.7 || ==9.0.2 || ==9.2.1
 copyright:          2021 Thomas Bidne
 author:             Thomas Bidne
 maintainer:         tbidne@prontonmail.com

@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-            - name: Setup nix
+      - name: Setup nix
         uses: cachix/install-nix-action@v13
         with:
           install_url: https://nixos-nix-install-tests.cachix.org/serve/pqndq1i9g5agiyr5iwwyl061s1c71kl6/install

@@ -1,5 +1,4 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 -- | Provides typeclasses for convert between byte sizes.
 --
