@@ -3,11 +3,7 @@
 -- | Property tests for 'Bytes'.
 module ByteTypes.Props.Data.Bytes (props) where
 
-import ByteTypes.Class.Conversion
-  ( Conversion (..),
-    DecSize (..),
-    IncSize (..),
-  )
+import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Bytes.Internal (Bytes (..), SomeSize (..))
@@ -23,10 +19,6 @@ import ByteTypes.Props.Verify.Normalize qualified as VNormalize
 import ByteTypes.Utils qualified as U
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
-import Numeric.Algebra (Field, MGroup (..), MSemigroup (..))
-import Numeric.Algebra qualified as Algebra
-import Numeric.Class.Literal (NumLiteral (..))
-import Numeric.Data.NonZero (NonZero)
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 
@@ -41,8 +33,6 @@ bytesProps :: [TestTree]
 bytesProps =
   [ unBytesProps,
     convertProps,
-    incProps,
-    decProps,
     normalizeProps,
     bytesEqProps,
     bytesOrdProps,
@@ -109,49 +99,6 @@ convert bytes@(MkBytes x) convertAndTestFn = do
       zRes = Bytes.unBytes $ toZ bytes
       yRes = Bytes.unBytes $ toY bytes
   convertAndTestFn MkResultConvs {..}
-
-incProps :: TestTree
-incProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "Bytes increasing label reduces size by 1,000" "incProps" $
-    H.withTests limit $
-      H.property $ do
-        (MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
-        let (expected, result) :: (Rational, Rational) = case sz of
-              SY -> (x, Bytes.unBytes bytes)
-              SB -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
-              SK -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
-              SM -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
-              SG -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
-              ST -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
-              SP -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
-              SE -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
-              SZ -> Size.withSingSize sz (x .%. divisor, Bytes.unBytes (next bytes))
-        H.footnote $ "expected: " <> show expected
-        H.footnote $ " result: " <> show result
-        result === expected
-  where
-    divisor :: NonZero Rational
-    divisor = nzFromLit 1_000
-
-decProps :: TestTree
-decProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "Bytes decreasing label multiplies size by 1,000" "decProps" $
-    H.withTests limit $
-      H.property $ do
-        (MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genNormalizedBytes
-        let (expected, result) :: (Rational, Rational) = case sz of
-              SB -> (x, Bytes.unBytes bytes)
-              SK -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SM -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SG -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              ST -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SP -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SE -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SZ -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-              SY -> Size.withSingSize sz (x .*. 1_000, Bytes.unBytes (prev bytes))
-        H.footnote $ "expected: " <> show expected
-        H.footnote $ " result: " <> show result
-        result === expected
 
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -288,6 +235,3 @@ someNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         normalize x === Size.withSingSize szx (normalize bytes)
         -- laws
         VNormalize.normalizeLaws x y k nz
-
-nzFromLit :: (Field n, NumLiteral n) => Integer -> NonZero n
-nzFromLit = Algebra.unsafeAMonoidNonZero . fromLit

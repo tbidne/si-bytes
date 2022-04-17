@@ -4,33 +4,17 @@
 --
 -- @since 0.1
 module ByteTypes.Class.Conversion
-  ( DecSize (..),
-    IncSize (..),
-    Conversion (..),
+  ( Conversion (..),
     convert,
     convertWitness,
   )
 where
 
-import ByteTypes.Data.Size (NextSize, PrevSize, SSize (..), SingSize (..), Size (..))
+import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import Numeric.Algebra (AMonoid (..), MGroup (..), MSemigroup (..))
 import Numeric.Algebra qualified as Algebra
 import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (NonZero (..))
-
--- | Typeclass for decrementing bytes to the next units.
---
--- @since 0.1
-class DecSize a where
-  -- | @since 0.1
-  prev :: a -> PrevSize a
-
--- | Typeclass for increasing bytes to the next units.
---
--- @since 0.1
-class IncSize a where
-  -- | @since 0.1
-  next :: a -> NextSize a
 
 -- | Provides a common interface for converting between byte sizes.
 --

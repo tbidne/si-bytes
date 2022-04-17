@@ -20,11 +20,7 @@ module ByteTypes.Data.Bytes.Internal
   )
 where
 
-import ByteTypes.Class.Conversion
-  ( Conversion (..),
-    DecSize (..),
-    IncSize (..),
-  )
+import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Conversion qualified as Conv
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
@@ -175,118 +171,6 @@ instance
   toY (MkBytes x) = MkBytes $ Conv.convertWitness @s Y x
 
 -- | @since 0.1
-type instance NextSize (Bytes 'B n) = Bytes 'K n
-
--- | @since 0.1
-type instance NextSize (Bytes 'K n) = Bytes 'M n
-
--- | @since 0.1
-type instance NextSize (Bytes 'M n) = Bytes 'G n
-
--- | @since 0.1
-type instance NextSize (Bytes 'G n) = Bytes 'T n
-
--- | @since 0.1
-type instance NextSize (Bytes 'T n) = Bytes 'P n
-
--- | @since 0.1
-type instance NextSize (Bytes 'P n) = Bytes 'E n
-
--- | @since 0.1
-type instance NextSize (Bytes 'E n) = Bytes 'Z n
-
--- | @since 0.1
-type instance NextSize (Bytes 'Z n) = Bytes 'Y n
-
--- | @since 0.1
-instance (Field n, NumLiteral n) => IncSize (Bytes 'B n) where
-  next x = resizeBytes $ x .% nzFromLit @n 1_000
-
--- | @since 0.1
-instance (Field n, NumLiteral n) => IncSize (Bytes 'K n) where
-  next x = resizeBytes $ x .% nzFromLit @n 1_000
-
--- | @since 0.1
-instance (Field n, NumLiteral n) => IncSize (Bytes 'M n) where
-  next x = resizeBytes $ x .% nzFromLit @n 1_000
-
--- | @since 0.1
-instance (Field n, NumLiteral n) => IncSize (Bytes 'G n) where
-  next x = resizeBytes $ x .% nzFromLit @n 1_000
-
--- | @since 0.1
-instance (Field n, NumLiteral n) => IncSize (Bytes 'T n) where
-  next x = resizeBytes $ x .% nzFromLit @n 1_000
-
--- | @since 0.1
-instance (Field n, NumLiteral n) => IncSize (Bytes 'P n) where
-  next x = resizeBytes $ x .% nzFromLit @n 1_000
-
--- | @since 0.1
-instance (Field n, NumLiteral n) => IncSize (Bytes 'E n) where
-  next x = resizeBytes $ x .% nzFromLit @n 1_000
-
--- | @since 0.1
-instance (Field n, NumLiteral n) => IncSize (Bytes 'Z n) where
-  next x = resizeBytes $ x .% nzFromLit @n 1_000
-
--- | @since 0.1
-type instance PrevSize (Bytes 'K n) = Bytes 'B n
-
--- | @since 0.1
-type instance PrevSize (Bytes 'M n) = Bytes 'K n
-
--- | @since 0.1
-type instance PrevSize (Bytes 'G n) = Bytes 'M n
-
--- | @since 0.1
-type instance PrevSize (Bytes 'T n) = Bytes 'G n
-
--- | @since 0.1
-type instance PrevSize (Bytes 'P n) = Bytes 'T n
-
--- | @since 0.1
-type instance PrevSize (Bytes 'E n) = Bytes 'P n
-
--- | @since 0.1
-type instance PrevSize (Bytes 'Z n) = Bytes 'E n
-
--- | @since 0.1
-type instance PrevSize (Bytes 'Y n) = Bytes 'Z n
-
--- | @since 0.1
-instance (NumLiteral n, Ring n) => DecSize (Bytes 'K n) where
-  prev x = resizeBytes $ x .* fromLit @n 1_000
-
--- | @since 0.1
-instance (NumLiteral n, Ring n) => DecSize (Bytes 'M n) where
-  prev x = resizeBytes $ x .* fromLit @n 1_000
-
--- | @since 0.1
-instance (NumLiteral n, Ring n) => DecSize (Bytes 'G n) where
-  prev x = resizeBytes $ x .* fromLit @n 1_000
-
--- | @since 0.1
-instance (NumLiteral n, Ring n) => DecSize (Bytes 'T n) where
-  prev x = resizeBytes $ x .* fromLit @n 1_000
-
--- | @since 0.1
-instance (NumLiteral n, Ring n) => DecSize (Bytes 'P n) where
-  prev x = resizeBytes $ x .* fromLit @n 1_000
-
--- | @since 0.1
-instance (NumLiteral n, Ring n) => DecSize (Bytes 'E n) where
-  prev x = resizeBytes $ x .* fromLit @n 1_000
-
--- | @since 0.1
-instance (NumLiteral n, Ring n) => DecSize (Bytes 'Z n) where
-  prev x = resizeBytes $ x .* fromLit @n 1_000
-
--- | @since 0.1
-instance (NumLiteral n, Ring n) => DecSize (Bytes 'Y n) where
-  prev x = resizeBytes $ x .* fromLit @n 1_000
-
--- | @since 0.1
 instance forall n s. (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (Bytes s n) where
   type Norm (Bytes s n) = SomeSize n
 
@@ -294,37 +178,37 @@ instance forall n s. (Field n, NumLiteral n, Ord n, SingSize s) => Normalize (By
     case bytesToSSize bytes of
       SB
         | absBytes < fromLit 1_000 -> MkSomeSize SB bytes
-        | otherwise -> normalize $ next bytes
+        | otherwise -> normalize $ incSize bytes
       SY
         | absBytes >= fromLit 1 -> MkSomeSize SY bytes
-        | otherwise -> normalize $ prev bytes
+        | otherwise -> normalize $ decSize bytes
       SK
-        | absBytes < fromLit 1 -> normalize $ prev bytes
-        | absBytes >= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ decSize bytes
+        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SM
-        | absBytes < fromLit 1 -> normalize $ prev bytes
-        | absBytes >= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ decSize bytes
+        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SG
-        | absBytes < fromLit 1 -> normalize $ prev bytes
-        | absBytes >= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ decSize bytes
+        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       ST
-        | absBytes < fromLit 1 -> normalize $ prev bytes
-        | absBytes >= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ decSize bytes
+        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SP
-        | absBytes < fromLit 1 -> normalize $ prev bytes
-        | absBytes >= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ decSize bytes
+        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SE
-        | absBytes < fromLit 1 -> normalize $ prev bytes
-        | absBytes >= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ decSize bytes
+        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SZ
-        | absBytes < fromLit 1 -> normalize $ prev bytes
-        | absBytes >= fromLit 1_000 -> normalize $ next bytes
+        | absBytes < fromLit 1 -> normalize $ decSize bytes
+        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
     where
       sz = bytesToSSize bytes
@@ -462,6 +346,34 @@ instance (Field n, NumLiteral n, Ord n) => Normalize (SomeSize n) where
 -- | @since 0.1
 instance PrettyPrint n => PrettyPrint (SomeSize n) where
   pretty (MkSomeSize sz b) = Size.withSingSize sz $ pretty b
+
+-- | Increases 'Bytes' to the next size.
+--
+-- ==== __Examples__
+--
+-- >>> incSize $ MkBytes @M @Float 2_500
+-- MkBytes {unBytes = 2.5}
+--
+-- >>> -- type error: "The byte unit Y does not have a 'next size'."
+-- >>> --incSize $ MkBytes @Y @Float 2_500
+--
+-- @since 0.1
+incSize :: forall s n. (NumLiteral n, Field n) => Bytes s n -> Bytes (NextSize s) n
+incSize = resizeBytes . (.% nzFromLit @n 1_000)
+
+-- | Decreases 'Bytes' to the previous size.
+--
+-- ==== __Examples__
+--
+-- >>> decSize $ MkBytes @M @Float 2.5
+-- MkBytes {unBytes = 2500.0}
+--
+-- >>> -- type error: "The byte unit B does not have a 'previous size'."
+-- >>> --decSize $ MkBytes @B @Float 2.5
+--
+-- @since 0.1
+decSize :: forall s n. (NumLiteral n, Field n) => Bytes s n -> Bytes (PrevSize s) n
+decSize = resizeBytes . (.* fromLit @n 1_000)
 
 nzFromLit :: forall n. (AMonoid n, NumLiteral n) => Integer -> NonZero n
 nzFromLit = Algebra.unsafeAMonoidNonZero . fromLit

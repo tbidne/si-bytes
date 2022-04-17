@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 -- | Provides the 'Size' type and typeclasses for converting
 -- between units.
 --
@@ -17,6 +19,7 @@ where
 
 import Data.Kind (Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
+import GHC.TypeLits (ErrorMessage (..), TypeError)
 
 -- | Byte units.
 --
@@ -161,58 +164,50 @@ withSingSize s x = case s of
 
 -- | Type family that relates units to the next larger one.
 --
+-- ==== __Examples__
+--
+-- >>> :kind! NextSize 'M
+-- NextSize 'M :: Size
+-- = 'G
+--
+-- >>> :kind! NextSize 'Y
+-- NextSize 'Y :: Size
+-- = (TypeError ...)
+--
 -- @since 0.1
-type NextSize :: forall k. k -> k
-type family NextSize a = r | r -> a
-
--- | @since 0.1
-type instance NextSize 'B = 'K
-
--- | @since 0.1
-type instance NextSize 'K = 'M
-
--- | @since 0.1
-type instance NextSize 'M = 'G
-
--- | @since 0.1
-type instance NextSize 'G = 'T
-
--- | @since 0.1
-type instance NextSize 'T = 'P
-
--- | @since 0.1
-type instance NextSize 'P = 'E
-
--- | @since 0.1
-type instance NextSize 'E = 'Z
-
--- | @since 0.1
-type instance NextSize 'Z = 'Y
+type NextSize :: Size -> Size
+type family NextSize s = t where
+  NextSize 'B = 'K
+  NextSize 'K = 'M
+  NextSize 'M = 'G
+  NextSize 'G = 'T
+  NextSize 'T = 'P
+  NextSize 'P = 'E
+  NextSize 'E = 'Z
+  NextSize 'Z = 'Y
+  NextSize 'Y = TypeError ('Text "The byte unit Y does not have a 'next size'.")
 
 -- | Type family that relates units to the previous smaller one.
-type PrevSize :: forall k. k -> k
-type family PrevSize a = r | r -> a
-
--- | @since 0.1
-type instance PrevSize 'K = 'B
-
--- | @since 0.1
-type instance PrevSize 'M = 'K
-
--- | @since 0.1
-type instance PrevSize 'G = 'M
-
--- | @since 0.1
-type instance PrevSize 'T = 'G
-
--- | @since 0.1
-type instance PrevSize 'P = 'T
-
--- | @since 0.1
-type instance PrevSize 'E = 'P
-
--- | @since 0.1
-type instance PrevSize 'Z = 'E
-
--- | @since 0.1
-type instance PrevSize 'Y = 'Z
+--
+-- ==== __Examples__
+--
+-- >>> :kind! PrevSize 'M
+-- PrevSize 'M :: Size
+-- = 'K
+--
+-- >>> :kind! PrevSize 'B
+-- PrevSize 'B :: Size
+-- = (TypeError ...)
+--
+-- @since 0.1
+type PrevSize :: Size -> Size
+type family PrevSize s = t where
+  PrevSize 'B = TypeError ('Text "The byte unit B does not have a 'previous size'.")
+  PrevSize 'K = 'B
+  PrevSize 'M = 'K
+  PrevSize 'G = 'M
+  PrevSize 'T = 'G
+  PrevSize 'P = 'T
+  PrevSize 'E = 'P
+  PrevSize 'Z = 'E
+  PrevSize 'Y = 'Z

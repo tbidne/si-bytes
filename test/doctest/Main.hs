@@ -21,6 +21,7 @@ files =
     "src/ByteTypes/Data/Bytes/Internal.hs",
     "src/ByteTypes/Data/Network/NetBytes/Internal.hs",
     "src/ByteTypes/Data/Network/SomeNetDir/Internal.hs",
+    "src/ByteTypes/Data/Size.hs",
     "src/ByteTypes/Network.hs"
   ]
 
