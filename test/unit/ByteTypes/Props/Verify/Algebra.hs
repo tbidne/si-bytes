@@ -22,8 +22,9 @@ import Numeric.Algebra
     MGroup (..),
     MMonoid (..),
     MSemigroup (..),
-    Module (..),
+    Module,
     Ring,
+    Semimodule (..),
     VectorSpace (..),
   )
 import Numeric.Algebra qualified as Algebra

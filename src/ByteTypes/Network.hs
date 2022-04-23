@@ -68,7 +68,7 @@ import ByteTypes.Data.Size (Size (..))
 -- $setup
 -- >>> import Numeric.Algebra.Additive.ASemigroup (ASemigroup (..))
 -- >>> import Numeric.Algebra.Additive.AGroup (AGroup (..))
--- >>> import Numeric.Algebra.Module (Module (..))
+-- >>> import Numeric.Algebra.Semimodule (Semimodule (..))
 -- >>> import Numeric.Algebra.VectorSpace (VectorSpace (..))
 -- >>> import Numeric.Data.NonZero (unsafeNonZero)
 

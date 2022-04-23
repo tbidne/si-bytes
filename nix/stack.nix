@@ -10,7 +10,7 @@ let
   compiler = pkgs.haskell.packages."${compilerVersion}";
 in
 pkgs.haskell.lib.buildStackProject {
-  name = "algebra-simple";
+  name = "byte-types";
 
   buildInputs = with pkgs; [
     git

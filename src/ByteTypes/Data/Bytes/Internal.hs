@@ -43,8 +43,10 @@ import Numeric.Algebra
     Field,
     MGroup (..),
     MSemigroup (..),
-    Module (..),
+    Module,
     Ring,
+    Semimodule (..),
+    Semiring,
     VectorSpace (..),
   )
 import Numeric.Algebra qualified as Algebra
@@ -134,8 +136,11 @@ instance AGroup n => AGroup (Bytes s n) where
   aabs = fmap aabs
 
 -- | @since 0.1
-instance Ring n => Module (Bytes s n) n where
+instance Semiring n => Semimodule (Bytes s n) n where
   MkBytes x .* k = MkBytes $ x .*. k
+
+-- | @since 0.1
+instance Ring n => Module (Bytes s n) n
 
 -- | @since 0.1
 instance Field n => VectorSpace (Bytes s n) n where
@@ -309,8 +314,11 @@ instance (Field n, NumLiteral n, Ord n) => AGroup (SomeSize n) where
   aabs = fmap aabs
 
 -- | @since 0.1
-instance (Field n, NumLiteral n, Ord n) => Module (SomeSize n) n where
+instance (Field n, NumLiteral n, Ord n) => Semimodule (SomeSize n) n where
   MkSomeSize sz x .* k = normalize $ MkSomeSize sz $ x .* k
+
+-- | @since 0.1
+instance (Field n, NumLiteral n, Ord n) => Module (SomeSize n) n
 
 -- | @since 0.1
 instance (Field n, NumLiteral n, Ord n) => VectorSpace (SomeSize n) n where
