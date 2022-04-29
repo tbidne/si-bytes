@@ -18,8 +18,14 @@
 -- @since 0.1
 module ByteTypes.Data.Network.SomeNetDir
   ( SomeNetDir,
+    Internal.unSomeNetDir,
+    Internal.someNetDirToSize,
+    Internal.someNetDirToDirection,
     hideNetDir,
     SomeNet,
+    Internal.unSomeNet,
+    Internal.someNetToSize,
+    Internal.someNetToDirection,
     hideNetSizeDir,
   )
 where
@@ -30,3 +36,4 @@ import ByteTypes.Data.Network.SomeNetDir.Internal
     hideNetDir,
     hideNetSizeDir,
   )
+import ByteTypes.Data.Network.SomeNetDir.Internal qualified as Internal

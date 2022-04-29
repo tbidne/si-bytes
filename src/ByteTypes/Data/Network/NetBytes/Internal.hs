@@ -15,12 +15,17 @@ module ByteTypes.Data.Network.NetBytes.Internal
     NetBytes (.., MkNetBytesP),
     unNetBytesP,
     netToSSize,
+    netToSize,
     netToSDirection,
+    netToDirection,
 
     -- * Unknown Size
     SomeNetSize (..),
+    unSomeNetSize,
     hideNetSize,
+    someNetSizeToSize,
     someNetSizeToSDirection,
+    someNetSizeToDirection,
   )
 where
 
@@ -33,6 +38,7 @@ import ByteTypes.Data.Direction
     SDirection (..),
     SingDirection (..),
   )
+import ByteTypes.Data.Direction qualified as Direction
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Control.Applicative (liftA2)
@@ -108,6 +114,17 @@ pattern MkNetBytesP x <-
 netToSDirection :: SingDirection d => NetBytes d s n -> SDirection d
 netToSDirection _ = singDirection
 
+-- | Recovers the direction.
+--
+-- ==== __Examples__
+--
+-- >>> netToDirection $ MkNetBytesP @Up @M 10
+-- Up
+--
+-- @since 0.1
+netToDirection :: SingDirection d => NetBytes d s n -> Direction
+netToDirection = Direction.sdirectionToDirection . netToSDirection
+
 -- | Retrieves the 'SingSize' witness. Can be used to recover the 'Size'.
 --
 -- >>> netToSSize (MkNetBytesP @Down @K @Int 7)
@@ -116,6 +133,17 @@ netToSDirection _ = singDirection
 -- @since 0.1
 netToSSize :: SingSize s => NetBytes d s n -> SSize s
 netToSSize _ = singSize
+
+-- | Recovers the size.
+--
+-- ==== __Examples__
+--
+-- >>> netToSize (MkNetBytesP @Up @M 8)
+-- M
+--
+-- @since 0.1
+netToSize :: SingSize s => NetBytes d s n -> Size
+netToSize = Size.ssizeToSize . netToSSize
 
 -- | @since 0.1
 instance Show n => Show (NetBytes d s n) where
@@ -248,6 +276,12 @@ data SomeNetSize d n where
   -- | @since 0.1
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 
+-- | Unwraps the 'SomeNetSize'.
+--
+-- @since 0.1
+unSomeNetSize :: SomeNetSize d n -> n
+unSomeNetSize (MkSomeNetSize _ b) = unNetBytesP b
+
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetSize'.
 --
 -- @since 0.1
@@ -341,3 +375,25 @@ instance (PrettyPrint n, SingDirection d) => PrettyPrint (SomeNetSize d n) where
 -- @since 0.1
 someNetSizeToSDirection :: SingDirection d => SomeNetSize d n -> SDirection d
 someNetSizeToSDirection _ = singDirection
+
+-- | Recovers the direction.
+--
+-- ==== __Examples__
+--
+-- >>> someNetSizeToDirection $ hideNetSize (MkNetBytesP @Up @M 8)
+-- Up
+--
+-- @since 0.1
+someNetSizeToDirection :: SingDirection d => SomeNetSize d n -> Direction
+someNetSizeToDirection = Direction.sdirectionToDirection . someNetSizeToSDirection
+
+-- | Recovers the size.
+--
+-- ==== __Examples__
+--
+-- >>> someNetSizeToSize $ hideNetSize (MkNetBytesP @Up @M 8)
+-- M
+--
+-- @since 0.1
+someNetSizeToSize :: SomeNetSize d n -> Size
+someNetSizeToSize (MkSomeNetSize sz _) = Size.ssizeToSize sz

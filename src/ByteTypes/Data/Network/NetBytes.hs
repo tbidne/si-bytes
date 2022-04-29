@@ -7,10 +7,15 @@ module ByteTypes.Data.Network.NetBytes
   ( -- * Network Bytes
     NetBytes (MkNetBytesP),
     unNetBytesP,
+    Internal.netToSize,
+    Internal.netToDirection,
+    hideNetSize,
 
     -- * Unknown Size
     SomeNetSize,
-    hideNetSize,
+    Internal.unSomeNetSize,
+    Internal.someNetSizeToSize,
+    Internal.someNetSizeToDirection,
   )
 where
 
@@ -20,3 +25,4 @@ import ByteTypes.Data.Network.NetBytes.Internal
     hideNetSize,
     unNetBytesP,
   )
+import ByteTypes.Data.Network.NetBytes.Internal qualified as Internal

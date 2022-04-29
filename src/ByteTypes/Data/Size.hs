@@ -10,6 +10,7 @@ module ByteTypes.Data.Size
     SSize (..),
     SingSize (..),
     withSingSize,
+    ssizeToSize,
 
     -- * Type Families for Relating Tags
     NextSize,
@@ -93,6 +94,18 @@ data SSize s where
   SZ :: SSize 'Z
   -- | @since 0.1
   SY :: SSize 'Y
+
+-- | @since 0.1
+ssizeToSize :: SSize s -> Size
+ssizeToSize SB = B
+ssizeToSize SK = K
+ssizeToSize SM = M
+ssizeToSize SG = G
+ssizeToSize ST = T
+ssizeToSize SP = P
+ssizeToSize SE = E
+ssizeToSize SZ = Z
+ssizeToSize SY = Y
 
 -- | @since 0.1
 instance TestEquality SSize where

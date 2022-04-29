@@ -19,8 +19,13 @@ module ByteTypes.Bytes
 
     -- ** Bytes
     Bytes (..),
-    SomeSize,
+    Bytes.bytesToSize,
+
+    -- *** Unknown Size
     hideSize,
+    SomeSize,
+    Bytes.unSomeSize,
+    Bytes.someSizeToSize,
 
     -- * Transformations
 
@@ -45,6 +50,7 @@ import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Bytes (Bytes (..), SomeSize, hideSize)
+import ByteTypes.Data.Bytes qualified as Bytes
 import ByteTypes.Data.Size (Size (..))
 
 -- $setup

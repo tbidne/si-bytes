@@ -11,19 +11,26 @@
 -- @since 0.1
 module ByteTypes.Data.Network.SomeNetDir.Internal
   ( SomeNetDir (..),
+    unSomeNetDir,
     hideNetDir,
     someNetDirToSSize,
+    someNetDirToSize,
+    someNetDirToDirection,
     SomeNet (..),
+    unSomeNet,
     hideNetSizeDir,
+    someNetToSize,
+    someNetToDirection,
   )
 where
 
 import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
-import ByteTypes.Data.Direction (SDirection (..), SingDirection (..))
+import ByteTypes.Data.Direction (Direction (..), SDirection (..), SingDirection (..))
 import ByteTypes.Data.Direction qualified as Direction
 import ByteTypes.Data.Network.NetBytes.Internal (NetBytes, SomeNetSize (..))
+import ByteTypes.Data.Network.NetBytes.Internal qualified as Internal
 import ByteTypes.Data.Size (SSize (..), SingSize (..), Size (..))
 import ByteTypes.Data.Size qualified as Size
 import Data.Kind (Type)
@@ -73,12 +80,40 @@ data SomeNetDir s n where
   -- | @since 0.1
   MkSomeNetDir :: SDirection d -> NetBytes d s n -> SomeNetDir s n
 
+-- | Unwraps the 'SomeNetDir'.
+--
+-- @since 0.1
+unSomeNetDir :: SomeNetDir s n -> n
+unSomeNetDir (MkSomeNetDir _ b) = Internal.unNetBytesP b
+
 -- | Retrieves the 'SingSize' witness. Can be used to recover the
 -- 'Size'.
 --
 -- @since 0.1
 someNetDirToSSize :: SingSize s => SomeNetDir s n -> SSize s
 someNetDirToSSize _ = singSize
+
+-- | Recovers the size.
+--
+-- ==== __Examples__
+--
+-- >>> someNetDirToSize $ hideNetDir (MkNetBytesP @Up @T 4)
+-- T
+--
+-- @since 0.1
+someNetDirToSize :: SingSize s => SomeNetDir s n -> Size
+someNetDirToSize = Size.ssizeToSize . someNetDirToSSize
+
+-- | Recovers the direction.
+--
+-- ==== __Examples__
+--
+-- >>> someNetDirToSize $ hideNetDir (MkNetBytesP @Down @T 4)
+-- T
+--
+-- @since 0.1
+someNetDirToDirection :: SomeNetDir s n -> Direction
+someNetDirToDirection (MkSomeNetDir d _) = Direction.sdirectionToDirection d
 
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetDir'.
 --
@@ -171,6 +206,12 @@ data SomeNet n where
   -- | @since 0.1
   MkSomeNet :: SDirection d -> SSize s -> NetBytes d s n -> SomeNet n
 
+-- | Unwraps the 'SomeNetDir'.
+--
+-- @since 0.1
+unSomeNet :: SomeNet n -> n
+unSomeNet (MkSomeNet _ _ b) = Internal.unNetBytesP b
+
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNet'.
 --
 -- @since 0.1
@@ -249,3 +290,25 @@ instance PrettyPrint n => PrettyPrint (SomeNet n) where
   pretty (MkSomeNet dir sz x) =
     Direction.withSingDirection dir $
       Size.withSingSize sz $ pretty x
+
+-- | Recovers the direction.
+--
+-- ==== __Examples__
+--
+-- >>> someNetToSize $ hideNetSizeDir (MkNetBytesP @Down @T 4)
+-- T
+--
+-- @since 0.1
+someNetToSize :: SomeNet n -> Size
+someNetToSize (MkSomeNet _ sz _) = Size.ssizeToSize sz
+
+-- | Recovers the direction.
+--
+-- ==== __Examples__
+--
+-- >>> someNetToDirection $ hideNetSizeDir (MkNetBytesP @Up @T 4)
+-- Up
+--
+-- @since 0.1
+someNetToDirection :: SomeNet n -> Direction
+someNetToDirection (MkSomeNet d _ _) = Direction.sdirectionToDirection d

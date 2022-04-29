@@ -7,6 +7,7 @@ module ByteTypes.Data.Direction
     SDirection (..),
     SingDirection (..),
     withSingDirection,
+    sdirectionToDirection,
   )
 where
 
@@ -40,6 +41,11 @@ data SDirection d where
 
 -- | @since 0.1
 deriving stock instance Show (SDirection d)
+
+-- | @since 0.1
+sdirectionToDirection :: SDirection d -> Direction
+sdirectionToDirection SDown = Down
+sdirectionToDirection SUp = Up
 
 -- | @since 0.1
 instance TestEquality SDirection where

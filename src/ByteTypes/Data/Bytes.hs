@@ -6,11 +6,15 @@
 module ByteTypes.Data.Bytes
   ( -- * Bytes
     Bytes (..),
+    Internal.bytesToSize,
+    Internal.hideSize,
 
     -- * Unknown Size
     SomeSize,
-    hideSize,
+    Internal.unSomeSize,
+    Internal.someSizeToSize,
   )
 where
 
-import ByteTypes.Data.Bytes.Internal (Bytes (..), SomeSize, hideSize)
+import ByteTypes.Data.Bytes.Internal (Bytes (..), SomeSize)
+import ByteTypes.Data.Bytes.Internal qualified as Internal

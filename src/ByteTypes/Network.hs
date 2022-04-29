@@ -22,12 +22,30 @@ module ByteTypes.Network
 
     -- ** Bytes
     NetBytes (..),
-    SomeNetSize,
+    NetBytes.unNetBytesP,
+    NetBytes.netToSize,
+    NetBytes.netToDirection,
+
+    -- *** Unknown Size
     hideNetSize,
+    SomeNetSize,
+    NetBytes.unSomeNetSize,
+    NetBytes.someNetSizeToSize,
+    NetBytes.someNetSizeToDirection,
+
+    -- *** Unknown Direction
+    SomeNetDir.hideNetDir,
     SomeNetDir,
-    hideNetDir,
+    SomeNetDir.unSomeNetDir,
+    SomeNetDir.someNetDirToSize,
+    SomeNetDir.someNetDirToDirection,
+
+    -- *** Unknown Size and Direction
+    SomeNetDir.hideNetSizeDir,
     SomeNet,
-    hideNetSizeDir,
+    SomeNetDir.unSomeNet,
+    SomeNetDir.someNetToSize,
+    SomeNetDir.someNetToDirection,
 
     -- * Transformations
 
@@ -52,17 +70,10 @@ import ByteTypes.Class.Conversion (Conversion (..))
 import ByteTypes.Class.Normalize (Normalize (..))
 import ByteTypes.Class.PrettyPrint (PrettyPrint (..))
 import ByteTypes.Data.Direction (Direction (..))
-import ByteTypes.Data.Network.NetBytes.Internal
-  ( NetBytes (..),
-    SomeNetSize,
-    hideNetSize,
-  )
-import ByteTypes.Data.Network.SomeNetDir.Internal
-  ( SomeNet,
-    SomeNetDir,
-    hideNetDir,
-    hideNetSizeDir,
-  )
+import ByteTypes.Data.Network.NetBytes (NetBytes (..), SomeNetSize, hideNetSize)
+import ByteTypes.Data.Network.NetBytes qualified as NetBytes
+import ByteTypes.Data.Network.SomeNetDir (SomeNet, SomeNetDir)
+import ByteTypes.Data.Network.SomeNetDir qualified as SomeNetDir
 import ByteTypes.Data.Size (Size (..))
 
 -- $setup

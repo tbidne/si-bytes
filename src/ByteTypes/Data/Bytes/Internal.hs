@@ -12,11 +12,14 @@
 module ByteTypes.Data.Bytes.Internal
   ( -- * Bytes
     Bytes (..),
+    bytesToSize,
     bytesToSSize,
 
     -- * Unknown Size
     SomeSize (..),
+    unSomeSize,
     hideSize,
+    someSizeToSize,
   )
 where
 
@@ -91,6 +94,17 @@ newtype Bytes s n = MkBytes
 -- @since 0.1
 resizeBytes :: Bytes s n -> Bytes t n
 resizeBytes (MkBytes x) = MkBytes x
+
+-- | Recovers the size.
+--
+-- ==== __Examples__
+--
+-- >>> bytesToSize $ MkBytes @G 10
+-- G
+--
+-- @since 0.1
+bytesToSize :: SingSize s => Bytes s n -> Size
+bytesToSize = Size.ssizeToSize . bytesToSSize
 
 -- | Retrieves the 'SSize' witness. Can be used to recover the 'Size'.
 --
@@ -276,6 +290,12 @@ data SomeSize n where
   -- | @since 0.1
   MkSomeSize :: SSize s -> Bytes s n -> SomeSize n
 
+-- | Unwraps the 'SomeSize'.
+--
+-- @since 0.1
+unSomeSize :: SomeSize n -> n
+unSomeSize (MkSomeSize _ b) = unBytes b
+
 -- | Wraps a 'Bytes' in an existentially quantified 'SomeSize'.
 --
 -- @since 0.1
@@ -290,6 +310,17 @@ hideSize bytes = case singSize @s of
   SE -> MkSomeSize SE bytes
   SZ -> MkSomeSize SZ bytes
   SY -> MkSomeSize SY bytes
+
+-- | Recovers the size.
+--
+-- ==== __Examples__
+--
+-- >>> someSizeToSize $ hideSize $ MkBytes @G 10
+-- G
+--
+-- @since 0.1
+someSizeToSize :: SomeSize n -> Size
+someSizeToSize (MkSomeSize sz _) = Size.ssizeToSize sz
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeSize n)
