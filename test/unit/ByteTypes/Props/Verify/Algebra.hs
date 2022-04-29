@@ -25,7 +25,8 @@ import Numeric.Algebra
     Module,
     Ring,
     Semimodule (..),
-    VectorSpace (..),
+    SemivectorSpace (..),
+    VectorSpace,
   )
 import Numeric.Algebra qualified as Algebra
 import Numeric.Data.NonZero (NonZero (..))

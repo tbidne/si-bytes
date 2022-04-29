@@ -15,7 +15,8 @@ import Numeric.Algebra
     AMonoid (..),
     ASemigroup (..),
     Semimodule (..),
-    VectorSpace (..),
+    SemivectorSpace (..),
+    VectorSpace,
   )
 import Numeric.Data.NonZero (NonZero (..))
 
