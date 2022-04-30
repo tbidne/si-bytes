@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -25,7 +26,6 @@ import Control.DeepSeq (NFData)
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Conversion qualified as Conv
 import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.PrettyPrint (PrettyPrint (..))
 import Data.Bytes.Size
   ( NextSize,
     PrevSize,
@@ -35,6 +35,9 @@ import Data.Bytes.Size
   )
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
+#if !MIN_VERSION_prettyprinter(1, 7, 1)
+import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
+#endif
 import GHC.Generics (Generic)
 import Numeric.Algebra
   ( AGroup (..),
@@ -54,6 +57,9 @@ import Numeric.Algebra
 import Numeric.Algebra qualified as Algebra
 import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (NonZero (..))
+#if MIN_VERSION_prettyprinter(1, 7, 1)
+import Prettyprinter (Pretty (..), (<+>))
+#endif
 
 -- $setup
 -- >>> getRawFileSize _ = pure (40, "K")
@@ -236,19 +242,17 @@ instance forall n s. (Semifield n, NumLiteral n, Ord n, SingSize s) => Normalize
       absBytes = aabs x
 
 -- | @since 0.1
-instance (PrettyPrint n, SingSize s) => PrettyPrint (Bytes s n) where
+instance (Pretty n, SingSize s) => Pretty (Bytes s n) where
   pretty (MkBytes x) = case singSize @s of
-    SB -> p <> " B"
-    SK -> p <> " K"
-    SM -> p <> " M"
-    SG -> p <> " G"
-    ST -> p <> " T"
-    SP -> p <> " P"
-    SE -> p <> " E"
-    SZ -> p <> " Z"
-    SY -> p <> " Y"
-    where
-      p = pretty x
+    SB -> pretty x <+> pretty @String "B"
+    SK -> pretty x <+> pretty @String "K"
+    SM -> pretty x <+> pretty @String "M"
+    SG -> pretty x <+> pretty @String "G"
+    ST -> pretty x <+> pretty @String "T"
+    SP -> pretty x <+> pretty @String "P"
+    SE -> pretty x <+> pretty @String "E"
+    SZ -> pretty x <+> pretty @String "Z"
+    SY -> pretty x <+> pretty @String "Y"
 
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return e.g.
@@ -388,7 +392,7 @@ instance (NumLiteral n, Ord n, Semifield n) => Normalize (SomeSize n) where
   normalize (MkSomeSize sz x) = Size.withSingSize sz $ normalize x
 
 -- | @since 0.1
-instance PrettyPrint n => PrettyPrint (SomeSize n) where
+instance Pretty n => Pretty (SomeSize n) where
   pretty (MkSomeSize sz b) = Size.withSingSize sz $ pretty b
 
 -- | Increases 'Bytes' to the next size.

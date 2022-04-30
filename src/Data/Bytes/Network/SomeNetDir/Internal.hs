@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Internal module for "Data.Bytes.Network.SomeNetDir". The primary
@@ -24,7 +25,6 @@ where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.PrettyPrint (PrettyPrint (..))
 import Data.Bytes.Network.Direction (Direction (..), SDirection (..), SingDirection (..))
 import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Network.NetBytes.Internal (NetBytes, SomeNetSize (..))
@@ -32,8 +32,14 @@ import Data.Bytes.Network.NetBytes.Internal qualified as Internal
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
+#if !MIN_VERSION_prettyprinter(1, 7, 1)
+import Data.Text.Prettyprint.Doc (Pretty (..))
+#endif
 import Numeric.Algebra.Semifield (Semifield)
 import Numeric.Class.Literal (NumLiteral (..))
+#if MIN_VERSION_prettyprinter(1, 7, 1)
+import Prettyprinter (Pretty (..))
+#endif
 
 -- $setup
 -- >>> import Data.Bytes.Network.Direction (Direction (..))
@@ -165,7 +171,7 @@ instance (NumLiteral n, Ord n, Semifield n, SingSize s) => Normalize (SomeNetDir
       MkSomeNetSize sz y -> MkSomeNet dir sz y
 
 -- | @since 0.1
-instance (PrettyPrint n, SingSize s) => PrettyPrint (SomeNetDir s n) where
+instance (Pretty n, SingSize s) => Pretty (SomeNetDir s n) where
   pretty (MkSomeNetDir dir x) =
     Direction.withSingDirection dir $ pretty x
 
@@ -284,7 +290,7 @@ instance (NumLiteral n, Ord n, Semifield n) => Normalize (SomeNet n) where
       MkSomeNetSize sz' x' -> MkSomeNet dir sz' x'
 
 -- | @since 0.1
-instance PrettyPrint n => PrettyPrint (SomeNet n) where
+instance Pretty n => Pretty (SomeNet n) where
   pretty (MkSomeNet dir sz x) =
     Direction.withSingDirection dir $
       Size.withSingSize sz $ pretty x

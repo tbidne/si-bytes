@@ -49,7 +49,6 @@ module Data.Bytes.Network
 
     -- ** Pretty Printing
     -- $pretty
-    PrettyPrint (..),
 
     -- ** Converting Units
     Conversion (..),
@@ -64,7 +63,6 @@ where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.PrettyPrint (PrettyPrint (..))
 import Data.Bytes.Network.Direction (Direction (..))
 import Data.Bytes.Network.NetBytes (NetBytes (..), SomeNetSize, hideNetSize)
 import Data.Bytes.Network.NetBytes qualified as NetBytes
@@ -78,19 +76,18 @@ import Data.Bytes.Size (Size (..))
 -- >>> import Numeric.Algebra.Semimodule (Semimodule (..))
 -- >>> import Numeric.Algebra.SemivectorSpace (SemivectorSpace (..))
 -- >>> import Numeric.Data.NonZero (unsafeNonZero)
+-- >>> import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
+-- >>> import Prettyprinter.Render.String (renderString)
 
 -- $pretty
 --
--- 'PrettyPrint', as the name suggests, is used for printing out bytes types
--- in a prettier manner than 'show' (i.e. no constructors, added units,
--- rounding).
+-- "Prettyprinter"'s 'Prettyprinter.Pretty' class can be used for pretty
+-- printing.
 --
--- >>> let b1 = MkNetBytesP 50000 :: NetBytes 'Down 'M Int
--- >>> let b2 = hideNetSize (MkNetBytesP 20.40684 :: NetBytes 'Down 'T Float)
--- >>> pretty b1
--- "50000 M Down"
--- >>> pretty b2
--- "20.41 T Down"
+-- >>> -- import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
+-- >>> -- import Prettyprinter.Render.String (renderString)
+-- >>> renderString $ layoutPretty defaultLayoutOptions $ pretty $ MkNetBytesP @Up @G @Float 203.301
+-- "203.301 G Up"
 
 -- $algebra
 --

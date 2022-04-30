@@ -62,7 +62,7 @@ data Size
     --
     -- @since 0.1
     Y
-  deriving
+  deriving stock
     ( -- | @since 0.1
       Eq,
       -- | @since 0.1

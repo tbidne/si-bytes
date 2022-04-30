@@ -29,7 +29,6 @@ module Data.Bytes
 
     -- ** Pretty Printing
     -- $pretty
-    PrettyPrint (..),
 
     -- ** Converting Units
     Conversion (..),
@@ -44,7 +43,6 @@ where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.PrettyPrint (PrettyPrint (..))
 import Data.Bytes.Internal (Bytes (..), SomeSize, hideSize)
 import Data.Bytes.Internal qualified as Bytes
 import Data.Bytes.Size (Size (..))
@@ -55,18 +53,17 @@ import Data.Bytes.Size (Size (..))
 -- >>> import Numeric.Algebra.Semimodule (Semimodule (..))
 -- >>> import Numeric.Algebra.SemivectorSpace (SemivectorSpace (..))
 -- >>> import Numeric.Data.NonZero (unsafeNonZero)
+-- >>> import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
+-- >>> import Prettyprinter.Render.String (renderString)
 
 -- $pretty
--- 'PrettyPrint', as the name suggests, is used for printing out bytes types
--- in a prettier manner than 'show' (i.e., no constructors, added units,
--- rounding).
+-- "Prettyprinter"'s 'Prettyprinter.Pretty' class can be used for pretty
+-- printing.
 --
--- >>> let b1 = MkBytes 50000 :: Bytes 'M Int
--- >>> let b2 = hideSize (MkBytes 20.40684 :: Bytes 'T Float)
--- >>> pretty b1
--- "50000 M"
--- >>> pretty b2
--- "20.41 T"
+-- >>> -- import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
+-- >>> -- import Prettyprinter.Render.String (renderString)
+-- >>> renderString $ layoutPretty defaultLayoutOptions $ pretty $ MkBytes @G @Float 203.301
+-- "203.301 G"
 
 -- $algebra
 --

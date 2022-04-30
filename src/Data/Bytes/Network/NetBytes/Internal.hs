@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -28,7 +29,6 @@ import Control.Applicative (liftA2)
 import Control.DeepSeq (NFData)
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.PrettyPrint (PrettyPrint (..))
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
 import Data.Bytes.Network.Direction
   ( Direction (..),
@@ -39,6 +39,9 @@ import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
+#if !MIN_VERSION_prettyprinter(1, 7, 1)
+import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
+#endif
 import GHC.Generics (Generic)
 import GHC.Show qualified as Show
 import Numeric.Algebra
@@ -55,6 +58,9 @@ import Numeric.Algebra
     VectorSpace,
   )
 import Numeric.Class.Literal (NumLiteral (..))
+#if MIN_VERSION_prettyprinter(1, 7, 1)
+import Prettyprinter (Pretty (..), (<+>))
+#endif
 
 -- $setup
 -- >>> getUpTrafficRaw = pure (40, "K")
@@ -227,12 +233,12 @@ instance (NumLiteral n, Ord n, Semifield n, SingSize s) => Normalize (NetBytes d
 -- | @since 0.1
 instance
   forall d s n.
-  (PrettyPrint n, SingDirection d, SingSize s) =>
-  PrettyPrint (NetBytes d s n)
+  (Pretty n, SingDirection d, SingSize s) =>
+  Pretty (NetBytes d s n)
   where
   pretty (MkNetBytes x) = case singDirection @d of
-    SDown -> pretty x <> " Down"
-    SUp -> pretty x <> " Up"
+    SDown -> pretty x <+> pretty @String "Down"
+    SUp -> pretty x <+> pretty @String "Up"
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return e.g.
@@ -361,7 +367,7 @@ instance (NumLiteral n, Ord n, Semifield n) => Normalize (SomeNetSize d n) where
   normalize (MkSomeNetSize sz x) = Size.withSingSize sz $ normalize x
 
 -- | @since 0.1
-instance (PrettyPrint n, SingDirection d) => PrettyPrint (SomeNetSize d n) where
+instance (Pretty n, SingDirection d) => Pretty (SomeNetSize d n) where
   pretty (MkSomeNetSize sz b) = Size.withSingSize sz $ pretty b
 
 -- | Retrieves the 'SingDirection' witness. Can be used to recover the

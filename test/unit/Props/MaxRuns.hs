@@ -11,7 +11,7 @@ import Text.Read qualified as TR
 
 -- | Sets the maximum successful runs for each test.
 newtype MaxRuns = MkMaxRuns TestLimit
-  deriving (Show)
+  deriving stock (Show)
   deriving (Num) via TestLimit
 
 instance IsOption MaxRuns where
