@@ -6,6 +6,10 @@ module Data.Bytes.Class.Normalize
   )
 where
 
+-- $setup
+-- >>> import Data.Bytes (Bytes (..), SomeSize (..), hideSize)
+-- >>> import Data.Bytes.Size (Size (..))
+
 -- | Used for normalizing bytes @b@ such that
 --
 -- \[
@@ -18,7 +22,7 @@ where
 --
 -- However, because the normalized units varies with the value, @normalize@
 -- always returns a type that existentially quantifies the size
--- (e.g. 'BytesTypes.Data.Bytes.SomeSize'). 'Eq' for these types is defined in
+-- (e.g. 'Data.Bytes.SomeSize'). 'Eq' for these types is defined in
 -- terms of an equivalence class that takes units into account e.g.
 -- @1 P = 1,000 T = 1,000,000 G ...@. Viewed this way, @normalize@ is actually
 -- an /isomorphism/, as it is essentially a no-op, never leaving the
@@ -39,9 +43,19 @@ where
 --
 -- The other consideration we must keep in mind is that the final result of a
 -- series of computations may not be normalized. If this is desired, then
--- @normalize@ should be the /last/ operation performed. Using @normalize@ in
+-- 'normalize' should be the /last/ operation performed. Using 'normalize' in
 -- the middle would not cause any harm (other than, perhaps, impacting
 -- efficiency), but it would not guarantee the final result is normalized.
+--
+-- ==== __Examples__
+--
+-- >>> let bytes = MkBytes 5000 :: Bytes 'M Int
+-- >>> normalize bytes
+-- MkSomeSize SG (MkBytes {unBytes = 5})
+--
+-- >>> let bytes = hideSize (MkBytes 0.01 :: Bytes 'T Float)
+-- >>> normalize bytes
+-- MkSomeSize SG (MkBytes {unBytes = 10.0})
 --
 -- @since 0.1
 class Normalize a where

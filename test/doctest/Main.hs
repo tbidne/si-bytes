@@ -18,6 +18,7 @@ files =
   [ "-isrc",
     "src/Data/Bytes.hs",
     "src/Data/Bytes/Class/Conversion.hs",
+    "src/Data/Bytes/Class/Normalize.hs",
     "src/Data/Bytes/Internal.hs",
     "src/Data/Bytes/Network.hs",
     "src/Data/Bytes/Network/NetBytes/Internal.hs",

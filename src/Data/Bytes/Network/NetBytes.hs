@@ -5,7 +5,7 @@
 -- @since 0.1
 module Data.Bytes.Network.NetBytes
   ( -- * Network Bytes
-    NetBytes (MkNetBytesP),
+    NetBytes (..),
     unNetBytesP,
     Internal.netToSize,
     Internal.netToDirection,
@@ -20,7 +20,7 @@ module Data.Bytes.Network.NetBytes
 where
 
 import Data.Bytes.Network.NetBytes.Internal
-  ( NetBytes (MkNetBytesP),
+  ( NetBytes (..),
     SomeNetSize,
     hideNetSize,
     unNetBytesP,

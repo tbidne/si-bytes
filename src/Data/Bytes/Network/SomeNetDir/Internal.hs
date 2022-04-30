@@ -1,21 +1,19 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Internal module for "Data.Bytes.Network.SomeNetDir". The primary
--- difference is this module exposes some underlying details that allow one to
--- recover the 'Size'. For example, we expose 'someNetDirToSSize' and
--- constructors 'MkSomeNetDir', 'MkSomeNet', which includes runtime witnesses
--- 'SSize' and 'SDirection'. These are hidden by default as they complicate the
--- API, and the latter can be used to break the equivalence-class
--- based 'Eq'.
+-- difference is this module exposes some underlying details i.e. singleton witnesses. These are hidden by default as they complicate the API.
 --
 -- @since 0.1
 module Data.Bytes.Network.SomeNetDir.Internal
-  ( SomeNetDir (..),
+  ( -- * Unknown Direction
+    SomeNetDir (..),
     unSomeNetDir,
     hideNetDir,
     someNetDirToSSize,
     someNetDirToSize,
     someNetDirToDirection,
+
+    -- * Unknown Direction and Size
     SomeNet (..),
     unSomeNet,
     hideNetSizeDir,

@@ -1,6 +1,4 @@
--- | Module: Data.Bytes
---
--- This module serves as the main entry point for the library. It provides
+-- | This module serves as the main entry point for the library. It provides
 -- the types and operations for typical usage and is usually the only import
 -- required. The core concept is:
 --
@@ -22,8 +20,8 @@ module Data.Bytes
     Bytes.bytesToSize,
 
     -- *** Unknown Size
-    hideSize,
     SomeSize,
+    hideSize,
     Bytes.unSomeSize,
     Bytes.someSizeToSize,
 
@@ -34,11 +32,9 @@ module Data.Bytes
     PrettyPrint (..),
 
     -- ** Converting Units
-    -- $convert
     Conversion (..),
 
     -- ** Normalization
-    -- $normalize
     Normalize (..),
 
     -- * Algebra
@@ -72,40 +68,6 @@ import Data.Bytes.Size (Size (..))
 -- >>> pretty b2
 -- "20.41 T"
 
--- $normalize
--- This typeclass attempts to \"normalize\" a given 'Bytes' or 'SomeSize' such
--- that the result is between 1 and 1000, provided this is possible (i.e. we
--- cannot increase the max or decrease the min). Because the result type is
--- dependent on the value, 'normalize' necessarily existentially quantifies the
--- 'Size' i.e. returns 'SomeSize'.
---
--- >>> let bytes = MkBytes 5000 :: Bytes 'M Int
--- >>> normalize bytes
--- MkSomeSize SG (MkBytes {unBytes = 5})
---
--- >>> let bytes = hideSize (MkBytes 0.01 :: Bytes 'T Float)
--- >>> normalize bytes
--- MkSomeSize SG (MkBytes {unBytes = 10.0})
-
--- $convert
--- The 'Conversion' class allows one to transform 'Bytes' or 'SomeSize' to any
--- 'Size'. In the case of 'SomeSize', we can use this to fix the 'Size' and
--- \"undo\" the existential quantification.
---
--- >>> let bytes = MkBytes 50_000 :: Bytes 'M Int
--- >>> let gBytes = toG bytes
--- >>> :type gBytes
--- gBytes :: Bytes 'G Int
--- >>> gBytes
--- MkBytes {unBytes = 50}
---
--- >>> let bytes = hideSize (MkBytes 0.2 :: Bytes 'T Float)
--- >>> let mBytes = toM bytes
--- >>> :type mBytes
--- mBytes :: Bytes 'M Float
--- >>> mBytes
--- MkBytes {unBytes = 200000.0}
-
 -- $algebra
 --
 -- The built-in 'Num' class is abandoned in favor of
@@ -134,6 +96,7 @@ import Data.Bytes.Size (Size (..))
 --
 -- == Examples
 -- === Addition/Subtraction
+-- >>> -- import Numeric.Algebra (ASemigroup ((.+.)), AGroup ((.-.))
 -- >>> let mb1 = MkBytes 20 :: Bytes 'M Int
 -- >>> let mb2 = MkBytes 50 :: Bytes 'M Int
 -- >>> mb1 .+. mb2
@@ -145,10 +108,13 @@ import Data.Bytes.Size (Size (..))
 -- >>> -- mb1 .+. kb -- This would be a type error
 --
 -- === Multiplication
+-- >>> -- import Numeric.Algebra (Semimodule ((.*)))
 -- >>> mb1 .* 10
 -- MkBytes {unBytes = 200}
 --
 -- === Division
+-- >>> -- import Numeric.Algebra (SemivectorSpace ((.%)))
+-- >>> -- import Numeric.Data.NonZero (unsafeNonZero)
 -- >>> mb1 .% (unsafeNonZero 10)
 -- MkBytes {unBytes = 2}
 --

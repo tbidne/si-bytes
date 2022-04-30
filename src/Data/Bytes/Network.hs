@@ -25,22 +25,22 @@ module Data.Bytes.Network
     NetBytes.netToDirection,
 
     -- *** Unknown Size
-    hideNetSize,
     SomeNetSize,
+    hideNetSize,
     NetBytes.unSomeNetSize,
     NetBytes.someNetSizeToSize,
     NetBytes.someNetSizeToDirection,
 
     -- *** Unknown Direction
-    SomeNetDir.hideNetDir,
     SomeNetDir,
+    SomeNetDir.hideNetDir,
     SomeNetDir.unSomeNetDir,
     SomeNetDir.someNetDirToSize,
     SomeNetDir.someNetDirToDirection,
 
     -- *** Unknown Size and Direction
-    SomeNetDir.hideNetSizeDir,
     SomeNet,
+    SomeNetDir.hideNetSizeDir,
     SomeNetDir.unSomeNet,
     SomeNetDir.someNetToSize,
     SomeNetDir.someNetToDirection,
@@ -52,11 +52,9 @@ module Data.Bytes.Network
     PrettyPrint (..),
 
     -- ** Converting Units
-    -- $convert
     Conversion (..),
 
     -- ** Normalization
-    -- $normalize
     Normalize (..),
 
     -- * Algebra
@@ -94,40 +92,6 @@ import Data.Bytes.Size (Size (..))
 -- >>> pretty b2
 -- "20.41 T Down"
 
--- $normalize
--- This typeclass attempts to \"normalize\" a given bytes type such
--- that the result is between 1 and 1000, provided this is possible (i.e. we
--- cannot increase the max or decrease the min). Because the result type is
--- dependent on the value, 'normalize' necessarily existentially quantifies the
--- 'Size' i.e. returns 'SomeNetSize' (or 'SomeNet', in the case of 'SomeNetDir').
---
--- >>> let bytes = MkNetBytesP 5000 :: NetBytes 'Down 'M Int
--- >>> normalize bytes
--- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 5})
---
--- >>> let bytes = hideNetSize (MkNetBytesP 0.01 :: NetBytes 'Up 'T Float)
--- >>> normalize bytes
--- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 10.0})
-
--- $convert
--- The 'Conversion' class allows one to transform a bytes type to any
--- 'Size'. In the case of a type that has hidden the 'Size', we can use this
--- to fix the 'Size' and \"undo\" the existential quantification.
---
--- >>> let bytes = MkNetBytesP 50_000 :: NetBytes 'Down 'M Int
--- >>> let gBytes = toG bytes
--- >>> :type gBytes
--- gBytes :: NetBytes 'Down 'G Int
--- >>> gBytes
--- MkNetBytesP {unNetBytesP = 50}
---
--- >>> let bytes = hideNetSize (MkNetBytesP 0.2 :: NetBytes 'Up 'T Float)
--- >>> let mBytes = toM bytes
--- >>> :type mBytes
--- mBytes :: NetBytes 'Up 'M Float
--- >>> mBytes
--- MkNetBytesP {unNetBytesP = 200000.0}
-
 -- $algebra
 --
 -- The built-in 'Num' class is abandoned in favor of
@@ -156,6 +120,7 @@ import Data.Bytes.Size (Size (..))
 --
 -- == Examples
 -- === Addition/Subtraction
+-- >>> -- import Numeric.Algebra (ASemigroup ((.+.)), AGroup ((.-.))
 -- >>> let mb1 = MkNetBytesP 20 :: NetBytes 'Down 'M Int
 -- >>> let mb2 = MkNetBytesP 50 :: NetBytes 'Down 'M Int
 -- >>> mb1 .+. mb2
@@ -170,10 +135,13 @@ import Data.Bytes.Size (Size (..))
 -- >>> -- mb1 .+. mbUp -- This would be a type error
 --
 -- === Multiplication
+-- >>> -- import Numeric.Algebra (Semimodule ((.*)))
 -- >>> mb1 .* 10
 -- MkNetBytesP {unNetBytesP = 200}
 --
 -- === Division
+-- >>> -- import Numeric.Algebra (SemivectorSpace ((.%)))
+-- >>> -- import Numeric.Data.NonZero (unsafeNonZero)
 -- >>> mb1 .% (unsafeNonZero 10)
 -- MkNetBytesP {unNetBytesP = 2}
 --
@@ -190,3 +158,5 @@ import Data.Bytes.Size (Size (..))
 -- MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 1.5})
 -- >>> some1 .-. some2
 -- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 500.0})
+--
+-- This respects 'SomeNetSize'\'s equivalence-class base 'Eq'.

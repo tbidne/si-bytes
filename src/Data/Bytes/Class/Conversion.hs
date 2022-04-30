@@ -16,7 +16,28 @@ import Numeric.Algebra qualified as Algebra
 import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (NonZero (..))
 
--- | Provides a common interface for converting between byte sizes.
+-- $setup
+-- >>> import Data.Bytes.Internal (Bytes (..), hideSize)
+
+-- | This class allows one to transform a bytes type to any 'Size'. For types
+-- with existentially quantified 'Size' (e.g. 'Data.Bytes.SomeSize',
+-- 'Data.Bytes.Network.NetBytes.SomeNetSize'), this will "undo" the existential quantification.
+--
+-- ==== __Examples__
+--
+-- >>> let bytes = MkBytes 50_000 :: Bytes 'M Int
+-- >>> let gBytes = toG bytes
+-- >>> :type gBytes
+-- gBytes :: Bytes 'G Int
+-- >>> gBytes
+-- MkBytes {unBytes = 50}
+--
+-- >>> let bytes = hideSize (MkBytes 0.2 :: Bytes 'T Float)
+-- >>> let mBytes = toM bytes
+-- >>> :type mBytes
+-- mBytes :: Bytes 'M Float
+-- >>> mBytes
+-- MkBytes {unBytes = 200000.0}
 --
 -- @since 0.1
 class Conversion a where
