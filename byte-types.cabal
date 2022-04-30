@@ -14,12 +14,12 @@ description:
   This package provides types for performing type-safe byte operations
   (e.g. conversions, addition), taking units into account.
   .
-  The primary module is "ByteTypes.Bytes". The module is sufficient for most
+  The primary module is "Data.Bytes". The module is sufficient for most
   purposes, providing types that track units (e.g. B, KB, MB, ...) and allow
   handling of unknown sizes at runtime.
   .
-  The other module of interest is "ByteTypes.Network". This module has a
-  virtually identical API to "ByteTypes.Bytes", but the types it provides
+  The other module of interest is "Data.Bytes.Network". This module has a
+  virtually identical API to "Data.Bytes", but the types it provides
   also track /direction/ (i.e. uploaded vs downloaded), for when this
   distinction is important (e.g. computing total uploaded network traffic).
   .
@@ -70,20 +70,18 @@ common common-exts
 library
   import:           common-exts
   exposed-modules:
-    ByteTypes.Bytes
-    ByteTypes.Class.Conversion
-    ByteTypes.Class.Normalize
-    ByteTypes.Class.PrettyPrint
-    ByteTypes.Data.Bytes
-    ByteTypes.Data.Bytes.Internal
-    ByteTypes.Data.Direction
-    ByteTypes.Data.Network
-    ByteTypes.Data.Network.NetBytes
-    ByteTypes.Data.Network.NetBytes.Internal
-    ByteTypes.Data.Network.SomeNetDir
-    ByteTypes.Data.Network.SomeNetDir.Internal
-    ByteTypes.Data.Size
-    ByteTypes.Network
+    Data.Bytes
+    Data.Bytes.Class.Conversion
+    Data.Bytes.Class.Normalize
+    Data.Bytes.Class.PrettyPrint
+    Data.Bytes.Internal
+    Data.Bytes.Network
+    Data.Bytes.Network.Direction
+    Data.Bytes.Network.NetBytes
+    Data.Bytes.Network.NetBytes.Internal
+    Data.Bytes.Network.SomeNetDir
+    Data.Bytes.Network.SomeNetDir.Internal
+    Data.Bytes.Size
 
   build-depends:
     , algebra-simple  ^>=0.1
@@ -109,19 +107,19 @@ test-suite unit
   type:             exitcode-stdio-1.0
   main-is:          Main.hs
   other-modules:
-    ByteTypes.Props.Class.Conversion
-    ByteTypes.Props.Data.Bytes
-    ByteTypes.Props.Data.Bytes.Generators
-    ByteTypes.Props.Data.Direction.Generators
-    ByteTypes.Props.Data.Network.Generators
-    ByteTypes.Props.Data.Network.NetBytes
-    ByteTypes.Props.Data.Network.SomeNetDir
-    ByteTypes.Props.Data.Size.Generators
-    ByteTypes.Props.MaxRuns
-    ByteTypes.Props.Verify.Algebra
-    ByteTypes.Props.Verify.Conversion
-    ByteTypes.Props.Verify.Normalize
-    ByteTypes.Utils
+    Props.Data.Bytes
+    Props.Data.Bytes.Class.Conversion
+    Props.Data.Bytes.Network.NetBytes
+    Props.Data.Bytes.Network.SomeNetDir
+    Props.Generators.Bytes
+    Props.Generators.Direction
+    Props.Generators.Network
+    Props.Generators.Size
+    Props.MaxRuns
+    Props.Utils
+    Props.Verify.Algebra
+    Props.Verify.Conversion
+    Props.Verify.Normalize
 
   build-depends:
     , algebra-simple

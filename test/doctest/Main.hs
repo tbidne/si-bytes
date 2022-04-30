@@ -16,13 +16,13 @@ main = do
 files :: [String]
 files =
   [ "-isrc",
-    "src/ByteTypes/Bytes.hs",
-    "src/ByteTypes/Class/Conversion.hs",
-    "src/ByteTypes/Data/Bytes/Internal.hs",
-    "src/ByteTypes/Data/Network/NetBytes/Internal.hs",
-    "src/ByteTypes/Data/Network/SomeNetDir/Internal.hs",
-    "src/ByteTypes/Data/Size.hs",
-    "src/ByteTypes/Network.hs"
+    "src/Data/Bytes.hs",
+    "src/Data/Bytes/Class/Conversion.hs",
+    "src/Data/Bytes/Internal.hs",
+    "src/Data/Bytes/Network.hs",
+    "src/Data/Bytes/Network/NetBytes/Internal.hs",
+    "src/Data/Bytes/Network/SomeNetDir/Internal.hs",
+    "src/Data/Bytes/Size.hs"
   ]
 
 -- This is needed because DocTest does not read the cabal
