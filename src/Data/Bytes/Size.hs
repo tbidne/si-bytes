@@ -75,7 +75,7 @@ data Size
 --
 -- @since 0.1
 type SSize :: Size -> Type
-data SSize s where
+data SSize (s :: Size) where
   -- | @since 0.1
   SB :: SSize 'B
   -- | @since 0.1

@@ -73,7 +73,7 @@ import Prettyprinter (Pretty (..), (<+>))
 --
 -- @since 0.1
 type NetBytes :: Direction -> Size -> Type -> Type
-newtype NetBytes d s n = MkNetBytes
+newtype NetBytes (d :: Direction) (s :: Size) (n :: Type) = MkNetBytes
   { -- | Unwraps the 'NetBytes'.
     --
     -- @since 0.1
@@ -273,7 +273,7 @@ instance
 --
 -- @since 0.1
 type SomeNetSize :: Direction -> Type -> Type
-data SomeNetSize d n where
+data SomeNetSize (d :: Direction) (n :: Type) where
   -- | @since 0.1
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 

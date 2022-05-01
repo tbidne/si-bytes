@@ -33,7 +33,7 @@ data Direction
 --
 -- @since 0.1
 type SDirection :: Direction -> Type
-data SDirection d where
+data SDirection (d :: Direction) where
   -- | @since 0.1
   SDown :: SDirection 'Down
   -- | @since 0.1

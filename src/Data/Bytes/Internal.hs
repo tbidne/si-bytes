@@ -77,7 +77,7 @@ import Prettyprinter (Pretty (..), (<+>))
 --
 -- @since 0.1
 type Bytes :: Size -> Type -> Type
-newtype Bytes s n = MkBytes
+newtype Bytes (s :: Size) (n :: Type) = MkBytes
   { -- | Unwraps the 'Bytes'.
     --
     -- @since 0.1
@@ -286,7 +286,7 @@ instance (Pretty n, SingSize s) => Pretty (Bytes s n) where
 --
 -- @since 0.1
 type SomeSize :: Type -> Type
-data SomeSize n where
+data SomeSize (n :: Type) where
   -- | @since 0.1
   MkSomeSize :: SSize s -> Bytes s n -> SomeSize n
 

@@ -80,7 +80,7 @@ import Prettyprinter (Pretty (..))
 --
 -- @since 0.1
 type SomeNetDir :: Size -> Type -> Type
-data SomeNetDir s n where
+data SomeNetDir (s :: Size) (n :: Type) where
   -- | @since 0.1
   MkSomeNetDir :: SDirection d -> NetBytes d s n -> SomeNetDir s n
 
@@ -206,7 +206,7 @@ instance (Pretty n, SingSize s) => Pretty (SomeNetDir s n) where
 --
 -- @since 0.1
 type SomeNet :: Type -> Type
-data SomeNet n where
+data SomeNet (n :: Type) where
   -- | @since 0.1
   MkSomeNet :: SDirection d -> SSize s -> NetBytes d s n -> SomeNet n
 
