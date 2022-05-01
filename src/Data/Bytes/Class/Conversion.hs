@@ -11,7 +11,7 @@ module Data.Bytes.Class.Conversion
 where
 
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
-import Numeric.Algebra (AMonoid (..), MGroup (..), MSemigroup (..))
+import Numeric.Algebra (AMonoid (..), MGroup (..), MSemigroup (..), Semifield)
 import Numeric.Algebra qualified as Algebra
 import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (NonZero (..))
@@ -85,9 +85,8 @@ class Conversion a where
 -- @since 0.1
 convertWitness ::
   forall s n.
-  ( AMonoid n,
-    MGroup n,
-    NumLiteral n,
+  ( NumLiteral n,
+    Semifield n,
     SingSize s
   ) =>
   Size ->
@@ -114,9 +113,8 @@ convertWitness toUnits n = case singSize @s of
 -- @since 0.1
 convert ::
   forall n.
-  ( AMonoid n,
-    MGroup n,
-    NumLiteral n
+  ( NumLiteral n,
+    Semifield n
   ) =>
   Size ->
   Size ->

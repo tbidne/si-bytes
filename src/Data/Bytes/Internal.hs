@@ -170,9 +170,8 @@ instance Field n => VectorSpace (Bytes s n) n
 
 -- | @since 0.1
 instance
-  ( AMonoid n,
-    NumLiteral n,
-    MGroup n,
+  ( NumLiteral n,
+    Semifield n,
     SingSize s
   ) =>
   Conversion (Bytes s n)
@@ -406,7 +405,7 @@ instance Pretty n => Pretty (SomeSize n) where
 -- >>> --incSize $ MkBytes @Y @Float 2_500
 --
 -- @since 0.1
-incSize :: forall s n. (AMonoid n, MGroup n, NumLiteral n) => Bytes s n -> Bytes (NextSize s) n
+incSize :: forall s n. (NumLiteral n, Semifield n) => Bytes s n -> Bytes (NextSize s) n
 incSize = resizeBytes . MkBytes . (.%. nzFromLit @n 1_000) . unBytes
 
 -- | Decreases 'Bytes' to the previous size.
