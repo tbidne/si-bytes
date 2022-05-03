@@ -45,18 +45,20 @@ import Numeric.Algebra
     ASemigroup (..),
     Field,
     MGroup (..),
+    MSemiSpace (..),
     MSemigroup (..),
+    MSpace (..),
     Module,
+    Normed (..),
     Ring,
     Semifield,
-    Semimodule (..),
+    Semimodule,
     Semiring,
-    SemivectorSpace (..),
+    SemivectorSpace,
     VectorSpace,
   )
-import Numeric.Algebra qualified as Algebra
 import Numeric.Class.Literal (NumLiteral (..))
-import Numeric.Data.NonZero (NonZero (..))
+import Numeric.Data.NonZero (reallyUnsafeNonZero)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
@@ -148,30 +150,39 @@ instance ASemigroup n => ASemigroup (Bytes s n) where
 -- | @since 0.1
 instance AMonoid n => AMonoid (Bytes s n) where
   zero = MkBytes zero
-  aabs = fmap aabs
 
 -- | @since 0.1
 instance AGroup n => AGroup (Bytes s n) where
   (.-.) = liftA2 (.-.)
 
 -- | @since 0.1
-instance Semiring n => Semimodule (Bytes s n) n where
+instance MSemigroup n => MSemiSpace (Bytes s n) n where
   MkBytes x .* k = MkBytes $ x .*. k
+
+-- | @since 0.1
+instance MGroup n => MSpace (Bytes s n) n where
+  MkBytes x .% k = MkBytes $ x .%. k
+
+-- | @since 0.1
+instance Normed n => Normed (Bytes s n) where
+  norm (MkBytes x) = MkBytes (norm x)
+
+-- | @since 0.1
+instance Semiring n => Semimodule (Bytes s n) n
 
 -- | @since 0.1
 instance Ring n => Module (Bytes s n) n
 
 -- | @since 0.1
-instance Semifield n => SemivectorSpace (Bytes s n) n where
-  MkBytes x .% k = MkBytes $ x .%. k
+instance Semifield n => SemivectorSpace (Bytes s n) n
 
 -- | @since 0.1
 instance Field n => VectorSpace (Bytes s n) n
 
 -- | @since 0.1
 instance
-  ( NumLiteral n,
-    Semifield n,
+  ( MGroup n,
+    NumLiteral n,
     SingSize s
   ) =>
   Conversion (Bytes s n)
@@ -197,7 +208,7 @@ instance
   toY (MkBytes x) = MkBytes $ Conv.convertWitness @s Y x
 
 -- | @since 0.1
-instance forall n s. (Semifield n, NumLiteral n, Ord n, SingSize s) => Normalize (Bytes s n) where
+instance forall n s. (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (Bytes s n) where
   type Norm (Bytes s n) = SomeSize n
 
   normalize bytes@(MkBytes x) =
@@ -238,7 +249,7 @@ instance forall n s. (Semifield n, NumLiteral n, Ord n, SingSize s) => Normalize
         | otherwise -> MkSomeSize sz bytes
     where
       sz = bytesToSSize bytes
-      absBytes = aabs x
+      absBytes = norm x
 
 -- | @since 0.1
 instance (Pretty n, SingSize s) => Pretty (Bytes s n) where
@@ -329,42 +340,51 @@ deriving stock instance Show n => Show (SomeSize n)
 deriving stock instance Functor SomeSize
 
 -- | @since 0.1
-instance (Eq n, NumLiteral n, Semifield n) => Eq (SomeSize n) where
+instance (Eq n, MGroup n, NumLiteral n) => Eq (SomeSize n) where
   x == y = toB x == toB y
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => Ord (SomeSize n) where
+instance (MGroup n, NumLiteral n, Ord n) => Ord (SomeSize n) where
   x <= y = toB x <= toB y
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => ASemigroup (SomeSize n) where
+instance (ASemigroup n, MGroup n, Normed n, NumLiteral n, Ord n) => ASemigroup (SomeSize n) where
   x .+. y = normalize $ toB x .+. toB y
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => AMonoid (SomeSize n) where
+instance (Normed n, NumLiteral n, Ord n, Semifield n) => AMonoid (SomeSize n) where
   zero = MkSomeSize SB zero
-  aabs = fmap aabs
 
 -- | @since 0.1
-instance (Field n, NumLiteral n, Ord n) => AGroup (SomeSize n) where
+instance (Field n, Normed n, NumLiteral n, Ord n) => AGroup (SomeSize n) where
   x .-. y = normalize $ toB x .-. toB y
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => Semimodule (SomeSize n) n where
+instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSemiSpace (SomeSize n) n where
   MkSomeSize sz x .* k = normalize $ MkSomeSize sz $ x .* k
 
 -- | @since 0.1
-instance (Field n, NumLiteral n, Ord n) => Module (SomeSize n) n
-
--- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => SemivectorSpace (SomeSize n) n where
+instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSpace (SomeSize n) n where
   MkSomeSize sz x .% k = normalize $ MkSomeSize sz $ x .% k
 
 -- | @since 0.1
-instance (Field n, NumLiteral n, Ord n) => VectorSpace (SomeSize n) n
+instance Normed n => Normed (SomeSize n) where
+  norm (MkSomeSize sz x) = MkSomeSize sz (norm x)
 
 -- | @since 0.1
-instance (NumLiteral n, Semifield n) => Conversion (SomeSize n) where
+instance (Normed n, NumLiteral n, Ord n, Semifield n) => Semimodule (SomeSize n) n
+
+-- | @since 0.1
+instance (Field n, Normed n, NumLiteral n, Ord n) => Module (SomeSize n) n
+
+-- | @since 0.1
+instance (Normed n, NumLiteral n, Ord n, Semifield n) => SemivectorSpace (SomeSize n) n
+
+-- | @since 0.1
+instance (Field n, Normed n, NumLiteral n, Ord n) => VectorSpace (SomeSize n) n
+
+-- | @since 0.1
+instance (MGroup n, NumLiteral n) => Conversion (SomeSize n) where
   type Converted 'B (SomeSize n) = Bytes 'B n
   type Converted 'K (SomeSize n) = Bytes 'K n
   type Converted 'M (SomeSize n) = Bytes 'M n
@@ -386,7 +406,7 @@ instance (NumLiteral n, Semifield n) => Conversion (SomeSize n) where
   toY (MkSomeSize sz x) = Size.withSingSize sz $ toY x
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => Normalize (SomeSize n) where
+instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeSize n) where
   type Norm (SomeSize n) = SomeSize n
   normalize (MkSomeSize sz x) = Size.withSingSize sz $ normalize x
 
@@ -405,8 +425,10 @@ instance Pretty n => Pretty (SomeSize n) where
 -- >>> --incSize $ MkBytes @Y @Float 2_500
 --
 -- @since 0.1
-incSize :: forall s n. (NumLiteral n, Semifield n) => Bytes s n -> Bytes (NextSize s) n
-incSize = resizeBytes . MkBytes . (.%. nzFromLit @n 1_000) . unBytes
+incSize :: forall s n. (MGroup n, NumLiteral n) => Bytes s n -> Bytes (NextSize s) n
+incSize = resizeBytes . MkBytes . (.%. nz1000) . unBytes
+  where
+    nz1000 = reallyUnsafeNonZero $ fromLit 1_000
 
 -- | Decreases 'Bytes' to the previous size.
 --
@@ -421,6 +443,3 @@ incSize = resizeBytes . MkBytes . (.%. nzFromLit @n 1_000) . unBytes
 -- @since 0.1
 decSize :: forall s n. (MSemigroup n, NumLiteral n) => Bytes s n -> Bytes (PrevSize s) n
 decSize = resizeBytes . MkBytes . (.*. fromLit @n 1_000) . unBytes
-
-nzFromLit :: forall n. (AMonoid n, NumLiteral n) => Integer -> NonZero n
-nzFromLit = Algebra.unsafeAMonoidNonZero . fromLit

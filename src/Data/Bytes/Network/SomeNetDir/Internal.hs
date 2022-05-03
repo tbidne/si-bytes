@@ -35,7 +35,13 @@ import Data.Kind (Type)
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..))
 #endif
-import Numeric.Algebra.Semifield (Semifield)
+import Numeric.Algebra
+  ( MGroup,
+    MSemiSpace (..),
+    MSemigroup (..),
+    MSpace (..),
+    Normed (..),
+  )
 import Numeric.Class.Literal (NumLiteral (..))
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..))
@@ -142,7 +148,19 @@ instance (Eq n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
       _ -> False
 
 -- | @since 0.1
-instance (NumLiteral n, Semifield n, SingSize s) => Conversion (SomeNetDir s n) where
+instance MSemigroup n => MSemiSpace (SomeNetDir s n) n where
+  MkSomeNetDir dx x .* k = MkSomeNetDir dx (x .* k)
+
+-- | @since 0.1
+instance MGroup n => MSpace (SomeNetDir s n) n where
+  MkSomeNetDir dx x .% k = MkSomeNetDir dx (x .% k)
+
+-- | @since 0.1
+instance Normed n => Normed (SomeNetDir s n) where
+  norm (MkSomeNetDir dx x) = MkSomeNetDir dx (norm x)
+
+-- | @since 0.1
+instance (MGroup n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) where
   type Converted 'B (SomeNetDir s n) = SomeNetDir 'B n
   type Converted 'K (SomeNetDir s n) = SomeNetDir 'K n
   type Converted 'M (SomeNetDir s n) = SomeNetDir 'M n
@@ -164,7 +182,7 @@ instance (NumLiteral n, Semifield n, SingSize s) => Conversion (SomeNetDir s n) 
   toY (MkSomeNetDir dir x) = MkSomeNetDir dir $ toY x
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n, SingSize s) => Normalize (SomeNetDir s n) where
+instance (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
   type Norm (SomeNetDir s n) = SomeNet n
   normalize (MkSomeNetDir dir x) =
     case normalize x of
@@ -251,7 +269,7 @@ deriving stock instance Show n => Show (SomeNet n)
 deriving stock instance Functor SomeNet
 
 -- | @since 0.1
-instance (Eq n, NumLiteral n, Semifield n) => Eq (SomeNet n) where
+instance (MGroup n, Eq n, NumLiteral n) => Eq (SomeNet n) where
   MkSomeNet dx szx x == MkSomeNet dy szy y =
     Size.withSingSize szx $
       Size.withSingSize szy $
@@ -261,7 +279,19 @@ instance (Eq n, NumLiteral n, Semifield n) => Eq (SomeNet n) where
           _ -> False
 
 -- | @since 0.1
-instance (NumLiteral n, Semifield n) => Conversion (SomeNet n) where
+instance MSemigroup n => MSemiSpace (SomeNet n) n where
+  MkSomeNet d s x .* k = MkSomeNet d s (x .* k)
+
+-- | @since 0.1
+instance MGroup n => MSpace (SomeNet n) n where
+  MkSomeNet d s x .% k = MkSomeNet d s (x .% k)
+
+-- | @since 0.1
+instance Normed n => Normed (SomeNet n) where
+  norm (MkSomeNet d s x) = MkSomeNet d s (norm x)
+
+-- | @since 0.1
+instance (MGroup n, NumLiteral n) => Conversion (SomeNet n) where
   type Converted 'B (SomeNet n) = SomeNetDir 'B n
   type Converted 'K (SomeNet n) = SomeNetDir 'K n
   type Converted 'M (SomeNet n) = SomeNetDir 'M n
@@ -283,7 +313,7 @@ instance (NumLiteral n, Semifield n) => Conversion (SomeNet n) where
   toY (MkSomeNet dir sz x) = Size.withSingSize sz $ toY (MkSomeNetDir dir x)
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => Normalize (SomeNet n) where
+instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeNet n) where
   type Norm (SomeNet n) = SomeNet n
   normalize (MkSomeNet dir sz x) =
     case Size.withSingSize sz normalize x of

@@ -13,8 +13,8 @@ import Numeric.Algebra
   ( AGroup (..),
     AMonoid (..),
     ASemigroup (..),
-    Semimodule (..),
-    SemivectorSpace (..),
+    MSemiSpace (..),
+    MSpace (..),
     VectorSpace,
   )
 import Numeric.Data.NonZero (NonZero (..))

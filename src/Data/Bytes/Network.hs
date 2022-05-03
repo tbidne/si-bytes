@@ -71,10 +71,11 @@ import Data.Bytes.Network.SomeNetDir qualified as SomeNetDir
 import Data.Bytes.Size (Size (..))
 
 -- $setup
--- >>> import Numeric.Algebra.Additive.ASemigroup (ASemigroup (..))
--- >>> import Numeric.Algebra.Additive.AGroup (AGroup (..))
--- >>> import Numeric.Algebra.Semimodule (Semimodule (..))
--- >>> import Numeric.Algebra.SemivectorSpace (SemivectorSpace (..))
+-- >>> import Numeric.Algebra.Additive.ASemigroup (ASemigroup ((.+.)))
+-- >>> import Numeric.Algebra.Additive.AGroup (AGroup ((.-.)))
+-- >>> import Numeric.Algebra.Space.Semimodule (Semimodule)
+-- >>> import Numeric.Algebra.Space.MSemiSpace (MSemiSpace ((.*)))
+-- >>> import Numeric.Algebra.Space.MSpace (MSpace ((.%)))
 -- >>> import Numeric.Data.NonZero (unsafeNonZero)
 -- >>> import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
 -- >>> import Prettyprinter.Render.String (renderString)
@@ -132,12 +133,12 @@ import Data.Bytes.Size (Size (..))
 -- >>> -- mb1 .+. mbUp -- This would be a type error
 --
 -- === Multiplication
--- >>> -- import Numeric.Algebra (Semimodule ((.*)))
+-- >>> -- import Numeric.Algebra (MSemiSpace ((.*)))
 -- >>> mb1 .* 10
 -- MkNetBytesP {unNetBytesP = 200}
 --
 -- === Division
--- >>> -- import Numeric.Algebra (SemivectorSpace ((.%)))
+-- >>> -- import Numeric.Algebra (MSpace ((.%)))
 -- >>> -- import Numeric.Data.NonZero (unsafeNonZero)
 -- >>> mb1 .% (unsafeNonZero 10)
 -- MkNetBytesP {unNetBytesP = 2}

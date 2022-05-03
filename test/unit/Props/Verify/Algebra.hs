@@ -20,11 +20,11 @@ import Numeric.Algebra
     Field,
     MGroup (..),
     MMonoid (..),
+    MSemiSpace (..),
     MSemigroup (..),
+    MSpace (..),
     Module,
     Ring,
-    Semimodule (..),
-    SemivectorSpace (..),
     VectorSpace,
   )
 import Numeric.Algebra qualified as Algebra

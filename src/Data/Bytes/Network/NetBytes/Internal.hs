@@ -49,12 +49,17 @@ import Numeric.Algebra
     AMonoid (..),
     ASemigroup (..),
     Field,
+    MGroup (..),
+    MSemiSpace (..),
+    MSemigroup (..),
+    MSpace (..),
     Module,
+    Normed (..),
     Ring,
     Semifield,
-    Semimodule (..),
+    Semimodule,
     Semiring,
-    SemivectorSpace (..),
+    SemivectorSpace,
     VectorSpace,
   )
 import Numeric.Class.Literal (NumLiteral (..))
@@ -181,28 +186,37 @@ instance ASemigroup n => ASemigroup (NetBytes d s n) where
 -- | @since 0.1
 instance AMonoid n => AMonoid (NetBytes d s n) where
   zero = MkNetBytes zero
-  aabs = fmap aabs
 
 -- | @since 0.1
 instance AGroup n => AGroup (NetBytes d s n) where
   (.-.) = liftA2 (.-.)
 
 -- | @since 0.1
-instance Semiring n => Semimodule (NetBytes d s n) n where
+instance Normed n => Normed (NetBytes d s n) where
+  norm (MkNetBytes b) = MkNetBytes (norm b)
+
+-- | @since 0.1
+instance MSemigroup n => MSemiSpace (NetBytes d s n) n where
   MkNetBytes x .* k = MkNetBytes $ x .* k
+
+-- | @since 0.1
+instance MGroup n => MSpace (NetBytes d s n) n where
+  MkNetBytes x .% k = MkNetBytes $ x .% k
+
+-- | @since 0.1
+instance Semiring n => Semimodule (NetBytes d s n) n
 
 -- | @since 0.1
 instance Ring n => Module (NetBytes d s n) n
 
 -- | @since 0.1
-instance Semifield n => SemivectorSpace (NetBytes d s n) n where
-  MkNetBytes x .% k = MkNetBytes $ x .% k
+instance Semifield n => SemivectorSpace (NetBytes d s n) n
 
 -- | @since 0.1
 instance Field n => VectorSpace (NetBytes d s n) n
 
 -- | @since 0.1
-instance (NumLiteral n, Semifield n, SingSize s) => Conversion (NetBytes d s n) where
+instance (MGroup n, NumLiteral n, SingSize s) => Conversion (NetBytes d s n) where
   type Converted 'B (NetBytes d s n) = NetBytes d 'B n
   type Converted 'K (NetBytes d s n) = NetBytes d 'K n
   type Converted 'M (NetBytes d s n) = NetBytes d 'M n
@@ -224,7 +238,7 @@ instance (NumLiteral n, Semifield n, SingSize s) => Conversion (NetBytes d s n) 
   toY (MkNetBytes b) = MkNetBytes $ toY b
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n, SingSize s) => Normalize (NetBytes d s n) where
+instance (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (NetBytes d s n) where
   type Norm (NetBytes d s n) = SomeNetSize d n
 
   normalize (MkNetBytes bytes) = case normalize bytes of
@@ -305,42 +319,47 @@ deriving stock instance Show n => Show (SomeNetSize d n)
 deriving stock instance Functor (SomeNetSize d)
 
 -- | @since 0.1
-instance (Eq n, NumLiteral n, Semifield n) => Eq (SomeNetSize d n) where
+instance (MGroup n, Eq n, NumLiteral n) => Eq (SomeNetSize d n) where
   x == y = toB x == toB y
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => Ord (SomeNetSize d n) where
+instance (MGroup n, NumLiteral n, Ord n) => Ord (SomeNetSize d n) where
   x <= y = toB x <= toB y
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => ASemigroup (SomeNetSize d n) where
+instance (ASemigroup n, MGroup n, Normed n, NumLiteral n, Ord n) => ASemigroup (SomeNetSize d n) where
   x .+. y = normalize $ toB x .+. toB y
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => AMonoid (SomeNetSize d n) where
+instance (Normed n, NumLiteral n, Ord n, Semifield n) => AMonoid (SomeNetSize d n) where
   zero = MkSomeNetSize SB zero
-  aabs = fmap aabs
 
 -- | @since 0.1
-instance (Field n, NumLiteral n, Ord n) => AGroup (SomeNetSize d n) where
+instance (Field n, Normed n, NumLiteral n, Ord n) => AGroup (SomeNetSize d n) where
   x .-. y = normalize $ toB x .-. toB y
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => Semimodule (SomeNetSize d n) n where
+instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSemiSpace (SomeNetSize d n) n where
   MkSomeNetSize sz x .* k = normalize $ MkSomeNetSize sz $ x .* k
 
 -- | @since 0.1
-instance (Field n, NumLiteral n, Ord n) => Module (SomeNetSize d n) n
-
--- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => SemivectorSpace (SomeNetSize d n) n where
+instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSpace (SomeNetSize d n) n where
   MkSomeNetSize sz x .% k = normalize $ MkSomeNetSize sz $ x .% k
 
 -- | @since 0.1
-instance (Field n, NumLiteral n, Ord n) => VectorSpace (SomeNetSize d n) n
+instance (Normed n, NumLiteral n, Ord n, Semifield n) => Semimodule (SomeNetSize d n) n
 
 -- | @since 0.1
-instance (NumLiteral n, Semifield n) => Conversion (SomeNetSize d n) where
+instance (Field n, Normed n, NumLiteral n, Ord n) => Module (SomeNetSize d n) n
+
+-- | @since 0.1
+instance (Normed n, NumLiteral n, Ord n, Semifield n) => SemivectorSpace (SomeNetSize d n) n
+
+-- | @since 0.1
+instance (Field n, Normed n, NumLiteral n, Ord n) => VectorSpace (SomeNetSize d n) n
+
+-- | @since 0.1
+instance (MGroup n, NumLiteral n) => Conversion (SomeNetSize d n) where
   type Converted 'B (SomeNetSize d n) = NetBytes d 'B n
   type Converted 'K (SomeNetSize d n) = NetBytes d 'K n
   type Converted 'M (SomeNetSize d n) = NetBytes d 'M n
@@ -362,7 +381,7 @@ instance (NumLiteral n, Semifield n) => Conversion (SomeNetSize d n) where
   toY (MkSomeNetSize sz x) = Size.withSingSize sz $ toY x
 
 -- | @since 0.1
-instance (NumLiteral n, Ord n, Semifield n) => Normalize (SomeNetSize d n) where
+instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeNetSize d n) where
   type Norm (SomeNetSize d n) = SomeNetSize d n
   normalize (MkSomeNetSize sz x) = Size.withSingSize sz $ normalize x
 
