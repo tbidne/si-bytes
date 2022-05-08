@@ -18,13 +18,14 @@ module Data.Bytes.Size
   )
 where
 
-import Data.Kind (Type)
+import Data.Kind (Constraint, Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
 import GHC.TypeLits (ErrorMessage (..), TypeError)
 
 -- | Byte units.
 --
 -- @since 0.1
+type Size :: Type
 data Size
   = -- | Bytes
     --
@@ -127,7 +128,8 @@ deriving stock instance Show (SSize s)
 -- | Typeclass for recovering the 'Size' at runtime.
 --
 -- @since 0.1
-class SingSize s where
+type SingSize :: Size -> Constraint
+class SingSize (s :: Size) where
   -- | @since 0.1
   singSize :: SSize s
 
@@ -189,7 +191,7 @@ withSingSize s x = case s of
 --
 -- @since 0.1
 type NextSize :: Size -> Size
-type family NextSize s = t where
+type family NextSize (s :: Size) = (t :: Size) where
   NextSize 'B = 'K
   NextSize 'K = 'M
   NextSize 'M = 'G
@@ -214,7 +216,7 @@ type family NextSize s = t where
 --
 -- @since 0.1
 type PrevSize :: Size -> Size
-type family PrevSize s = t where
+type family PrevSize (s :: Size) = (t :: Size) where
   PrevSize 'B = TypeError ('Text "The byte unit B does not have a 'previous size'.")
   PrevSize 'K = 'B
   PrevSize 'M = 'K

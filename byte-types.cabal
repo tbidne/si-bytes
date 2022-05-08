@@ -41,6 +41,7 @@ common common-exts
   default-extensions:
     DataKinds
     DefaultSignatures
+    DeriveDataTypeable
     DeriveFunctor
     DeriveGeneric
     DerivingStrategies

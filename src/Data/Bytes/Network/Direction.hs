@@ -11,12 +11,13 @@ module Data.Bytes.Network.Direction
   )
 where
 
-import Data.Kind (Type)
+import Data.Kind (Constraint, Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
 
 -- | Tags for differentiating downloaded vs. uploaded bytes.
 --
 -- @since 0.1
+type Direction :: Type
 data Direction
   = -- | @since 0.1
     Down
@@ -57,7 +58,8 @@ instance TestEquality SDirection where
 -- | Typeclass for recovering the 'Direction' at runtime.
 --
 -- @since 0.1
-class SingDirection d where
+type SingDirection :: Direction -> Constraint
+class SingDirection (d :: Direction) where
   -- | @since 0.1
   singDirection :: SDirection d
 

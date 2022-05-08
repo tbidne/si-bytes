@@ -32,6 +32,7 @@ exts :: [String]
 exts =
   [ "-XDataKinds",
     "-XDefaultSignatures",
+    "-XDeriveDataTypeable",
     "-XDeriveFunctor",
     "-XDeriveGeneric",
     "-XDerivingStrategies",
