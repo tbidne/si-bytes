@@ -70,23 +70,13 @@ import Data.Bytes.Network.SomeNetDir (SomeNet, SomeNetDir)
 import Data.Bytes.Network.SomeNetDir qualified as SomeNetDir
 import Data.Bytes.Size (Size (..))
 
--- $setup
--- >>> import Numeric.Algebra.Additive.ASemigroup (ASemigroup ((.+.)))
--- >>> import Numeric.Algebra.Additive.AGroup (AGroup ((.-.)))
--- >>> import Numeric.Algebra.Space.Semimodule (Semimodule)
--- >>> import Numeric.Algebra.Space.MSemiSpace (MSemiSpace ((.*)))
--- >>> import Numeric.Algebra.Space.MSpace (MSpace ((.%)))
--- >>> import Numeric.Data.NonZero (unsafeNonZero)
--- >>> import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
--- >>> import Prettyprinter.Render.String (renderString)
-
 -- $pretty
 --
 -- "Prettyprinter"'s 'Prettyprinter.Pretty' class can be used for pretty
 -- printing.
 --
--- >>> -- import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
--- >>> -- import Prettyprinter.Render.String (renderString)
+-- >>> import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
+-- >>> import Prettyprinter.Render.String (renderString)
 -- >>> renderString $ layoutPretty defaultLayoutOptions $ pretty $ MkNetBytesP @Up @G @Float 203.301
 -- "203.301 G Up"
 
@@ -118,7 +108,7 @@ import Data.Bytes.Size (Size (..))
 --
 -- == Examples
 -- === Addition/Subtraction
--- >>> -- import Numeric.Algebra (ASemigroup ((.+.)), AGroup ((.-.))
+-- >>> import Numeric.Algebra (ASemigroup ((.+.)), AGroup ((.-.)))
 -- >>> let mb1 = MkNetBytesP 20 :: NetBytes 'Down 'M Int
 -- >>> let mb2 = MkNetBytesP 50 :: NetBytes 'Down 'M Int
 -- >>> mb1 .+. mb2
@@ -133,13 +123,13 @@ import Data.Bytes.Size (Size (..))
 -- >>> -- mb1 .+. mbUp -- This would be a type error
 --
 -- === Multiplication
--- >>> -- import Numeric.Algebra (MSemiSpace ((.*)))
+-- >>> import Numeric.Algebra (MSemiSpace ((.*)))
 -- >>> mb1 .* 10
 -- MkNetBytesP {unNetBytesP = 200}
 --
 -- === Division
--- >>> -- import Numeric.Algebra (MSpace ((.%)))
--- >>> -- import Numeric.Data.NonZero (unsafeNonZero)
+-- >>> import Numeric.Algebra (MSpace ((.%)))
+-- >>> import Numeric.Data.NonZero (unsafeNonZero)
 -- >>> mb1 .% (unsafeNonZero 10)
 -- MkNetBytesP {unNetBytesP = 2}
 --

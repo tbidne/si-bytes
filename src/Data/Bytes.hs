@@ -47,22 +47,12 @@ import Data.Bytes.Internal (Bytes (..), SomeSize, hideSize)
 import Data.Bytes.Internal qualified as Bytes
 import Data.Bytes.Size (Size (..))
 
--- $setup
--- >>> import Numeric.Algebra.Additive.ASemigroup (ASemigroup ((.+.)))
--- >>> import Numeric.Algebra.Additive.AGroup (AGroup ((.-.)))
--- >>> import Numeric.Algebra.Space.Semimodule (Semimodule)
--- >>> import Numeric.Algebra.Space.MSemiSpace (MSemiSpace ((.*)))
--- >>> import Numeric.Algebra.Space.MSpace (MSpace ((.%)))
--- >>> import Numeric.Data.NonZero (unsafeNonZero)
--- >>> import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
--- >>> import Prettyprinter.Render.String (renderString)
-
 -- $pretty
 -- "Prettyprinter"'s 'Prettyprinter.Pretty' class can be used for pretty
 -- printing.
 --
--- >>> -- import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
--- >>> -- import Prettyprinter.Render.String (renderString)
+-- >>> import Prettyprinter (Pretty (pretty), layoutPretty, defaultLayoutOptions)
+-- >>> import Prettyprinter.Render.String (renderString)
 -- >>> renderString $ layoutPretty defaultLayoutOptions $ pretty $ MkBytes @G @Float 203.301
 -- "203.301 G"
 
@@ -94,7 +84,7 @@ import Data.Bytes.Size (Size (..))
 --
 -- == Examples
 -- === Addition/Subtraction
--- >>> -- import Numeric.Algebra (ASemigroup ((.+.)), AGroup ((.-.))
+-- >>> import Numeric.Algebra (ASemigroup ((.+.)), AGroup ((.-.)))
 -- >>> let mb1 = MkBytes 20 :: Bytes 'M Int
 -- >>> let mb2 = MkBytes 50 :: Bytes 'M Int
 -- >>> mb1 .+. mb2
@@ -106,13 +96,13 @@ import Data.Bytes.Size (Size (..))
 -- >>> -- mb1 .+. kb -- This would be a type error
 --
 -- === Multiplication
--- >>> -- import Numeric.Algebra (MSemiSpace ((.*)))
+-- >>> import Numeric.Algebra (MSemiSpace ((.*)))
 -- >>> mb1 .* 10
 -- MkBytes {unBytes = 200}
 --
 -- === Division
--- >>> -- import Numeric.Algebra (MSpace ((.%)))
--- >>> -- import Numeric.Data.NonZero (unsafeNonZero)
+-- >>> import Numeric.Algebra (MSpace ((.%)))
+-- >>> import Numeric.Data.NonZero (unsafeNonZero)
 -- >>> mb1 .% (unsafeNonZero 10)
 -- MkBytes {unBytes = 2}
 --
