@@ -27,7 +27,7 @@ import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Network.Direction (Direction (..), SDirection (..), SingDirection (..))
 import Data.Bytes.Network.Direction qualified as Direction
-import Data.Bytes.Network.NetBytes.Internal (NetBytes, SomeNetSize (..))
+import Data.Bytes.Network.NetBytes.Internal (NetBytes (MkNetBytesP), SomeNetSize (..))
 import Data.Bytes.Network.NetBytes.Internal qualified as Internal
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
@@ -43,6 +43,7 @@ import Numeric.Algebra
     Normed (..),
   )
 import Numeric.Class.Literal (NumLiteral (..))
+import Optics.Core (A_Lens, LabelOptic (..), lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..))
 #endif
@@ -146,6 +147,13 @@ instance (Eq n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
       (SDown, SDown) -> x == y
       (SUp, SUp) -> x == y
       _ -> False
+
+-- | @since 0.1
+instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetDir" k (SomeNetDir s m) (SomeNetDir s n) a b where
+  labelOptic =
+    lens
+      unSomeNetDir
+      (\(MkSomeNetDir dx _) x -> MkSomeNetDir dx (MkNetBytesP x))
 
 -- | @since 0.1
 instance MSemigroup n => MSemiSpace (SomeNetDir s n) n where
@@ -277,6 +285,13 @@ instance (MGroup n, Eq n, NumLiteral n) => Eq (SomeNet n) where
           (SDown, SDown) -> toB x == toB y
           (SUp, SUp) -> toB x == toB y
           _ -> False
+
+-- | @since 0.1
+instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNet" k (SomeNet m) (SomeNet n) a b where
+  labelOptic =
+    lens
+      unSomeNet
+      (\(MkSomeNet dx sz _) x -> MkSomeNet dx sz (MkNetBytesP x))
 
 -- | @since 0.1
 instance MSemigroup n => MSemiSpace (SomeNet n) n where

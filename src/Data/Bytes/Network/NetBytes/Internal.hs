@@ -64,6 +64,7 @@ import Numeric.Algebra
     VectorSpace,
   )
 import Numeric.Class.Literal (NumLiteral (..))
+import Optics.Core (A_Lens, LabelOptic (..), lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
@@ -181,6 +182,10 @@ instance Eq n => Eq (NetBytes d s n) where
 -- | @since 0.1
 instance Ord n => Ord (NetBytes d s n) where
   MkNetBytes x <= MkNetBytes y = x <= y
+
+-- | @since 0.1
+instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unNetBytes" k (NetBytes d s m) (NetBytes d s n) a b where
+  labelOptic = lens (unBytes . unNetBytes) (\_ x -> MkNetBytes (MkBytes x))
 
 -- | @since 0.1
 instance ASemigroup n => ASemigroup (NetBytes d s n) where
@@ -328,6 +333,13 @@ instance (MGroup n, Eq n, NumLiteral n) => Eq (SomeNetSize d n) where
 -- | @since 0.1
 instance (MGroup n, NumLiteral n, Ord n) => Ord (SomeNetSize d n) where
   x <= y = toB x <= toB y
+
+-- | @since 0.1
+instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetSize" k (SomeNetSize d m) (SomeNetSize d n) a b where
+  labelOptic =
+    lens
+      unSomeNetSize
+      (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
 
 -- | @since 0.1
 instance (ASemigroup n, MGroup n, Normed n, NumLiteral n, Ord n) => ASemigroup (SomeNetSize d n) where
