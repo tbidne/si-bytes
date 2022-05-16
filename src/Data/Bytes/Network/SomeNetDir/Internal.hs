@@ -96,6 +96,7 @@ data SomeNetDir (s :: Size) (n :: Type) where
 -- @since 0.1
 unSomeNetDir :: SomeNetDir s n -> n
 unSomeNetDir (MkSomeNetDir _ b) = Internal.unNetBytesP b
+{-# INLINEABLE unSomeNetDir #-}
 
 -- | Retrieves the 'SingSize' witness. Can be used to recover the
 -- 'Size'.
@@ -103,6 +104,7 @@ unSomeNetDir (MkSomeNetDir _ b) = Internal.unNetBytesP b
 -- @since 0.1
 someNetDirToSSize :: SingSize s => SomeNetDir s n -> SSize s
 someNetDirToSSize _ = singSize
+{-# INLINEABLE someNetDirToSSize #-}
 
 -- | Recovers the size.
 --
@@ -114,6 +116,7 @@ someNetDirToSSize _ = singSize
 -- @since 0.1
 someNetDirToSize :: SingSize s => SomeNetDir s n -> Size
 someNetDirToSize = Size.ssizeToSize . someNetDirToSSize
+{-# INLINEABLE someNetDirToSize #-}
 
 -- | Recovers the direction.
 --
@@ -125,6 +128,7 @@ someNetDirToSize = Size.ssizeToSize . someNetDirToSSize
 -- @since 0.1
 someNetDirToDirection :: SomeNetDir s n -> Direction
 someNetDirToDirection (MkSomeNetDir d _) = Direction.sdirectionToDirection d
+{-# INLINEABLE someNetDirToDirection #-}
 
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetDir'.
 --
@@ -133,6 +137,7 @@ hideNetDir :: forall d s n. SingDirection d => NetBytes d s n -> SomeNetDir s n
 hideNetDir bytes = case singDirection @d of
   SDown -> MkSomeNetDir SDown bytes
   SUp -> MkSomeNetDir SUp bytes
+{-# INLINEABLE hideNetDir #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNetDir s n)
@@ -147,6 +152,7 @@ instance (Eq n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
       (SDown, SDown) -> x == y
       (SUp, SUp) -> x == y
       _ -> False
+  {-# INLINEABLE (==) #-}
 
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetDir" k (SomeNetDir s m) (SomeNetDir s n) a b where
@@ -154,18 +160,22 @@ instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetDir" k (SomeNetDir s
     lens
       unSomeNetDir
       (\(MkSomeNetDir dx _) x -> MkSomeNetDir dx (MkNetBytesP x))
+  {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
 instance MSemigroup n => MSemiSpace (SomeNetDir s n) n where
   MkSomeNetDir dx x .* k = MkSomeNetDir dx (x .* k)
+  {-# INLINEABLE (.*) #-}
 
 -- | @since 0.1
 instance MGroup n => MSpace (SomeNetDir s n) n where
   MkSomeNetDir dx x .% k = MkSomeNetDir dx (x .% k)
+  {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
 instance Normed n => Normed (SomeNetDir s n) where
   norm (MkSomeNetDir dx x) = MkSomeNetDir dx (norm x)
+  {-# INLINEABLE norm #-}
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) where
@@ -180,14 +190,23 @@ instance (MGroup n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) whe
   type Converted 'Y (SomeNetDir s n) = SomeNetDir 'Y n
 
   toB (MkSomeNetDir dir x) = MkSomeNetDir dir $ toB x
+  {-# INLINEABLE toB #-}
   toK (MkSomeNetDir dir x) = MkSomeNetDir dir $ toK x
+  {-# INLINEABLE toK #-}
   toM (MkSomeNetDir dir x) = MkSomeNetDir dir $ toM x
+  {-# INLINEABLE toM #-}
   toG (MkSomeNetDir dir x) = MkSomeNetDir dir $ toG x
+  {-# INLINEABLE toG #-}
   toT (MkSomeNetDir dir x) = MkSomeNetDir dir $ toT x
+  {-# INLINEABLE toT #-}
   toP (MkSomeNetDir dir x) = MkSomeNetDir dir $ toP x
+  {-# INLINEABLE toP #-}
   toE (MkSomeNetDir dir x) = MkSomeNetDir dir $ toE x
+  {-# INLINEABLE toE #-}
   toZ (MkSomeNetDir dir x) = MkSomeNetDir dir $ toZ x
+  {-# INLINEABLE toZ #-}
   toY (MkSomeNetDir dir x) = MkSomeNetDir dir $ toY x
+  {-# INLINEABLE toY #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
@@ -195,11 +214,13 @@ instance (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (Som
   normalize (MkSomeNetDir dir x) =
     case normalize x of
       MkSomeNetSize sz y -> MkSomeNet dir sz y
+  {-# INLINEABLE normalize #-}
 
 -- | @since 0.1
 instance (Pretty n, SingSize s) => Pretty (SomeNetDir s n) where
   pretty (MkSomeNetDir dir x) =
     Direction.withSingDirection dir $ pretty x
+  {-# INLINEABLE pretty #-}
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size /and/
 -- direction. This is useful when a function does not know a priori what
@@ -241,6 +262,7 @@ data SomeNet (n :: Type) where
 -- @since 0.1
 unSomeNet :: SomeNet n -> n
 unSomeNet (MkSomeNet _ _ b) = Internal.unNetBytesP b
+{-# INLINEABLE unSomeNet #-}
 
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNet'.
 --
@@ -269,6 +291,7 @@ hideNetSizeDir bytes = case singDirection @d of
       SE -> MkSomeNet SUp SE bytes
       SZ -> MkSomeNet SUp SZ bytes
       SY -> MkSomeNet SUp SY bytes
+{-# INLINEABLE hideNetSizeDir #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNet n)
@@ -285,6 +308,7 @@ instance (MGroup n, Eq n, NumLiteral n) => Eq (SomeNet n) where
           (SDown, SDown) -> toB x == toB y
           (SUp, SUp) -> toB x == toB y
           _ -> False
+  {-# INLINEABLE (==) #-}
 
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNet" k (SomeNet m) (SomeNet n) a b where
@@ -292,18 +316,22 @@ instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNet" k (SomeNet m) (Som
     lens
       unSomeNet
       (\(MkSomeNet dx sz _) x -> MkSomeNet dx sz (MkNetBytesP x))
+  {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
 instance MSemigroup n => MSemiSpace (SomeNet n) n where
   MkSomeNet d s x .* k = MkSomeNet d s (x .* k)
+  {-# INLINEABLE (.*) #-}
 
 -- | @since 0.1
 instance MGroup n => MSpace (SomeNet n) n where
   MkSomeNet d s x .% k = MkSomeNet d s (x .% k)
+  {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
 instance Normed n => Normed (SomeNet n) where
   norm (MkSomeNet d s x) = MkSomeNet d s (norm x)
+  {-# INLINEABLE norm #-}
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n) => Conversion (SomeNet n) where
@@ -318,14 +346,23 @@ instance (MGroup n, NumLiteral n) => Conversion (SomeNet n) where
   type Converted 'Y (SomeNet n) = SomeNetDir 'Y n
 
   toB (MkSomeNet dir sz x) = Size.withSingSize sz $ toB (MkSomeNetDir dir x)
+  {-# INLINEABLE toB #-}
   toK (MkSomeNet dir sz x) = Size.withSingSize sz $ toK (MkSomeNetDir dir x)
+  {-# INLINEABLE toK #-}
   toM (MkSomeNet dir sz x) = Size.withSingSize sz $ toM (MkSomeNetDir dir x)
+  {-# INLINEABLE toM #-}
   toG (MkSomeNet dir sz x) = Size.withSingSize sz $ toG (MkSomeNetDir dir x)
+  {-# INLINEABLE toG #-}
   toT (MkSomeNet dir sz x) = Size.withSingSize sz $ toT (MkSomeNetDir dir x)
+  {-# INLINEABLE toT #-}
   toP (MkSomeNet dir sz x) = Size.withSingSize sz $ toP (MkSomeNetDir dir x)
+  {-# INLINEABLE toP #-}
   toE (MkSomeNet dir sz x) = Size.withSingSize sz $ toE (MkSomeNetDir dir x)
+  {-# INLINEABLE toE #-}
   toZ (MkSomeNet dir sz x) = Size.withSingSize sz $ toZ (MkSomeNetDir dir x)
+  {-# INLINEABLE toZ #-}
   toY (MkSomeNet dir sz x) = Size.withSingSize sz $ toY (MkSomeNetDir dir x)
+  {-# INLINEABLE toY #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeNet n) where
@@ -333,12 +370,14 @@ instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeNet n) wher
   normalize (MkSomeNet dir sz x) =
     case Size.withSingSize sz normalize x of
       MkSomeNetSize sz' x' -> MkSomeNet dir sz' x'
+  {-# INLINEABLE normalize #-}
 
 -- | @since 0.1
 instance Pretty n => Pretty (SomeNet n) where
   pretty (MkSomeNet dir sz x) =
     Direction.withSingDirection dir $
       Size.withSingSize sz $ pretty x
+  {-# INLINEABLE pretty #-}
 
 -- | Recovers the direction.
 --
@@ -350,6 +389,7 @@ instance Pretty n => Pretty (SomeNet n) where
 -- @since 0.1
 someNetToSize :: SomeNet n -> Size
 someNetToSize (MkSomeNet _ sz _) = Size.ssizeToSize sz
+{-# INLINEABLE someNetToSize #-}
 
 -- | Recovers the direction.
 --
@@ -361,3 +401,4 @@ someNetToSize (MkSomeNet _ sz _) = Size.ssizeToSize sz
 -- @since 0.1
 someNetToDirection :: SomeNet n -> Direction
 someNetToDirection (MkSomeNet d _ _) = Direction.sdirectionToDirection d
+{-# INLINEABLE someNetToDirection #-}

@@ -101,6 +101,7 @@ convertWitness toUnits n = case singSize @s of
   SE -> convert E toUnits n
   SZ -> convert Z toUnits n
   SY -> convert Y toUnits n
+{-# INLINEABLE convertWitness #-}
 
 -- | Low level function for converting a numeric literal between
 -- byte sizes. @convert b1 b2@ converts /from/ @b1@ /to/ @b2@,
@@ -200,6 +201,8 @@ convert Y P n = n .*. fromLit 1_000_000_000
 convert Y E n = n .*. fromLit 1_000_000
 convert Y Z n = n .*. fromLit 1_000
 convert Y Y n = n
+{-# INLINEABLE convert #-}
 
 nzFromLit :: forall n. NumLiteral n => Integer -> NonZero n
 nzFromLit = reallyUnsafeNonZero . fromLit
+{-# INLINEABLE nzFromLit #-}

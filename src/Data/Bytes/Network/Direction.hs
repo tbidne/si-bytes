@@ -47,6 +47,7 @@ deriving stock instance Show (SDirection d)
 sdirectionToDirection :: SDirection d -> Direction
 sdirectionToDirection SDown = Down
 sdirectionToDirection SUp = Up
+{-# INLINEABLE sdirectionToDirection #-}
 
 -- | @since 0.1
 instance TestEquality SDirection where
@@ -54,6 +55,7 @@ instance TestEquality SDirection where
     (SDown, SDown) -> Just Refl
     (SUp, SUp) -> Just Refl
     _ -> Nothing
+  {-# INLINEABLE testEquality #-}
 
 -- | Typeclass for recovering the 'Direction' at runtime.
 --
@@ -64,10 +66,14 @@ class SingDirection (d :: Direction) where
   singDirection :: SDirection d
 
 -- | @since 0.1
-instance SingDirection 'Down where singDirection = SDown
+instance SingDirection 'Down where
+  singDirection = SDown
+  {-# INLINEABLE singDirection #-}
 
 -- | @since 0.1
-instance SingDirection 'Up where singDirection = SUp
+instance SingDirection 'Up where
+  singDirection = SUp
+  {-# INLINEABLE singDirection #-}
 
 -- | Singleton \"with\"-style convenience function. Allows us to run a
 -- computation @SingDirection d => r@ without explicitly pattern-matching
@@ -78,3 +84,4 @@ withSingDirection :: SDirection d -> (SingDirection d => r) -> r
 withSingDirection s x = case s of
   SDown -> x
   SUp -> x
+{-# INLINEABLE withSingDirection #-}

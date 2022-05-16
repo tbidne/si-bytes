@@ -107,6 +107,7 @@ ssizeToSize SP = P
 ssizeToSize SE = E
 ssizeToSize SZ = Z
 ssizeToSize SY = Y
+{-# INLINEABLE ssizeToSize #-}
 
 -- | @since 0.1
 instance TestEquality SSize where
@@ -121,6 +122,7 @@ instance TestEquality SSize where
     (SZ, SZ) -> Just Refl
     (SY, SY) -> Just Refl
     _ -> Nothing
+  {-# INLINEABLE testEquality #-}
 
 -- | @since 0.1
 deriving stock instance Show (SSize s)
@@ -134,31 +136,49 @@ class SingSize (s :: Size) where
   singSize :: SSize s
 
 -- | @since 0.1
-instance SingSize 'B where singSize = SB
+instance SingSize 'B where
+  singSize = SB
+  {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'K where singSize = SK
+instance SingSize 'K where
+  singSize = SK
+  {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'M where singSize = SM
+instance SingSize 'M where
+  singSize = SM
+  {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'G where singSize = SG
+instance SingSize 'G where
+  singSize = SG
+  {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'T where singSize = ST
+instance SingSize 'T where
+  singSize = ST
+  {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'P where singSize = SP
+instance SingSize 'P where
+  singSize = SP
+  {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'E where singSize = SE
+instance SingSize 'E where
+  singSize = SE
+  {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'Z where singSize = SZ
+instance SingSize 'Z where
+  singSize = SZ
+  {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'Y where singSize = SY
+instance SingSize 'Y where
+  singSize = SY
+  {-# INLINEABLE singSize #-}
 
 -- | Singleton \"with\"-style convenience function. Allows us to run a
 -- computation @SingSize d => r@ without explicitly pattern-matching
@@ -176,6 +196,7 @@ withSingSize s x = case s of
   SE -> x
   SZ -> x
   SY -> x
+{-# INLINEABLE withSingSize #-}
 
 -- | Type family that relates units to the next larger one.
 --
