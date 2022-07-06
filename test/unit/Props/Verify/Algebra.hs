@@ -58,7 +58,7 @@ ordLaws x y z = do
   H.assert $ x < y <=> y > x
 
 -- | Verify 'AGroup' laws.
-groupLaws :: (AGroup a, Show a) => a -> a -> a -> PropertyT IO ()
+groupLaws :: (AGroup a, Eq a, Show a) => a -> a -> a -> PropertyT IO ()
 groupLaws x y z = do
   H.annotateShow x
   H.annotateShow y
@@ -72,7 +72,7 @@ groupLaws x y z = do
   (x .+. y) .+. z === x .+. (y .+. z)
 
 -- | Verify 'Ring' laws.
-ringLaws :: (Ring a, Show a) => a -> a -> a -> PropertyT IO ()
+ringLaws :: (Eq a, Ring a, Show a) => a -> a -> a -> PropertyT IO ()
 ringLaws x y z = do
   groupLaws x y z
   -- group commutativity
@@ -87,14 +87,14 @@ ringLaws x y z = do
   (y .+. z) .*. x === (y .*. x) .+. (z .*. x)
 
 -- | Verify 'Field' laws.
-fieldLaws :: (Field a, Show a) => NonZero a -> a -> a -> PropertyT IO ()
+fieldLaws :: (Eq a, Field a, Show a) => NonZero a -> a -> a -> PropertyT IO ()
 fieldLaws x'@(MkNonZero x) y z = do
   ringLaws x y z
   -- identity
   one === x .%. x'
 
 -- | Verify 'Module' laws.
-moduleLaws :: forall m r. (Module m r, Show m) => m -> m -> r -> r -> PropertyT IO ()
+moduleLaws :: forall m r. (Eq m, Module m r, Show m) => m -> m -> r -> r -> PropertyT IO ()
 moduleLaws x y k l = do
   -- left-distributivity
   k *. (x .+. y) === (k *. x) .+. (k *. y)
@@ -112,7 +112,7 @@ moduleLaws x y k l = do
 
 -- | Verify 'VectorSpace' laws.
 vectorSpaceLaws ::
-  (VectorSpace v k, Show v) =>
+  (Eq v, Eq k, VectorSpace v k, Show v) =>
   v ->
   v ->
   NonZero k ->

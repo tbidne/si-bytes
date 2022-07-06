@@ -10,4 +10,4 @@ package byte-types
 source-repository-package
     type: git
     location: https://github.com/tbidne/algebra-simple.git
-    tag: be105b31e3bd2bc00c69cd5c1e869294b26fbb17
+    tag: ce81fd3acd1c6d56252bb9569309645b1fdc6482

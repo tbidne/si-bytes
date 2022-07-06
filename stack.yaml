@@ -9,6 +9,6 @@ ghc-options:
     -Wredundant-constraints -Wunused-packages -Wmissing-deriving-strategies
 extra-deps:
 - git: https://github.com/tbidne/algebra-simple.git
-  commit: be105b31e3bd2bc00c69cd5c1e869294b26fbb17
+  commit: ce81fd3acd1c6d56252bb9569309645b1fdc6482
 nix:
   shell-file: nix/stack.nix

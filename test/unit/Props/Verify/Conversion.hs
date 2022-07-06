@@ -50,7 +50,7 @@ data ResultConvs n = MkResultConvs
   }
 
 -- | Tests that the \"to bytes\" conversion matches expectations.
-convertB :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertB :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
 convertB results = do
   let bExp = (.%. nzFromLit 1)
       kExp = (.%. nzFromLit 1_000)
@@ -65,7 +65,7 @@ convertB results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to kilobytes\" conversion matches expectations.
-convertK :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertK :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
 convertK results = do
   let bExp = (.*. fromLit 1_000)
       kExp = id
@@ -80,7 +80,7 @@ convertK results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to megabytes\" conversion matches expectations.
-convertM :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertM :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
 convertM results = do
   let bExp = (.*. fromLit 1_000_000)
       kExp = (.*. fromLit 1_000)
@@ -95,7 +95,7 @@ convertM results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to gigabytes\" conversion matches expectations.
-convertG :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertG :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
 convertG results = do
   let bExp = (.*. fromLit 1_000_000_000)
       kExp = (.*. fromLit 1_000_000)
@@ -110,7 +110,7 @@ convertG results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to terabytes\" conversion matches expectations.
-convertT :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertT :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
 convertT results = do
   let bExp = (.*. fromLit 1_000_000_000_000)
       kExp = (.*. fromLit 1_000_000_000)
@@ -125,7 +125,7 @@ convertT results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to petabytes\" conversion matches expectations.
-convertP :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertP :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
 convertP results = do
   let bExp = (.*. fromLit 1_000_000_000_000_000)
       kExp = (.*. fromLit 1_000_000_000_000)
@@ -140,7 +140,7 @@ convertP results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to exabytes\" conversion matches expectations.
-convertE :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertE :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
 convertE results = do
   let bExp = (.*. fromLit 1_000_000_000_000_000_000)
       kExp = (.*. fromLit 1_000_000_000_000_000)
@@ -155,7 +155,7 @@ convertE results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to zettabytes\" conversion matches expectations.
-convertZ :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertZ :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
 convertZ results = do
   let bExp = (.*. fromLit 1_000_000_000_000_000_000_000)
       kExp = (.*. fromLit 1_000_000_000_000_000_000)
@@ -170,7 +170,7 @@ convertZ results = do
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to yottabytes\" conversion matches expectations.
-convertY :: (Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertY :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
 convertY results = do
   let bExp = (.*. fromLit 1_000_000_000_000_000_000_000_000)
       kExp = (.*. fromLit 1_000_000_000_000_000_000_000)
@@ -208,5 +208,5 @@ convertAndTest convFn original result label = do
   H.footnote label
   expected === result
 
-nzFromLit :: (Field n, NumLiteral n) => Integer -> NonZero n
+nzFromLit :: (Eq n, Field n, NumLiteral n) => Integer -> NonZero n
 nzFromLit = Algebra.unsafeAMonoidNonZero . fromLit
