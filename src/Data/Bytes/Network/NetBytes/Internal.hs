@@ -38,7 +38,6 @@ import Data.Bytes.Network.Direction
 import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
-import Data.Data (Data)
 import Data.Kind (Type)
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
@@ -88,8 +87,6 @@ newtype NetBytes (d :: Direction) (s :: Size) (n :: Type) = MkNetBytes
   }
   deriving stock
     ( -- | @since 0.1
-      Data,
-      -- | @since 0.1
       Generic
     )
   deriving anyclass
