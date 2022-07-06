@@ -376,7 +376,8 @@ instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeNet n) wher
 instance Pretty n => Pretty (SomeNet n) where
   pretty (MkSomeNet dir sz x) =
     Direction.withSingDirection dir $
-      Size.withSingSize sz $ pretty x
+      Size.withSingSize sz $
+        pretty x
   {-# INLINEABLE pretty #-}
 
 -- | Recovers the direction.
