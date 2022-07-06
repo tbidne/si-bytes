@@ -12,12 +12,14 @@ module Data.Bytes.Internal
     Bytes (..),
     bytesToSize,
     bytesToSSize,
+    bytesLens,
 
     -- * Unknown Size
     SomeSize (..),
     unSomeSize,
     hideSize,
     someSizeToSize,
+    someSizeLens,
   )
 where
 
@@ -59,7 +61,7 @@ import Numeric.Algebra
   )
 import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (reallyUnsafeNonZero)
-import Optics.Core (A_Lens, LabelOptic (..), lens)
+import Optics.Core (Lens, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
@@ -125,6 +127,11 @@ bytesToSSize _ = singSize
 {-# INLINEABLE bytesToSSize #-}
 
 -- | @since 0.1
+bytesLens :: Lens (Bytes s m) (Bytes s n) m n
+bytesLens = lens unBytes (\_ x -> MkBytes x)
+{-# INLINEABLE bytesLens #-}
+
+-- | @since 0.1
 deriving stock instance Show n => Show (Bytes s n)
 
 -- | @since 0.1
@@ -151,11 +158,6 @@ instance Eq n => Eq (Bytes s n) where
 instance Ord n => Ord (Bytes s n) where
   MkBytes x <= MkBytes y = x <= y
   {-# INLINEABLE (<=) #-}
-
--- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unBytes" k (Bytes s m) (Bytes s n) a b where
-  labelOptic = lens unBytes (\_ x -> MkBytes x)
-  {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
 instance ASemigroup n => ASemigroup (Bytes s n) where
@@ -384,12 +386,9 @@ instance (MGroup n, NumLiteral n, Ord n) => Ord (SomeSize n) where
   {-# INLINEABLE (<=) #-}
 
 -- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeSize" k (SomeSize m) (SomeSize n) a b where
-  labelOptic =
-    lens
-      unSomeSize
-      (\(MkSomeSize sz _) x -> MkSomeSize sz (MkBytes x))
-  {-# INLINEABLE labelOptic #-}
+someSizeLens :: Lens (SomeSize m) (SomeSize n) m n
+someSizeLens = lens unSomeSize (\(MkSomeSize sz _) x -> MkSomeSize sz (MkBytes x))
+{-# INLINEABLE someSizeLens #-}
 
 -- | @since 0.1
 instance (ASemigroup n, MGroup n, Normed n, NumLiteral n, Ord n) => ASemigroup (SomeSize n) where

@@ -14,6 +14,7 @@ module Data.Bytes.Network.NetBytes.Internal
     netToSize,
     netToSDirection,
     netToDirection,
+    netBytesLens,
 
     -- * Unknown Size
     SomeNetSize (..),
@@ -22,6 +23,7 @@ module Data.Bytes.Network.NetBytes.Internal
     someNetSizeToSize,
     someNetSizeToSDirection,
     someNetSizeToDirection,
+    someNetSizeLens,
   )
 where
 
@@ -63,7 +65,7 @@ import Numeric.Algebra
     VectorSpace,
   )
 import Numeric.Class.Literal (NumLiteral (..))
-import Optics.Core (A_Lens, LabelOptic (..), lens)
+import Optics.Core (Lens, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
@@ -158,6 +160,11 @@ netToSize = Size.ssizeToSize . netToSSize
 {-# INLINEABLE netToSize #-}
 
 -- | @since 0.1
+netBytesLens :: Lens (NetBytes d s m) (NetBytes d s n) m n
+netBytesLens = lens (unBytes . unNetBytes) (\_ x -> MkNetBytes (MkBytes x))
+{-# INLINEABLE netBytesLens #-}
+
+-- | @since 0.1
 instance Show n => Show (NetBytes d s n) where
   showsPrec p (MkNetBytesP x) =
     showParen (p > Show.appPrec) $
@@ -190,11 +197,6 @@ instance Eq n => Eq (NetBytes d s n) where
 instance Ord n => Ord (NetBytes d s n) where
   MkNetBytes x <= MkNetBytes y = x <= y
   {-# INLINEABLE (<=) #-}
-
--- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unNetBytes" k (NetBytes d s m) (NetBytes d s n) a b where
-  labelOptic = lens (unBytes . unNetBytes) (\_ x -> MkNetBytes (MkBytes x))
-  {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
 instance ASemigroup n => ASemigroup (NetBytes d s n) where
@@ -365,14 +367,6 @@ instance (MGroup n, NumLiteral n, Ord n) => Ord (SomeNetSize d n) where
   {-# INLINEABLE (<=) #-}
 
 -- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetSize" k (SomeNetSize d m) (SomeNetSize d n) a b where
-  labelOptic =
-    lens
-      unSomeNetSize
-      (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
-  {-# INLINEABLE labelOptic #-}
-
--- | @since 0.1
 instance (ASemigroup n, MGroup n, Normed n, NumLiteral n, Ord n) => ASemigroup (SomeNetSize d n) where
   x .+. y = normalize $ toB x .+. toB y
   {-# INLINEABLE (.+.) #-}
@@ -482,3 +476,11 @@ someNetSizeToDirection = Direction.sdirectionToDirection . someNetSizeToSDirecti
 someNetSizeToSize :: SomeNetSize d n -> Size
 someNetSizeToSize (MkSomeNetSize sz _) = Size.ssizeToSize sz
 {-# INLINEABLE someNetSizeToSize #-}
+
+-- | @since 0.1
+someNetSizeLens :: Lens (SomeNetSize d m) (SomeNetSize d n) m n
+someNetSizeLens =
+  lens
+    unSomeNetSize
+    (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
+{-# INLINEABLE someNetSizeLens #-}

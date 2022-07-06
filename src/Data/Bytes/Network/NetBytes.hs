@@ -10,12 +10,14 @@ module Data.Bytes.Network.NetBytes
     Internal.netToSize,
     Internal.netToDirection,
     hideNetSize,
+    Internal.netBytesLens,
 
     -- * Unknown Size
     SomeNetSize,
     Internal.unSomeNetSize,
     Internal.someNetSizeToSize,
     Internal.someNetSizeToDirection,
+    Internal.someNetSizeLens,
   )
 where
 

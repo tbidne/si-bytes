@@ -13,6 +13,7 @@ module Data.Bytes.Network.SomeNetDir.Internal
     someNetDirToSSize,
     someNetDirToSize,
     someNetDirToDirection,
+    someNetDirLens,
 
     -- * Unknown Direction and Size
     SomeNet (..),
@@ -20,6 +21,7 @@ module Data.Bytes.Network.SomeNetDir.Internal
     hideNetSizeDir,
     someNetToSize,
     someNetToDirection,
+    someNetLens,
   )
 where
 
@@ -43,7 +45,7 @@ import Numeric.Algebra
     Normed (..),
   )
 import Numeric.Class.Literal (NumLiteral (..))
-import Optics.Core (A_Lens, LabelOptic (..), lens)
+import Optics.Core (Lens, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..))
 #endif
@@ -140,6 +142,14 @@ hideNetDir bytes = case singDirection @d of
 {-# INLINEABLE hideNetDir #-}
 
 -- | @since 0.1
+someNetDirLens :: Lens (SomeNetDir s m) (SomeNetDir s n) m n
+someNetDirLens =
+  lens
+    unSomeNetDir
+    (\(MkSomeNetDir dx _) x -> MkSomeNetDir dx (MkNetBytesP x))
+{-# INLINEABLE someNetDirLens #-}
+
+-- | @since 0.1
 deriving stock instance Show n => Show (SomeNetDir s n)
 
 -- | @since 0.1
@@ -153,14 +163,6 @@ instance (Eq n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
       (SUp, SUp) -> x == y
       _ -> False
   {-# INLINEABLE (==) #-}
-
--- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetDir" k (SomeNetDir s m) (SomeNetDir s n) a b where
-  labelOptic =
-    lens
-      unSomeNetDir
-      (\(MkSomeNetDir dx _) x -> MkSomeNetDir dx (MkNetBytesP x))
-  {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
 instance MSemigroup n => MSemiSpace (SomeNetDir s n) n where
@@ -311,14 +313,6 @@ instance (MGroup n, Eq n, NumLiteral n) => Eq (SomeNet n) where
   {-# INLINEABLE (==) #-}
 
 -- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNet" k (SomeNet m) (SomeNet n) a b where
-  labelOptic =
-    lens
-      unSomeNet
-      (\(MkSomeNet dx sz _) x -> MkSomeNet dx sz (MkNetBytesP x))
-  {-# INLINEABLE labelOptic #-}
-
--- | @since 0.1
 instance MSemigroup n => MSemiSpace (SomeNet n) n where
   MkSomeNet d s x .* k = MkSomeNet d s (x .* k)
   {-# INLINEABLE (.*) #-}
@@ -403,3 +397,11 @@ someNetToSize (MkSomeNet _ sz _) = Size.ssizeToSize sz
 someNetToDirection :: SomeNet n -> Direction
 someNetToDirection (MkSomeNet d _ _) = Direction.sdirectionToDirection d
 {-# INLINEABLE someNetToDirection #-}
+
+-- | @since 0.1
+someNetLens :: Lens (SomeNet m) (SomeNet n) m n
+someNetLens =
+  lens
+    unSomeNet
+    (\(MkSomeNet dx sz _) x -> MkSomeNet dx sz (MkNetBytesP x))
+{-# INLINEABLE someNetLens #-}
