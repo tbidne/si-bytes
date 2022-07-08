@@ -1,6 +1,6 @@
 {
   description = "byte-types flake";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs?rev=98000933d72a97632caf0db0027ea3eb2e5e7f29";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.algebra-simple-src.url = "github:tbidne/algebra-simple";
   outputs =
@@ -9,10 +9,10 @@
     , self
     , algebra-simple-src
     }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" "x86_64-darwin" ] (system:
+    flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; };
-      compilerVersion = "ghc922";
+      compilerVersion = "ghc923";
       compiler = pkgs.haskell.packages."${compilerVersion}";
       mkPkg = returnShellEnv:
         compiler.developPackage {
@@ -23,7 +23,6 @@
             pkgs.haskell.lib.addBuildTools drv (with compiler; [
               cabal-install
               haskell-language-server
-              hlint
               ghcid
               pkgs.nixpkgs-fmt
             ]);
