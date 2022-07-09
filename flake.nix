@@ -1,6 +1,6 @@
 {
-  description = "byte-types flake";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs";
+  description = "Byte with type-level units (e.g. B, KB, MB, ...)";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.algebra-simple-src.url = "github:tbidne/algebra-simple";
   outputs =

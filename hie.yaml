@@ -3,5 +3,8 @@ cradle:
     - path: "./src"
       component: "lib:byte-types"
 
+    - path: "./test/doctest"
+      component: "byte-types:test:doctest"
+
     - path: "./test/unit"
       component: "byte-types:test:unit"
