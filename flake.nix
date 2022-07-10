@@ -4,10 +4,10 @@
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.algebra-simple-src.url = "github:tbidne/algebra-simple";
   outputs =
-    { flake-utils
+    { algebra-simple-src
+    , flake-utils
     , nixpkgs
     , self
-    , algebra-simple-src
     }:
     flake-utils.lib.eachDefaultSystem (system:
     let
