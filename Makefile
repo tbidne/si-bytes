@@ -97,7 +97,7 @@ haddock:
 	cabal haddock --haddock-hyperlink-source --haddock-quickjump ;\
 	mkdir -p docs/ ;\
 	find docs/ -type f | xargs -I % sh -c "rm -r %" ;\
-	cp -r dist-newstyle/build/x86_64-linux/ghc-9.2.2/byte-types-0.1/doc/html/byte-types/* docs/
+	cp -r dist-newstyle/build/x86_64-linux/ghc-9.2.3/byte-types-0.1/doc/html/byte-types/* docs/
 
 .PHONY: haddockc
 haddockc:
