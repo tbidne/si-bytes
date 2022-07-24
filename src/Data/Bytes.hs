@@ -18,14 +18,12 @@ module Data.Bytes
     -- ** Bytes
     Bytes (..),
     Bytes.bytesToSize,
-    Bytes.bytesLens,
 
     -- *** Unknown Size
     SomeSize,
     hideSize,
     Bytes.unSomeSize,
     Bytes.someSizeToSize,
-    Bytes.someSizeLens,
 
     -- * Transformations
 

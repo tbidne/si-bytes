@@ -23,7 +23,6 @@ module Data.Bytes.Network
     NetBytes.unNetBytesP,
     NetBytes.netToSize,
     NetBytes.netToDirection,
-    NetBytes.netBytesLens,
 
     -- *** Unknown Size
     SomeNetSize,
@@ -31,7 +30,6 @@ module Data.Bytes.Network
     NetBytes.unSomeNetSize,
     NetBytes.someNetSizeToSize,
     NetBytes.someNetSizeToDirection,
-    NetBytes.someNetSizeLens,
 
     -- *** Unknown Direction
     SomeNetDir,
@@ -39,7 +37,6 @@ module Data.Bytes.Network
     SomeNetDir.unSomeNetDir,
     SomeNetDir.someNetDirToSize,
     SomeNetDir.someNetDirToDirection,
-    SomeNetDir.someNetDirLens,
 
     -- *** Unknown Size and Direction
     SomeNet,
@@ -47,7 +44,6 @@ module Data.Bytes.Network
     SomeNetDir.unSomeNet,
     SomeNetDir.someNetToSize,
     SomeNetDir.someNetToDirection,
-    SomeNetDir.someNetLens,
 
     -- * Transformations
 

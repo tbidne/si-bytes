@@ -22,13 +22,11 @@ module Data.Bytes.Network.SomeNetDir
     Internal.someNetDirToSize,
     Internal.someNetDirToDirection,
     hideNetDir,
-    Internal.someNetDirLens,
     SomeNet,
     Internal.unSomeNet,
     Internal.someNetToSize,
     Internal.someNetToDirection,
     hideNetSizeDir,
-    Internal.someNetLens,
   )
 where
 

@@ -14,7 +14,6 @@ module Data.Bytes.Network.NetBytes.Internal
     netToSize,
     netToSDirection,
     netToDirection,
-    netBytesLens,
 
     -- * Unknown Size
     SomeNetSize (..),
@@ -23,7 +22,6 @@ module Data.Bytes.Network.NetBytes.Internal
     someNetSizeToSize,
     someNetSizeToSDirection,
     someNetSizeToDirection,
-    someNetSizeLens,
   )
 where
 
@@ -65,7 +63,7 @@ import Numeric.Algebra
     VectorSpace,
   )
 import Numeric.Class.Literal (NumLiteral (..))
-import Optics.Core (Lens, lens)
+import Optics.Core (A_Lens, An_Iso, LabelOptic (..), iso, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
@@ -160,9 +158,9 @@ netToSize = Size.ssizeToSize . netToSSize
 {-# INLINEABLE netToSize #-}
 
 -- | @since 0.1
-netBytesLens :: Lens (NetBytes d s m) (NetBytes d s n) m n
-netBytesLens = lens (unBytes . unNetBytes) (\_ x -> MkNetBytes (MkBytes x))
-{-# INLINEABLE netBytesLens #-}
+instance (k ~ An_Iso, a ~ m, b ~ n) => LabelOptic "unBytes" k (NetBytes d s m) (NetBytes d s n) a b where
+  labelOptic = iso (unBytes . unNetBytes) (MkNetBytes . MkBytes)
+  {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
 instance Show n => Show (NetBytes d s n) where
@@ -351,6 +349,11 @@ hideNetSize bytes = case singSize @s of
 {-# INLINEABLE hideNetSize #-}
 
 -- | @since 0.1
+instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetSize" k (SomeNetSize d m) (SomeNetSize d n) a b where
+  labelOptic = lens unSomeNetSize (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
+  {-# INLINEABLE labelOptic #-}
+
+-- | @since 0.1
 deriving stock instance Show n => Show (SomeNetSize d n)
 
 -- | @since 0.1
@@ -476,11 +479,3 @@ someNetSizeToDirection = Direction.sdirectionToDirection . someNetSizeToSDirecti
 someNetSizeToSize :: SomeNetSize d n -> Size
 someNetSizeToSize (MkSomeNetSize sz _) = Size.ssizeToSize sz
 {-# INLINEABLE someNetSizeToSize #-}
-
--- | @since 0.1
-someNetSizeLens :: Lens (SomeNetSize d m) (SomeNetSize d n) m n
-someNetSizeLens =
-  lens
-    unSomeNetSize
-    (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
-{-# INLINEABLE someNetSizeLens #-}
