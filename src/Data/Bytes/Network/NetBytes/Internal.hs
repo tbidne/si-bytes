@@ -508,7 +508,7 @@ textToNetBytes t = case MP.runParser parseNetBytes "" t of
 {-# INLINEABLE textToNetBytes #-}
 
 -- | Attempts to read the text into a 'SomeNetSize'. We accept both short and
--- long size e.g. @N m@, @N mb@, @N megabytes@. The text comparisons are
+-- long size e.g. @m@, @mb@, @megabytes@. The text comparisons are
 -- case-insensitive, and whitespace between the number and size is optional.
 --
 -- ==== __Examples__
