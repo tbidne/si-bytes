@@ -251,15 +251,15 @@ instance Field n => VectorSpace (NetBytes d s n) n
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n, SingSize s) => Conversion (NetBytes d s n) where
-  type Converted 'B (NetBytes d s n) = NetBytes d 'B n
-  type Converted 'K (NetBytes d s n) = NetBytes d 'K n
-  type Converted 'M (NetBytes d s n) = NetBytes d 'M n
-  type Converted 'G (NetBytes d s n) = NetBytes d 'G n
-  type Converted 'T (NetBytes d s n) = NetBytes d 'T n
-  type Converted 'P (NetBytes d s n) = NetBytes d 'P n
-  type Converted 'E (NetBytes d s n) = NetBytes d 'E n
-  type Converted 'Z (NetBytes d s n) = NetBytes d 'Z n
-  type Converted 'Y (NetBytes d s n) = NetBytes d 'Y n
+  type Converted B (NetBytes d s n) = NetBytes d B n
+  type Converted K (NetBytes d s n) = NetBytes d K n
+  type Converted M (NetBytes d s n) = NetBytes d M n
+  type Converted G (NetBytes d s n) = NetBytes d G n
+  type Converted T (NetBytes d s n) = NetBytes d T n
+  type Converted P (NetBytes d s n) = NetBytes d P n
+  type Converted E (NetBytes d s n) = NetBytes d E n
+  type Converted Z (NetBytes d s n) = NetBytes d Z n
+  type Converted Y (NetBytes d s n) = NetBytes d Y n
 
   toB (MkNetBytes b) = MkNetBytes $ toB b
   {-# INLINEABLE toB #-}
@@ -419,15 +419,15 @@ instance (Field n, Normed n, NumLiteral n, Ord n) => VectorSpace (SomeNetSize d 
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n) => Conversion (SomeNetSize d n) where
-  type Converted 'B (SomeNetSize d n) = NetBytes d 'B n
-  type Converted 'K (SomeNetSize d n) = NetBytes d 'K n
-  type Converted 'M (SomeNetSize d n) = NetBytes d 'M n
-  type Converted 'G (SomeNetSize d n) = NetBytes d 'G n
-  type Converted 'T (SomeNetSize d n) = NetBytes d 'T n
-  type Converted 'P (SomeNetSize d n) = NetBytes d 'P n
-  type Converted 'E (SomeNetSize d n) = NetBytes d 'E n
-  type Converted 'Z (SomeNetSize d n) = NetBytes d 'Z n
-  type Converted 'Y (SomeNetSize d n) = NetBytes d 'Y n
+  type Converted B (SomeNetSize d n) = NetBytes d B n
+  type Converted K (SomeNetSize d n) = NetBytes d K n
+  type Converted M (SomeNetSize d n) = NetBytes d M n
+  type Converted G (SomeNetSize d n) = NetBytes d G n
+  type Converted T (SomeNetSize d n) = NetBytes d T n
+  type Converted P (SomeNetSize d n) = NetBytes d P n
+  type Converted E (SomeNetSize d n) = NetBytes d E n
+  type Converted Z (SomeNetSize d n) = NetBytes d Z n
+  type Converted Y (SomeNetSize d n) = NetBytes d Y n
 
   toB (MkSomeNetSize sz x) = Size.withSingSize sz $ toB x
   {-# INLINEABLE toB #-}

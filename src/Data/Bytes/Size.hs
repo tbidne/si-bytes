@@ -78,23 +78,23 @@ data Size
 type SSize :: Size -> Type
 data SSize (s :: Size) where
   -- | @since 0.1
-  SB :: SSize 'B
+  SB :: SSize B
   -- | @since 0.1
-  SK :: SSize 'K
+  SK :: SSize K
   -- | @since 0.1
-  SM :: SSize 'M
+  SM :: SSize M
   -- | @since 0.1
-  SG :: SSize 'G
+  SG :: SSize G
   -- | @since 0.1
-  ST :: SSize 'T
+  ST :: SSize T
   -- | @since 0.1
-  SP :: SSize 'P
+  SP :: SSize P
   -- | @since 0.1
-  SE :: SSize 'E
+  SE :: SSize E
   -- | @since 0.1
-  SZ :: SSize 'Z
+  SZ :: SSize Z
   -- | @since 0.1
-  SY :: SSize 'Y
+  SY :: SSize Y
 
 -- | @since 0.1
 ssizeToSize :: SSize s -> Size
@@ -136,47 +136,47 @@ class SingSize (s :: Size) where
   singSize :: SSize s
 
 -- | @since 0.1
-instance SingSize 'B where
+instance SingSize B where
   singSize = SB
   {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'K where
+instance SingSize K where
   singSize = SK
   {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'M where
+instance SingSize M where
   singSize = SM
   {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'G where
+instance SingSize G where
   singSize = SG
   {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'T where
+instance SingSize T where
   singSize = ST
   {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'P where
+instance SingSize P where
   singSize = SP
   {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'E where
+instance SingSize E where
   singSize = SE
   {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'Z where
+instance SingSize Z where
   singSize = SZ
   {-# INLINEABLE singSize #-}
 
 -- | @since 0.1
-instance SingSize 'Y where
+instance SingSize Y where
   singSize = SY
   {-# INLINEABLE singSize #-}
 
@@ -213,15 +213,15 @@ withSingSize s x = case s of
 -- @since 0.1
 type NextSize :: Size -> Size
 type family NextSize (s :: Size) = (t :: Size) where
-  NextSize 'B = 'K
-  NextSize 'K = 'M
-  NextSize 'M = 'G
-  NextSize 'G = 'T
-  NextSize 'T = 'P
-  NextSize 'P = 'E
-  NextSize 'E = 'Z
-  NextSize 'Z = 'Y
-  NextSize 'Y = TypeError ('Text "The byte unit Y does not have a 'next size'.")
+  NextSize B = K
+  NextSize K = M
+  NextSize M = G
+  NextSize G = T
+  NextSize T = P
+  NextSize P = E
+  NextSize E = Z
+  NextSize Z = Y
+  NextSize Y = TypeError (Text "The byte unit Y does not have a 'next size'.")
 
 -- | Type family that relates units to the previous smaller one.
 --
@@ -238,12 +238,12 @@ type family NextSize (s :: Size) = (t :: Size) where
 -- @since 0.1
 type PrevSize :: Size -> Size
 type family PrevSize (s :: Size) = (t :: Size) where
-  PrevSize 'B = TypeError ('Text "The byte unit B does not have a 'previous size'.")
-  PrevSize 'K = 'B
-  PrevSize 'M = 'K
-  PrevSize 'G = 'M
-  PrevSize 'T = 'G
-  PrevSize 'P = 'T
-  PrevSize 'E = 'P
-  PrevSize 'Z = 'E
-  PrevSize 'Y = 'Z
+  PrevSize B = TypeError (Text "The byte unit B does not have a 'previous size'.")
+  PrevSize K = B
+  PrevSize M = K
+  PrevSize G = M
+  PrevSize T = G
+  PrevSize P = T
+  PrevSize E = P
+  PrevSize Z = E
+  PrevSize Y = Z

@@ -222,15 +222,15 @@ instance
   ) =>
   Conversion (Bytes s n)
   where
-  type Converted 'B (Bytes s n) = Bytes 'B n
-  type Converted 'K (Bytes s n) = Bytes 'K n
-  type Converted 'M (Bytes s n) = Bytes 'M n
-  type Converted 'G (Bytes s n) = Bytes 'G n
-  type Converted 'T (Bytes s n) = Bytes 'T n
-  type Converted 'P (Bytes s n) = Bytes 'P n
-  type Converted 'E (Bytes s n) = Bytes 'E n
-  type Converted 'Z (Bytes s n) = Bytes 'Z n
-  type Converted 'Y (Bytes s n) = Bytes 'Y n
+  type Converted B (Bytes s n) = Bytes B n
+  type Converted K (Bytes s n) = Bytes K n
+  type Converted M (Bytes s n) = Bytes M n
+  type Converted G (Bytes s n) = Bytes G n
+  type Converted T (Bytes s n) = Bytes T n
+  type Converted P (Bytes s n) = Bytes P n
+  type Converted E (Bytes s n) = Bytes E n
+  type Converted Z (Bytes s n) = Bytes Z n
+  type Converted Y (Bytes s n) = Bytes Y n
 
   toB (MkBytes x) = MkBytes $ Conv.convertWitness @s B x
   {-# INLINEABLE toB #-}
@@ -447,15 +447,15 @@ instance (Field n, Normed n, NumLiteral n, Ord n) => VectorSpace (SomeSize n) n
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n) => Conversion (SomeSize n) where
-  type Converted 'B (SomeSize n) = Bytes 'B n
-  type Converted 'K (SomeSize n) = Bytes 'K n
-  type Converted 'M (SomeSize n) = Bytes 'M n
-  type Converted 'G (SomeSize n) = Bytes 'G n
-  type Converted 'T (SomeSize n) = Bytes 'T n
-  type Converted 'P (SomeSize n) = Bytes 'P n
-  type Converted 'E (SomeSize n) = Bytes 'E n
-  type Converted 'Z (SomeSize n) = Bytes 'Z n
-  type Converted 'Y (SomeSize n) = Bytes 'Y n
+  type Converted B (SomeSize n) = Bytes B n
+  type Converted K (SomeSize n) = Bytes K n
+  type Converted M (SomeSize n) = Bytes M n
+  type Converted G (SomeSize n) = Bytes G n
+  type Converted T (SomeSize n) = Bytes T n
+  type Converted P (SomeSize n) = Bytes P n
+  type Converted E (SomeSize n) = Bytes E n
+  type Converted Z (SomeSize n) = Bytes Z n
+  type Converted Y (SomeSize n) = Bytes Y n
 
   toB (MkSomeSize sz x) = Size.withSingSize sz $ toB x
   {-# INLINEABLE toB #-}

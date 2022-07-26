@@ -44,31 +44,31 @@ class Conversion a where
   type Converted (b :: Size) a = r | r -> b
 
   -- | @since 0.1
-  toB :: a -> Converted 'B a
+  toB :: a -> Converted B a
 
   -- | @since 0.1
-  toK :: a -> Converted 'K a
+  toK :: a -> Converted K a
 
   -- | @since 0.1
-  toM :: a -> Converted 'M a
+  toM :: a -> Converted M a
 
   -- | @since 0.1
-  toG :: a -> Converted 'G a
+  toG :: a -> Converted G a
 
   -- | @since 0.1
-  toT :: a -> Converted 'T a
+  toT :: a -> Converted T a
 
   -- | @since 0.1
-  toP :: a -> Converted 'P a
+  toP :: a -> Converted P a
 
   -- | @since 0.1
-  toE :: a -> Converted 'E a
+  toE :: a -> Converted E a
 
   -- | @since 0.1
-  toZ :: a -> Converted 'Z a
+  toZ :: a -> Converted Z a
 
   -- | @since 0.1
-  toY :: a -> Converted 'Y a
+  toY :: a -> Converted Y a
 
 -- | Low level function for converting a numeric literal /from/ the inferred
 -- 'SingSize' /to/ the parameter 'Size'. For instance,

@@ -190,15 +190,15 @@ instance Normed n => Normed (SomeNetDir s n) where
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) where
-  type Converted 'B (SomeNetDir s n) = SomeNetDir 'B n
-  type Converted 'K (SomeNetDir s n) = SomeNetDir 'K n
-  type Converted 'M (SomeNetDir s n) = SomeNetDir 'M n
-  type Converted 'G (SomeNetDir s n) = SomeNetDir 'G n
-  type Converted 'T (SomeNetDir s n) = SomeNetDir 'T n
-  type Converted 'P (SomeNetDir s n) = SomeNetDir 'P n
-  type Converted 'E (SomeNetDir s n) = SomeNetDir 'E n
-  type Converted 'Z (SomeNetDir s n) = SomeNetDir 'Z n
-  type Converted 'Y (SomeNetDir s n) = SomeNetDir 'Y n
+  type Converted B (SomeNetDir s n) = SomeNetDir B n
+  type Converted K (SomeNetDir s n) = SomeNetDir K n
+  type Converted M (SomeNetDir s n) = SomeNetDir M n
+  type Converted G (SomeNetDir s n) = SomeNetDir G n
+  type Converted T (SomeNetDir s n) = SomeNetDir T n
+  type Converted P (SomeNetDir s n) = SomeNetDir P n
+  type Converted E (SomeNetDir s n) = SomeNetDir E n
+  type Converted Z (SomeNetDir s n) = SomeNetDir Z n
+  type Converted Y (SomeNetDir s n) = SomeNetDir Y n
 
   toB (MkSomeNetDir dir x) = MkSomeNetDir dir $ toB x
   {-# INLINEABLE toB #-}
@@ -343,15 +343,15 @@ instance Normed n => Normed (SomeNet n) where
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n) => Conversion (SomeNet n) where
-  type Converted 'B (SomeNet n) = SomeNetDir 'B n
-  type Converted 'K (SomeNet n) = SomeNetDir 'K n
-  type Converted 'M (SomeNet n) = SomeNetDir 'M n
-  type Converted 'G (SomeNet n) = SomeNetDir 'G n
-  type Converted 'T (SomeNet n) = SomeNetDir 'T n
-  type Converted 'P (SomeNet n) = SomeNetDir 'P n
-  type Converted 'E (SomeNet n) = SomeNetDir 'E n
-  type Converted 'Z (SomeNet n) = SomeNetDir 'Z n
-  type Converted 'Y (SomeNet n) = SomeNetDir 'Y n
+  type Converted B (SomeNet n) = SomeNetDir B n
+  type Converted K (SomeNet n) = SomeNetDir K n
+  type Converted M (SomeNet n) = SomeNetDir M n
+  type Converted G (SomeNet n) = SomeNetDir G n
+  type Converted T (SomeNet n) = SomeNetDir T n
+  type Converted P (SomeNet n) = SomeNetDir P n
+  type Converted E (SomeNet n) = SomeNetDir E n
+  type Converted Z (SomeNet n) = SomeNetDir Z n
+  type Converted Y (SomeNet n) = SomeNetDir Y n
 
   toB (MkSomeNet dir sz x) = Size.withSingSize sz $ toB (MkSomeNetDir dir x)
   {-# INLINEABLE toB #-}

@@ -36,9 +36,9 @@ data Direction
 type SDirection :: Direction -> Type
 data SDirection (d :: Direction) where
   -- | @since 0.1
-  SDown :: SDirection 'Down
+  SDown :: SDirection Down
   -- | @since 0.1
-  SUp :: SDirection 'Up
+  SUp :: SDirection Up
 
 -- | @since 0.1
 deriving stock instance Show (SDirection d)
@@ -66,12 +66,12 @@ class SingDirection (d :: Direction) where
   singDirection :: SDirection d
 
 -- | @since 0.1
-instance SingDirection 'Down where
+instance SingDirection Down where
   singDirection = SDown
   {-# INLINEABLE singDirection #-}
 
 -- | @since 0.1
-instance SingDirection 'Up where
+instance SingDirection Up where
   singDirection = SUp
   {-# INLINEABLE singDirection #-}
 
