@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Internal module for "Data.Network.NetBytes". The primary
@@ -14,6 +13,7 @@ module Data.Bytes.Network.NetBytes.Internal
     netToSize,
     netToSDirection,
     netToDirection,
+    textToNetBytes,
 
     -- * Unknown Size
     SomeNetSize (..),
@@ -22,6 +22,11 @@ module Data.Bytes.Network.NetBytes.Internal
     someNetSizeToSize,
     someNetSizeToSDirection,
     someNetSizeToDirection,
+    textToSomeNetSize,
+
+    -- ** Helpers
+    parseNetBytes,
+    parseSomeNetSize,
   )
 where
 
@@ -30,6 +35,7 @@ import Control.DeepSeq (NFData)
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
+import Data.Bytes.Internal qualified as BytesI
 import Data.Bytes.Network.Direction
   ( Direction (..),
     SDirection (..),
@@ -39,9 +45,12 @@ import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
+import Data.Text (Text)
+import Data.Text qualified as T
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
 #endif
+import Data.Void (Void)
 import GHC.Generics (Generic)
 import GHC.Show qualified as Show
 import Numeric.Algebra
@@ -67,6 +76,8 @@ import Optics.Core (A_Lens, An_Iso, LabelOptic (..), iso, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
+import Text.Megaparsec (Parsec)
+import Text.Megaparsec qualified as MP
 
 -- $setup
 -- >>> getUpTrafficRaw = pure (40, "K")
@@ -479,3 +490,62 @@ someNetSizeToDirection = Direction.sdirectionToDirection . someNetSizeToSDirecti
 someNetSizeToSize :: SomeNetSize d n -> Size
 someNetSizeToSize (MkSomeNetSize sz _) = Size.ssizeToSize sz
 {-# INLINEABLE someNetSizeToSize #-}
+
+-- | Attempts to read the text into a 'NetBytes'.
+--
+-- ==== __Examples__
+-- >>> textToNetBytes @Int @Up @B "70"
+-- Right (MkNetBytesP {unNetBytesP = 70})
+--
+-- >>> textToNetBytes @Int @Down @M "cat"
+-- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
+--
+-- @since 0.1
+textToNetBytes :: Read n => Text -> Either Text (NetBytes d s n)
+textToNetBytes t = case MP.runParser parseNetBytes "" t of
+  Left err -> Left . T.pack . MP.errorBundlePretty $ err
+  Right netBytes -> Right netBytes
+{-# INLINEABLE textToNetBytes #-}
+
+-- | Attempts to read the text into a 'SomeNetSize'. We accept both short and
+-- long size e.g. @N m@, @N mb@, @N megabytes@. The text comparisons are
+-- case-insensitive, and whitespace between the number and size is optional.
+--
+-- ==== __Examples__
+-- >>> textToSomeNetSize @Int "70 bytes"
+-- Right (MkSomeNetSize SB (MkNetBytesP {unNetBytesP = 70}))
+--
+-- >>> textToSomeNetSize @Int "70 b"
+-- Right (MkSomeNetSize SB (MkNetBytesP {unNetBytesP = 70}))
+--
+-- >>> textToSomeNetSize @Int "70 megabytes"
+-- Right (MkSomeNetSize SM (MkNetBytesP {unNetBytesP = 70}))
+--
+-- >>> textToSomeNetSize @Int "70 gb"
+-- Right (MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 70}))
+--
+-- >>> textToSomeNetSize @Int "70tb"
+-- Right (MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 70}))
+--
+-- >>> textToSomeNetSize @Int "cat"
+-- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
+--
+-- >>> textToSomeNetSize @Int "70 tx"
+-- Left "1:5:\n  |\n1 | 70 tx\n  |     ^\nunexpected 'x'\nexpecting \"erabytes\", 'b', end of input, or white space\n"
+--
+-- @since 0.1
+textToSomeNetSize :: Read n => Text -> Either Text (SomeNetSize d n)
+textToSomeNetSize t = case MP.runParser parseSomeNetSize "" t of
+  Left err -> Left . T.pack . MP.errorBundlePretty $ err
+  Right someNetSize -> Right someNetSize
+{-# INLINEABLE textToSomeNetSize #-}
+
+parseNetBytes :: Read n => Parsec Void Text (NetBytes d s n)
+parseNetBytes = MkNetBytes <$> BytesI.parseBytes
+{-# INLINEABLE parseNetBytes #-}
+
+parseSomeNetSize :: Read n => Parsec Void Text (SomeNetSize d n)
+parseSomeNetSize = do
+  (MkSomeSize sz bytes) <- BytesI.parseSomeSize
+  pure $ MkSomeNetSize sz $ MkNetBytes bytes
+{-# INLINEABLE parseSomeNetSize #-}

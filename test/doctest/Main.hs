@@ -31,8 +31,10 @@ files =
 -- file's default-extensions
 exts :: [String]
 exts =
-  [ "-XDataKinds",
+  [ "-XApplicativeDo",
+    "-XDataKinds",
     "-XDefaultSignatures",
+    "-XDeriveAnyClass",
     "-XDeriveDataTypeable",
     "-XDeriveFunctor",
     "-XDeriveGeneric",
@@ -57,6 +59,7 @@ exts =
     "-XScopedTypeVariables",
     "-XStandaloneDeriving",
     "-XStandaloneKindSignatures",
+    "-XTupleSections",
     "-XTypeApplications",
     "-XTypeFamilyDependencies",
     "-XTypeOperators"

@@ -39,8 +39,10 @@ source-repository head
 
 common common-exts
   default-extensions:
+    ApplicativeDo
     DataKinds
     DefaultSignatures
+    DeriveAnyClass
     DeriveFunctor
     DeriveGeneric
     DerivingStrategies
@@ -63,6 +65,7 @@ common common-exts
     ScopedTypeVariables
     StandaloneDeriving
     StandaloneKindSignatures
+    TupleSections
     TypeApplications
     TypeFamilyDependencies
     TypeOperators
@@ -86,8 +89,10 @@ library
     , algebra-simple  ^>=0.1
     , base            >=4.14.1.0 && <4.17
     , deepseq         ^>=1.4.4.0
+    , megaparsec      >=7.0.5    && <9.3
     , optics-core     ^>=0.4
     , prettyprinter   >=1.4.0    && <1.8
+    , text            >=1.2.3.2  && <2.1
 
   hs-source-dirs:   src
   default-language: Haskell2010
