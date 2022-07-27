@@ -1,5 +1,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | Provides formatters for 'Direction'.
+--
+-- @since 0.1
 module Data.Bytes.Formatting.Direction
   ( DirectionFormat (..),
     _DirectionFormatShort,

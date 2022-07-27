@@ -149,8 +149,8 @@ import Data.Bytes.Size (Size (..))
 -- This respects 'SomeNetSize'\'s equivalence-class base 'Eq'.
 
 -- $parsing
--- We provide tools for parsing byte types from 'Text'. Parsing is lenient
--- in general. We support:
+-- We provide tools for parsing byte types from 'Data.Text.Text'. Parsing is
+-- lenient in general. We support:
 --
 -- * Case-insensitivity.
 -- * Optional leading\/internal\/trailing whitespace. Note the there must be

@@ -63,7 +63,7 @@ import Data.Bytes.Network.Direction (Directed)
 import Data.Bytes.Size (Sized)
 import Text.Printf (PrintfArg)
 
--- | Formats a value with 'Size' units. Can be used with all byte types
+-- | Formats a value with 'Data.Bytes.Size.Size' units. Can be used with all byte types
 -- in this package.
 --
 -- ==== __Examples__
@@ -101,8 +101,9 @@ formatSized ::
   String
 formatSized basefmt sizefmt x = formatBase basefmt (unwrap x) <> formatSize sizefmt x
 
--- | Formats a value with 'Size' and 'Direction' units. Can only be used with
--- types that have 'Size' /and/ 'Direction' units.
+-- | Formats a value with 'Data.Bytes.Size.Size' and
+-- 'Data.Bytes.Direction.Direction' units. Can only be used when /both/ units
+-- are present.
 --
 -- ==== __Examples__
 --

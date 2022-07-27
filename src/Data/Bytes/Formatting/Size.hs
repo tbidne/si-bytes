@@ -1,5 +1,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | Provides formatters for 'Size'.
+--
+-- @since 0.1
 module Data.Bytes.Formatting.Size
   ( SizeFormat (..),
     _SizeFormatShort,
