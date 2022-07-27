@@ -21,38 +21,31 @@ module Data.Bytes.Network
     -- ** Bytes
     NetBytes (..),
     NetBytes.unNetBytesP,
-    NetBytes.netToSize,
-    NetBytes.netToDirection,
     NetBytes.textToNetBytes,
 
     -- *** Unknown Size
     SomeNetSize,
     hideNetSize,
     NetBytes.unSomeNetSize,
-    NetBytes.someNetSizeToSize,
-    NetBytes.someNetSizeToDirection,
     NetBytes.textToSomeNetSize,
 
     -- *** Unknown Direction
     SomeNetDir,
     SomeNetDir.hideNetDir,
     SomeNetDir.unSomeNetDir,
-    SomeNetDir.someNetDirToSize,
-    SomeNetDir.someNetDirToDirection,
     SomeNetDir.textToSomeNetDir,
 
     -- *** Unknown Size and Direction
     SomeNet,
     SomeNetDir.hideNetSizeDir,
     SomeNetDir.unSomeNet,
-    SomeNetDir.someNetToSize,
-    SomeNetDir.someNetToDirection,
     SomeNetDir.textToSomeNet,
 
     -- * Transformations
 
     -- ** Pretty Printing
     -- $pretty
+    module Data.Bytes.Formatting,
 
     -- ** Converting Units
     Conversion (..),
@@ -67,6 +60,7 @@ where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Formatting
 import Data.Bytes.Network.Direction (Direction (..))
 import Data.Bytes.Network.NetBytes (NetBytes (..), SomeNetSize, hideNetSize)
 import Data.Bytes.Network.NetBytes qualified as NetBytes
@@ -74,15 +68,18 @@ import Data.Bytes.Network.SomeNetDir (SomeNet, SomeNetDir)
 import Data.Bytes.Network.SomeNetDir qualified as SomeNetDir
 import Data.Bytes.Size (Size (..))
 
+-- \$pretty
+
 -- $pretty
+-- We provide several formatters for pretty-printing different byte types.
 --
--- "Prettyprinter"'s 'Prettyprinter.Pretty' class can be used for pretty
--- printing.
+-- >>> import Data.Default (Default (def))
+-- >>> let bf = MkFloatingFormatter (Just 2)
+-- >>> let b = MkNetBytesP @Up @G @Float 203.301
+-- >>> formatSizedDirected bf def def b
+-- "203.30 gb up"
 --
--- >>> import Prettyprinter (Pretty (..), layoutPretty, defaultLayoutOptions)
--- >>> import Prettyprinter.Render.String (renderString)
--- >>> renderString $ layoutPretty defaultLayoutOptions $ pretty $ MkNetBytesP @Up @G @Float 203.301
--- "203.301 G Up"
+-- See "Data.Bytes.Formatting" for more.
 
 -- $algebra
 --

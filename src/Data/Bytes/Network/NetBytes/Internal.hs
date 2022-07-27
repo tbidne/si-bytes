@@ -10,18 +10,14 @@ module Data.Bytes.Network.NetBytes.Internal
     NetBytes (.., MkNetBytesP),
     unNetBytesP,
     netToSSize,
-    netToSize,
     netToSDirection,
-    netToDirection,
     textToNetBytes,
 
     -- * Unknown Size
     SomeNetSize (..),
     unSomeNetSize,
     hideNetSize,
-    someNetSizeToSize,
     someNetSizeToSDirection,
-    someNetSizeToDirection,
     textToSomeNetSize,
 
     -- ** Helpers
@@ -34,15 +30,17 @@ import Control.Applicative (liftA2)
 import Control.DeepSeq (NFData)
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
 import Data.Bytes.Internal qualified as BytesI
 import Data.Bytes.Network.Direction
-  ( Direction (..),
+  ( Directed (..),
+    Direction (..),
     SDirection (..),
     SingDirection (..),
   )
 import Data.Bytes.Network.Direction qualified as Direction
-import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
+import Data.Bytes.Size (SSize (..), SingSize (..), Size (..), Sized (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
 import Data.Text (Text)
@@ -134,18 +132,6 @@ netToSDirection :: SingDirection d => NetBytes d s n -> SDirection d
 netToSDirection _ = singDirection
 {-# INLINEABLE netToSDirection #-}
 
--- | Recovers the direction.
---
--- ==== __Examples__
---
--- >>> netToDirection $ MkNetBytesP @Up @M 10
--- Up
---
--- @since 0.1
-netToDirection :: SingDirection d => NetBytes d s n -> Direction
-netToDirection = Direction.sdirectionToDirection . netToSDirection
-{-# INLINEABLE netToDirection #-}
-
 -- | Retrieves the 'SingSize' witness. Can be used to recover the 'Size'.
 --
 -- >>> netToSSize (MkNetBytesP @Down @K @Int 7)
@@ -156,20 +142,8 @@ netToSSize :: SingSize s => NetBytes d s n -> SSize s
 netToSSize _ = singSize
 {-# INLINEABLE netToSSize #-}
 
--- | Recovers the size.
---
--- ==== __Examples__
---
--- >>> netToSize (MkNetBytesP @Up @M 8)
--- M
---
--- @since 0.1
-netToSize :: SingSize s => NetBytes d s n -> Size
-netToSize = Size.ssizeToSize . netToSSize
-{-# INLINEABLE netToSize #-}
-
 -- | @since 0.1
-instance (k ~ An_Iso, a ~ m, b ~ n) => LabelOptic "unBytes" k (NetBytes d s m) (NetBytes d s n) a b where
+instance (k ~ An_Iso, a ~ m, b ~ n) => LabelOptic "unNetBytes" k (NetBytes d s m) (NetBytes d s n) a b where
   labelOptic = iso (unBytes . unNetBytes) (MkNetBytes . MkBytes)
   {-# INLINEABLE labelOptic #-}
 
@@ -298,6 +272,22 @@ instance
     SDown -> pretty x <+> pretty @String "Down"
     SUp -> pretty x <+> pretty @String "Up"
   {-# INLINEABLE pretty #-}
+
+-- | @since 0.1
+instance SingSize s => Sized (NetBytes d s n) where
+  sizeOf = Size.ssizeToSize . netToSSize
+  {-# INLINEABLE sizeOf #-}
+
+-- | @since 0.1
+instance SingDirection d => Directed (NetBytes d s n) where
+  directionOf = Direction.sdirectionToDirection . netToSDirection
+  {-# INLINEABLE directionOf #-}
+
+-- | @since 0.1
+instance Unwrapper (NetBytes d s n) where
+  type Unwrapped (NetBytes d s n) = n
+  unwrap = unNetBytesP
+  {-# INLINEABLE unwrap #-}
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return e.g.
@@ -459,6 +449,22 @@ instance (Pretty n, SingDirection d) => Pretty (SomeNetSize d n) where
   pretty (MkSomeNetSize sz b) = Size.withSingSize sz $ pretty b
   {-# INLINEABLE pretty #-}
 
+-- | @since 0.1
+instance Sized (SomeNetSize d n) where
+  sizeOf (MkSomeNetSize sz _) = Size.ssizeToSize sz
+  {-# INLINEABLE sizeOf #-}
+
+-- | @since 0.1
+instance SingDirection d => Directed (SomeNetSize d n) where
+  directionOf = Direction.sdirectionToDirection . someNetSizeToSDirection
+  {-# INLINEABLE directionOf #-}
+
+-- | @since 0.1
+instance Unwrapper (SomeNetSize d n) where
+  type Unwrapped (SomeNetSize d n) = n
+  unwrap = unSomeNetSize
+  {-# INLINEABLE unwrap #-}
+
 -- | Retrieves the 'SingDirection' witness. Can be used to recover the
 -- 'Direction'.
 --
@@ -466,30 +472,6 @@ instance (Pretty n, SingDirection d) => Pretty (SomeNetSize d n) where
 someNetSizeToSDirection :: SingDirection d => SomeNetSize d n -> SDirection d
 someNetSizeToSDirection _ = singDirection
 {-# INLINEABLE someNetSizeToSDirection #-}
-
--- | Recovers the direction.
---
--- ==== __Examples__
---
--- >>> someNetSizeToDirection $ hideNetSize (MkNetBytesP @Up @M 8)
--- Up
---
--- @since 0.1
-someNetSizeToDirection :: SingDirection d => SomeNetSize d n -> Direction
-someNetSizeToDirection = Direction.sdirectionToDirection . someNetSizeToSDirection
-{-# INLINEABLE someNetSizeToDirection #-}
-
--- | Recovers the size.
---
--- ==== __Examples__
---
--- >>> someNetSizeToSize $ hideNetSize (MkNetBytesP @Up @M 8)
--- M
---
--- @since 0.1
-someNetSizeToSize :: SomeNetSize d n -> Size
-someNetSizeToSize (MkSomeNetSize sz _) = Size.ssizeToSize sz
-{-# INLINEABLE someNetSizeToSize #-}
 
 -- | Attempts to read the text into a 'NetBytes'.
 --

@@ -12,6 +12,9 @@ module Data.Bytes.Size
     withSingSize,
     ssizeToSize,
 
+    -- * Sized Types
+    Sized (..),
+
     -- * Type Families for Relating Tags
     NextSize,
     PrevSize,
@@ -247,3 +250,12 @@ type family PrevSize (s :: Size) = (t :: Size) where
   PrevSize E = P
   PrevSize Z = E
   PrevSize Y = Z
+
+-- | Types that have a size.
+--
+-- @since 0.1
+class Sized a where
+  -- | Retrieves the size.
+  --
+  -- @since 0.1
+  sizeOf :: a -> Size

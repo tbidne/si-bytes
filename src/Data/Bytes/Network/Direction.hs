@@ -6,6 +6,7 @@ module Data.Bytes.Network.Direction
     Direction (..),
     SDirection (..),
     SingDirection (..),
+    Directed (..),
     withSingDirection,
     sdirectionToDirection,
   )
@@ -85,3 +86,12 @@ withSingDirection s x = case s of
   SDown -> x
   SUp -> x
 {-# INLINEABLE withSingDirection #-}
+
+-- | Types that have a direction.
+--
+-- @since 0.1
+class Directed a where
+  -- | Retrieve the direction.
+  --
+  -- @since 0.1
+  directionOf :: a -> Direction

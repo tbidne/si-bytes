@@ -11,16 +11,12 @@ module Data.Bytes.Network.SomeNetDir.Internal
     unSomeNetDir,
     hideNetDir,
     someNetDirToSSize,
-    someNetDirToSize,
-    someNetDirToDirection,
     textToSomeNetDir,
 
     -- * Unknown Direction and Size
     SomeNet (..),
     unSomeNet,
     hideNetSizeDir,
-    someNetToSize,
-    someNetToDirection,
     textToSomeNet,
 
     -- ** Helpers
@@ -32,12 +28,18 @@ where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Internal qualified as BytesI
-import Data.Bytes.Network.Direction (Direction (..), SDirection (..), SingDirection (..))
+import Data.Bytes.Network.Direction
+  ( Directed (..),
+    Direction (..),
+    SDirection (..),
+    SingDirection (..),
+  )
 import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Network.NetBytes.Internal (NetBytes (MkNetBytesP), SomeNetSize (..))
 import Data.Bytes.Network.NetBytes.Internal qualified as Internal
-import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
+import Data.Bytes.Size (SSize (..), SingSize (..), Size (..), Sized (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
 import Data.Text (Text)
@@ -119,30 +121,6 @@ unSomeNetDir (MkSomeNetDir _ b) = Internal.unNetBytesP b
 someNetDirToSSize :: SingSize s => SomeNetDir s n -> SSize s
 someNetDirToSSize _ = singSize
 {-# INLINEABLE someNetDirToSSize #-}
-
--- | Recovers the size.
---
--- ==== __Examples__
---
--- >>> someNetDirToSize $ hideNetDir (MkNetBytesP @Up @T 4)
--- T
---
--- @since 0.1
-someNetDirToSize :: SingSize s => SomeNetDir s n -> Size
-someNetDirToSize = Size.ssizeToSize . someNetDirToSSize
-{-# INLINEABLE someNetDirToSize #-}
-
--- | Recovers the direction.
---
--- ==== __Examples__
---
--- >>> someNetDirToSize $ hideNetDir (MkNetBytesP @Down @T 4)
--- T
---
--- @since 0.1
-someNetDirToDirection :: SomeNetDir s n -> Direction
-someNetDirToDirection (MkSomeNetDir d _) = Direction.sdirectionToDirection d
-{-# INLINEABLE someNetDirToDirection #-}
 
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetDir'.
 --
@@ -232,6 +210,22 @@ instance (Pretty n, SingSize s) => Pretty (SomeNetDir s n) where
   pretty (MkSomeNetDir dir x) =
     Direction.withSingDirection dir $ pretty x
   {-# INLINEABLE pretty #-}
+
+-- | @since 0.1
+instance SingSize s => Sized (SomeNetDir s n) where
+  sizeOf = Size.ssizeToSize . someNetDirToSSize
+  {-# INLINEABLE sizeOf #-}
+
+-- | @since 0.1
+instance Directed (SomeNetDir s n) where
+  directionOf (MkSomeNetDir d _) = Direction.sdirectionToDirection d
+  {-# INLINEABLE directionOf #-}
+
+-- | @since 0.1
+instance Unwrapper (SomeNetDir s n) where
+  type Unwrapped (SomeNetDir s n) = n
+  unwrap = unSomeNetDir
+  {-# INLINEABLE unwrap #-}
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size /and/
 -- direction. This is useful when a function does not know a priori what
@@ -388,29 +382,21 @@ instance Pretty n => Pretty (SomeNet n) where
         pretty x
   {-# INLINEABLE pretty #-}
 
--- | Recovers the direction.
---
--- ==== __Examples__
---
--- >>> someNetToSize $ hideNetSizeDir (MkNetBytesP @Down @T 4)
--- T
---
--- @since 0.1
-someNetToSize :: SomeNet n -> Size
-someNetToSize (MkSomeNet _ sz _) = Size.ssizeToSize sz
-{-# INLINEABLE someNetToSize #-}
+-- | @since 0.1
+instance Sized (SomeNet n) where
+  sizeOf (MkSomeNet _ sz _) = Size.ssizeToSize sz
+  {-# INLINEABLE sizeOf #-}
 
--- | Recovers the direction.
---
--- ==== __Examples__
---
--- >>> someNetToDirection $ hideNetSizeDir (MkNetBytesP @Up @T 4)
--- Up
---
--- @since 0.1
-someNetToDirection :: SomeNet n -> Direction
-someNetToDirection (MkSomeNet d _ _) = Direction.sdirectionToDirection d
-{-# INLINEABLE someNetToDirection #-}
+-- | @since 0.1
+instance Directed (SomeNet n) where
+  directionOf (MkSomeNet d _ _) = Direction.sdirectionToDirection d
+  {-# INLINEABLE directionOf #-}
+
+-- | @since 0.1
+instance Unwrapper (SomeNet n) where
+  type Unwrapped (SomeNet n) = n
+  unwrap = unSomeNet
+  {-# INLINEABLE unwrap #-}
 
 -- | Attempts to read the text into a 'SomeNetDir'. We accept both short and
 -- long units. The text comparisons are case-insensitive, and whitespace

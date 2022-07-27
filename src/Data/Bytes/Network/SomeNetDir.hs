@@ -19,14 +19,10 @@
 module Data.Bytes.Network.SomeNetDir
   ( SomeNetDir,
     Internal.unSomeNetDir,
-    Internal.someNetDirToSize,
-    Internal.someNetDirToDirection,
     hideNetDir,
     Internal.textToSomeNetDir,
     SomeNet,
     Internal.unSomeNet,
-    Internal.someNetToSize,
-    Internal.someNetToDirection,
     hideNetSizeDir,
     Internal.textToSomeNet,
   )

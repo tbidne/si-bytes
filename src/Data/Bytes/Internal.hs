@@ -9,7 +9,6 @@
 module Data.Bytes.Internal
   ( -- * Bytes
     Bytes (..),
-    bytesToSize,
     bytesToSSize,
     textToBytes,
 
@@ -17,7 +16,6 @@ module Data.Bytes.Internal
     SomeSize (..),
     unSomeSize,
     hideSize,
-    someSizeToSize,
     textToSomeSize,
 
     -- ** Helpers
@@ -39,6 +37,7 @@ import Data.Bytes.Size
     SSize (..),
     SingSize (..),
     Size (..),
+    Sized (..),
   )
 import Data.Bytes.Size qualified as Size
 import Data.Char qualified as Ch
@@ -49,6 +48,7 @@ import Data.Void (Void)
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
 #endif
+import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import GHC.Generics (Generic)
 import Numeric.Algebra
   ( AGroup (..),
@@ -116,18 +116,6 @@ newtype Bytes (s :: Size) (n :: Type) = MkBytes
 resizeBytes :: Bytes s n -> Bytes t n
 resizeBytes (MkBytes x) = MkBytes x
 {-# INLINEABLE resizeBytes #-}
-
--- | Recovers the size.
---
--- ==== __Examples__
---
--- >>> bytesToSize $ MkBytes @G 10
--- G
---
--- @since 0.1
-bytesToSize :: SingSize s => Bytes s n -> Size
-bytesToSize = Size.ssizeToSize . bytesToSSize
-{-# INLINEABLE bytesToSize #-}
 
 -- | Retrieves the 'SSize' witness. Can be used to recover the 'Size'.
 --
@@ -310,6 +298,17 @@ instance (Pretty n, SingSize s) => Pretty (Bytes s n) where
     SY -> pretty x <+> pretty @Text "Y"
   {-# INLINEABLE pretty #-}
 
+-- | @since 0.1
+instance SingSize s => Sized (Bytes s n) where
+  sizeOf = Size.ssizeToSize . bytesToSSize
+  {-# INLINEABLE sizeOf #-}
+
+-- | @since 0.1
+instance Unwrapper (Bytes s n) where
+  type Unwrapped (Bytes s n) = n
+  unwrap = unBytes
+  {-# INLINEABLE unwrap #-}
+
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return e.g.
 --
@@ -369,18 +368,6 @@ hideSize bytes = case singSize @s of
   SZ -> MkSomeSize SZ bytes
   SY -> MkSomeSize SY bytes
 {-# INLINEABLE hideSize #-}
-
--- | Recovers the size.
---
--- ==== __Examples__
---
--- >>> someSizeToSize $ hideSize $ MkBytes @G 10
--- G
---
--- @since 0.1
-someSizeToSize :: SomeSize n -> Size
-someSizeToSize (MkSomeSize sz _) = Size.ssizeToSize sz
-{-# INLINEABLE someSizeToSize #-}
 
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeSize" k (SomeSize m) (SomeSize n) a b where
@@ -486,6 +473,17 @@ instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeSize n) whe
 instance Pretty n => Pretty (SomeSize n) where
   pretty (MkSomeSize sz b) = Size.withSingSize sz $ pretty b
   {-# INLINEABLE pretty #-}
+
+-- | @since 0.1
+instance Sized (SomeSize n) where
+  sizeOf (MkSomeSize sz _) = Size.ssizeToSize sz
+  {-# INLINEABLE sizeOf #-}
+
+-- | @since 0.1
+instance Unwrapper (SomeSize n) where
+  type Unwrapped (SomeSize n) = n
+  unwrap = unSomeSize
+  {-# INLINEABLE unwrap #-}
 
 -- | Increases 'Bytes' to the next size.
 --
@@ -597,10 +595,9 @@ parseSomeSize = do
 parseDigits :: Read n => Parsec Void Text n
 parseDigits = do
   b <- MP.takeWhile1P Nothing Ch.isDigit
-  bytes <- case TR.readMaybe (T.unpack b) of
-    Nothing -> fail $ "Could not read: " <> (T.unpack b)
+  case TR.readMaybe (T.unpack b) of
+    Nothing -> fail $ "Could not read: " <> T.unpack b
     Just b' -> pure b'
-  pure bytes
 {-# INLINEABLE parseDigits #-}
 
 -- | Parser combinator for 'Size'.
@@ -626,6 +623,6 @@ parseSize =
       pure B
     parseU u ushort ulong = do
       _ <- MPC.char' ushort
-      _ <- MP.optional (MP.try (MPC.string' "b") <|> (MPC.string' ulong))
+      _ <- MP.optional (MP.try (MPC.string' "b") <|> MPC.string' ulong)
       pure u
 {-# INLINEABLE parseSize #-}

@@ -17,20 +17,19 @@ module Data.Bytes
 
     -- ** Bytes
     Bytes (..),
-    Bytes.bytesToSize,
     Bytes.textToBytes,
 
     -- *** Unknown Size
     SomeSize,
     hideSize,
     Bytes.unSomeSize,
-    Bytes.someSizeToSize,
     Bytes.textToSomeSize,
 
     -- * Transformations
 
     -- ** Pretty Printing
     -- $pretty
+    module Data.Bytes.Formatting,
 
     -- ** Converting Units
     Conversion (..),
@@ -45,18 +44,21 @@ where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Formatting
 import Data.Bytes.Internal (Bytes (..), SomeSize, hideSize)
 import Data.Bytes.Internal qualified as Bytes
 import Data.Bytes.Size (Size (..))
 
 -- $pretty
--- "Prettyprinter"'s 'Prettyprinter.Pretty' class can be used for pretty
--- printing.
+-- We provide several formatters for pretty-printing different byte types.
 --
--- >>> import Prettyprinter (Pretty (pretty), layoutPretty, defaultLayoutOptions)
--- >>> import Prettyprinter.Render.String (renderString)
--- >>> renderString $ layoutPretty defaultLayoutOptions $ pretty $ MkBytes @G @Float 203.301
--- "203.301 G"
+-- >>> import Data.Default (Default (def))
+-- >>> let bf = MkFloatingFormatter (Just 2)
+-- >>> let b = MkBytes @G @Float 20.248
+-- >>> formatSized bf def b
+-- "20.25 gb"
+--
+-- See "Data.Bytes.Formatting" for more.
 
 -- $algebra
 --

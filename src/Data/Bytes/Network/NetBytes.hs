@@ -7,16 +7,12 @@ module Data.Bytes.Network.NetBytes
   ( -- * Network Bytes
     NetBytes (..),
     unNetBytesP,
-    Internal.netToSize,
-    Internal.netToDirection,
     hideNetSize,
     Internal.textToNetBytes,
 
     -- * Unknown Size
     SomeNetSize,
     Internal.unSomeNetSize,
-    Internal.someNetSizeToSize,
-    Internal.someNetSizeToDirection,
     Internal.textToSomeNetSize,
   )
 where
