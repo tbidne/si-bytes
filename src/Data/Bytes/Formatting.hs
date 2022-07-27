@@ -47,8 +47,8 @@ import Data.Bytes.Formatting.Base
 import Data.Bytes.Formatting.Direction
   ( DirectedFormatter (MkDirectedFormatter),
     DirectionFormat (..),
-    directedFormatterVerbose,
     directedFormatterUnix,
+    directedFormatterVerbose,
     formatDirection,
   )
 import Data.Bytes.Formatting.Size
@@ -56,8 +56,8 @@ import Data.Bytes.Formatting.Size
     SizedFormatter (MkSizedFormatter),
     formatSize,
     sizedFormatterNatural,
-    sizedFormatterVerbose,
     sizedFormatterUnix,
+    sizedFormatterVerbose,
   )
 import Data.Bytes.Network.Direction (Directed)
 import Data.Bytes.Size (Sized)
