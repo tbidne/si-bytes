@@ -19,10 +19,8 @@
 module Data.Bytes.Network.SomeNetDir
   ( SomeNetDir,
     hideNetDir,
-    Internal.textToSomeNetDir,
     SomeNet,
     hideNetSizeDir,
-    Internal.textToSomeNet,
   )
 where
 
@@ -32,4 +30,3 @@ import Data.Bytes.Network.SomeNetDir.Internal
     hideNetDir,
     hideNetSizeDir,
   )
-import Data.Bytes.Network.SomeNetDir.Internal qualified as Internal

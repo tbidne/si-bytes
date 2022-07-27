@@ -17,18 +17,12 @@ module Data.Bytes
 
     -- ** Bytes
     Bytes (..),
-    Bytes.textToBytes,
 
     -- *** Unknown Size
     SomeSize,
     hideSize,
-    Bytes.textToSomeSize,
 
     -- * Transformations
-
-    -- ** Pretty Printing
-    -- $pretty
-    module Data.Bytes.Formatting,
 
     -- ** Converting Units
     Conversion (..),
@@ -38,14 +32,24 @@ module Data.Bytes
 
     -- * Algebra
     -- $algebra
+
+    -- * Text
+
+    -- ** Pretty Printing
+    -- $pretty
+    module Data.Bytes.Formatting,
+
+    -- ** Parsing
+    -- $parsing
+    parse,
   )
 where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Parser (parse)
 import Data.Bytes.Formatting
 import Data.Bytes.Internal (Bytes (..), SomeSize, hideSize)
-import Data.Bytes.Internal qualified as Bytes
 import Data.Bytes.Size (Size (..))
 
 -- $pretty
@@ -123,3 +127,25 @@ import Data.Bytes.Size (Size (..))
 -- MkSomeSize SG (MkBytes 500.0)
 --
 -- This respects 'SomeSize'\'s equivalence-class based 'Eq'.
+
+-- $parsing
+-- We provide tools for parsing byte types from 'Text'. Parsing is lenient
+-- in general. We support:
+--
+-- * Case-insensitivity.
+-- * Optional leading\/internal\/trailing whitespace.
+-- * Flexible names.
+--
+-- __Examples__
+--
+-- >>> parse @(Bytes M Int) "70"
+-- Right (MkBytes 70)
+--
+-- >>> parse @(SomeSize Float) "100.45 kilobytes"
+-- Right (MkSomeSize SK (MkBytes 100.45))
+--
+-- >>> parse @(SomeSize Word) "2300G"
+-- Right (MkSomeSize SG (MkBytes 2300))
+--
+-- >>> parse @(SomeSize Float) "5.5 tb"
+-- Right (MkSomeSize ST (MkBytes 5.5))

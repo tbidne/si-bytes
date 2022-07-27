@@ -10,26 +10,20 @@ module Data.Bytes.Internal
   ( -- * Bytes
     Bytes (..),
     bytesToSSize,
-    textToBytes,
 
     -- * Unknown Size
     SomeSize (..),
     hideSize,
-    textToSomeSize,
-
-    -- ** Helpers
-    parseBytes,
-    parseSomeSize,
-    parseDigits,
-    parseSize,
   )
 where
 
-import Control.Applicative (Alternative (..), liftA2)
+import Control.Applicative (liftA2)
 import Control.DeepSeq (NFData)
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Conversion qualified as Conv
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Parser (Parser (..))
+import Data.Bytes.Class.Parser qualified as Parser
 import Data.Bytes.Size
   ( NextSize,
     PrevSize,
@@ -39,11 +33,8 @@ import Data.Bytes.Size
     Sized (..),
   )
 import Data.Bytes.Size qualified as Size
-import Data.Char qualified as Ch
 import Data.Kind (Type)
 import Data.Text (Text)
-import Data.Text qualified as T
-import Data.Void (Void)
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
 #endif
@@ -73,10 +64,8 @@ import Optics.Core (A_Lens, An_Iso, LabelOptic (..), iso, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
-import Text.Megaparsec (Parsec)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
-import Text.Read qualified as TR
 
 -- $setup
 -- >>> getRawFileSize _ = pure (40, "K")
@@ -295,6 +284,10 @@ instance Unwrapper (Bytes s n) where
   unwrap (MkBytes x) = x
   {-# INLINEABLE unwrap #-}
 
+-- | @since 0.1
+instance Read n => Parser (Bytes s n) where
+  parser = MkBytes <$> (Parser.parseDigits <* MP.eof)
+
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return e.g.
 --
@@ -464,6 +457,26 @@ instance Unwrapper (SomeSize n) where
   unwrap (MkSomeSize _ b) = unwrap b
   {-# INLINEABLE unwrap #-}
 
+-- | @since 0.1
+instance Read n => Parser (SomeSize n) where
+  parser = do
+    bytes <- Parser.parseDigits
+    MPC.space
+    sz <- parser
+    MPC.space
+    MP.eof
+    pure $ case sz of
+      B -> MkSomeSize SB $ MkBytes bytes
+      K -> MkSomeSize SK $ MkBytes bytes
+      M -> MkSomeSize SM $ MkBytes bytes
+      G -> MkSomeSize SG $ MkBytes bytes
+      T -> MkSomeSize ST $ MkBytes bytes
+      P -> MkSomeSize SP $ MkBytes bytes
+      E -> MkSomeSize SE $ MkBytes bytes
+      Z -> MkSomeSize SZ $ MkBytes bytes
+      Y -> MkSomeSize SY $ MkBytes bytes
+  {-# INLINEABLE parser #-}
+
 -- | Increases 'Bytes' to the next size.
 --
 -- ==== __Examples__
@@ -495,113 +508,3 @@ incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
 decSize :: forall s n. (MSemigroup n, NumLiteral n) => Bytes s n -> Bytes (PrevSize s) n
 decSize = resizeBytes . MkBytes . (.*. fromLit @n 1_000) . unwrap
 {-# INLINEABLE decSize #-}
-
--- | Attempts to read the text into a 'Bytes'.
---
--- ==== __Examples__
--- >>> textToBytes @Int @B "70"
--- Right (MkBytes 70)
---
--- >>> textToBytes @Int "cat"
--- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
---
--- @since 0.1
-textToBytes :: Read n => Text -> Either Text (Bytes s n)
-textToBytes t = case MP.runParser parseBytes "" t of
-  Left err -> Left . T.pack . MP.errorBundlePretty $ err
-  Right someSize -> Right someSize
-{-# INLINEABLE textToBytes #-}
-
--- | Attempts to read the text into a 'SomeSize'. We accept both short and
--- long size e.g. @m@, @mb@, @megabytes@. The text comparisons are
--- case-insensitive, and whitespace between the number and size is optional.
---
--- ==== __Examples__
--- >>> textToSomeSize @Int "70 bytes"
--- Right (MkSomeSize SB (MkBytes 70))
---
--- >>> textToSomeSize @Int "70 b"
--- Right (MkSomeSize SB (MkBytes 70))
---
--- >>> textToSomeSize @Int "70 megabytes"
--- Right (MkSomeSize SM (MkBytes 70))
---
--- >>> textToSomeSize @Int "70 gb"
--- Right (MkSomeSize SG (MkBytes 70))
---
--- >>> textToSomeSize @Int "70tb"
--- Right (MkSomeSize ST (MkBytes 70))
---
--- >>> textToSomeSize @Int "cat"
--- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
---
--- >>> textToSomeSize @Int "70 tx"
--- Left "1:5:\n  |\n1 | 70 tx\n  |     ^\nunexpected 'x'\nexpecting \"erabytes\", 'b', end of input, or white space\n"
---
--- @since 0.1
-textToSomeSize :: Read n => Text -> Either Text (SomeSize n)
-textToSomeSize t = case MP.runParser parseSomeSize "" t of
-  Left err -> Left . T.pack . MP.errorBundlePretty $ err
-  Right someSize -> Right someSize
-{-# INLINEABLE textToSomeSize #-}
-
-parseBytes :: Read n => Parsec Void Text (Bytes s n)
-parseBytes = MkBytes <$> parseDigits
-{-# INLINEABLE parseBytes #-}
-
-parseSomeSize :: Read n => Parsec Void Text (SomeSize n)
-parseSomeSize = do
-  bytes <- parseDigits
-  MPC.space
-  sz <- parseSize
-  MPC.space
-  MP.eof
-  pure $ case sz of
-    B -> MkSomeSize SB $ MkBytes bytes
-    K -> MkSomeSize SK $ MkBytes bytes
-    M -> MkSomeSize SM $ MkBytes bytes
-    G -> MkSomeSize SG $ MkBytes bytes
-    T -> MkSomeSize ST $ MkBytes bytes
-    P -> MkSomeSize SP $ MkBytes bytes
-    E -> MkSomeSize SE $ MkBytes bytes
-    Z -> MkSomeSize SZ $ MkBytes bytes
-    Y -> MkSomeSize SY $ MkBytes bytes
-{-# INLINEABLE parseSomeSize #-}
-
--- | Parser combinator for digits with a 'Read' instance.
---
--- @since 0.1
-parseDigits :: Read n => Parsec Void Text n
-parseDigits = do
-  b <- MP.takeWhile1P Nothing Ch.isDigit
-  case TR.readMaybe (T.unpack b) of
-    Nothing -> fail $ "Could not read: " <> T.unpack b
-    Just b' -> pure b'
-{-# INLINEABLE parseDigits #-}
-
--- | Parser combinator for 'Size'.
---
--- @since 0.1
-parseSize :: Parsec Void Text Size
-parseSize =
-  MP.choice
-    [ parseB,
-      parseU K 'k' "ilobytes",
-      parseU M 'm' "egabytes",
-      parseU G 'g' "igabytes",
-      parseU T 't' "erabytes",
-      parseU P 'p' "etabytes",
-      parseU E 'e' "xabytes",
-      parseU Z 'z' "ettabytes",
-      parseU Y 'y' "ottabytes"
-    ]
-  where
-    parseB = do
-      _ <- MPC.char' 'b'
-      _ <- MP.optional (MPC.string' "ytes")
-      pure B
-    parseU u ushort ulong = do
-      _ <- MPC.char' ushort
-      _ <- MP.optional (MP.try (MPC.string' "b") <|> MPC.string' ulong)
-      pure u
-{-# INLINEABLE parseSize #-}

@@ -10,24 +10,18 @@ module Data.Bytes.Network.SomeNetDir.Internal
     SomeNetDir (..),
     hideNetDir,
     someNetDirToSSize,
-    textToSomeNetDir,
 
     -- * Unknown Direction and Size
     SomeNet (..),
     hideNetSizeDir,
-    textToSomeNet,
-
-    -- ** Helpers
-    parseSomeNetDir,
-    parseSomeNet,
-    parseDirection,
   )
 where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Parser (Parser (..))
+import Data.Bytes.Class.Parser qualified as Parser
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
-import Data.Bytes.Internal qualified as BytesI
 import Data.Bytes.Network.Direction
   ( Directed (..),
     Direction (..),
@@ -35,16 +29,13 @@ import Data.Bytes.Network.Direction
     SingDirection (..),
   )
 import Data.Bytes.Network.Direction qualified as Direction
-import Data.Bytes.Network.NetBytes.Internal (NetBytes (MkNetBytesP), SomeNetSize (..))
+import Data.Bytes.Network.NetBytes.Internal (NetBytes (..), SomeNetSize (..))
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..), Sized (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
-import Data.Text (Text)
-import Data.Text qualified as T
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..))
 #endif
-import Data.Void (Void)
 import Numeric.Algebra
   ( MGroup,
     MSemiSpace (..),
@@ -57,7 +48,6 @@ import Optics.Core (A_Lens, LabelOptic (..), lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..))
 #endif
-import Text.Megaparsec (Parsec)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
 
@@ -218,6 +208,18 @@ instance Unwrapper (SomeNetDir s n) where
   type Unwrapped (SomeNetDir s n) = n
   unwrap (MkSomeNetDir _ b) = unwrap b
   {-# INLINEABLE unwrap #-}
+
+-- | @since 0.1
+instance Read n => Parser (SomeNetDir s n) where
+  parser = do
+    bytes <- Parser.parseDigits
+    MPC.space
+    dir <- parser
+    MP.eof
+    pure $ case dir of
+      Down -> MkSomeNetDir SDown $ MkNetBytesP bytes
+      Up -> MkSomeNetDir SUp $ MkNetBytesP bytes
+  {-# INLINEABLE parser #-}
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size /and/
 -- direction. This is useful when a function does not know a priori what
@@ -383,136 +385,34 @@ instance Unwrapper (SomeNet n) where
   unwrap (MkSomeNet _ _ b) = unwrap b
   {-# INLINEABLE unwrap #-}
 
--- | Attempts to read the text into a 'SomeNetDir'. We accept both short and
--- long units. The text comparisons are case-insensitive, and whitespace
--- between the number and units is optional.
---
--- ==== __Examples__
---
--- >>> textToSomeNetDir @Int "70 d"
--- Right (MkSomeNetDir SDown (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNetDir @Int "70 down"
--- Right (MkSomeNetDir SDown (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNetDir @Int "70 u"
--- Right (MkSomeNetDir SUp (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNetDir @Int "70 up"
--- Right (MkSomeNetDir SUp (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNetDir @Int "cat"
--- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
---
--- >>> textToSomeNetDir @Int "70 tx"
--- Left "1:4:\n  |\n1 | 70 tx\n  |    ^\nunexpected 't'\nexpecting 'D', 'U', 'd', 'u', or white space\n"
---
--- >>> textToSomeNetDir @Int "70 upp"
--- Left "1:6:\n  |\n1 | 70 upp\n  |      ^\nunexpected 'p'\nexpecting end of input\n"
---
--- >>> textToSomeNetDir @Int "70 up unexpected"
--- Left "1:6:\n  |\n1 | 70 up unexpected\n  |      ^\nunexpected space\nexpecting end of input\n"
---
--- @since 0.1
-textToSomeNetDir :: Read n => Text -> Either Text (SomeNetDir s n)
-textToSomeNetDir txt = case MP.runParser parseSomeNetDir "" txt of
-  Left err -> Left . T.pack . MP.errorBundlePretty $ err
-  Right someNetDir -> Right someNetDir
-{-# INLINEABLE textToSomeNetDir #-}
-
--- | Attempts to read the text into a 'SomeNet'. We accept both short and
--- long units. The text comparisons are case-insensitive, and whitespace
--- between the number and units is optional.
---
--- ==== __Examples__
--- >>> textToSomeNet @Int "70 bytes d"
--- Right (MkSomeNet SDown SB (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNet @Int "70 b down"
--- Right (MkSomeNet SDown SB (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNet @Int "70 megabytes u"
--- Right (MkSomeNet SUp SM (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNet @Int "70 gb up"
--- Right (MkSomeNet SUp SG (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNet @Int "70tb down"
--- Right (MkSomeNet SDown ST (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNet @Int "cat"
--- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
---
--- >>> textToSomeNet @Int "70 tx"
--- Left "1:5:\n  |\n1 | 70 tx\n  |     ^\nunexpected 'x'\nexpecting \"erabytes\", 'D', 'U', 'b', 'd', 'u', or white space\n"
---
--- >>> textToSomeNet @Int "70 gb upp"
--- Left "1:9:\n  |\n1 | 70 gb upp\n  |         ^\nunexpected 'p'\nexpecting end of input\n"
---
--- >>> textToSomeNet @Int "70 gb up unexpected"
--- Left "1:9:\n  |\n1 | 70 gb up unexpected\n  |         ^\nunexpected space\nexpecting end of input\n"
---
--- @since 0.1
-textToSomeNet :: Read n => Text -> Either Text (SomeNet n)
-textToSomeNet txt = case MP.runParser parseSomeNet "" txt of
-  Left err -> Left . T.pack . MP.errorBundlePretty $ err
-  Right someNet -> Right someNet
-{-# INLINEABLE textToSomeNet #-}
-
-parseSomeNetDir :: Read n => Parsec Void Text (SomeNetDir s n)
-parseSomeNetDir = do
-  bytes <- BytesI.parseDigits
-  MPC.space
-  dir <- parseDirection
-  MP.eof
-  pure $ case dir of
-    Down -> MkSomeNetDir SDown $ MkNetBytesP bytes
-    Up -> MkSomeNetDir SUp $ MkNetBytesP bytes
-{-# INLINEABLE parseSomeNetDir #-}
-
-parseSomeNet :: Read n => Parsec Void Text (SomeNet n)
-parseSomeNet = do
-  bytes <- BytesI.parseDigits
-  MPC.space
-  size <- BytesI.parseSize
-  MPC.space
-  dir <- parseDirection
-  MP.eof
-  pure $ case dir of
-    Down -> case size of
-      B -> MkSomeNet SDown SB $ MkNetBytesP bytes
-      K -> MkSomeNet SDown SK $ MkNetBytesP bytes
-      M -> MkSomeNet SDown SM $ MkNetBytesP bytes
-      G -> MkSomeNet SDown SG $ MkNetBytesP bytes
-      T -> MkSomeNet SDown ST $ MkNetBytesP bytes
-      P -> MkSomeNet SDown SP $ MkNetBytesP bytes
-      E -> MkSomeNet SDown SE $ MkNetBytesP bytes
-      Z -> MkSomeNet SDown SZ $ MkNetBytesP bytes
-      Y -> MkSomeNet SDown SY $ MkNetBytesP bytes
-    Up -> case size of
-      B -> MkSomeNet SUp SB $ MkNetBytesP bytes
-      K -> MkSomeNet SUp SK $ MkNetBytesP bytes
-      M -> MkSomeNet SUp SM $ MkNetBytesP bytes
-      G -> MkSomeNet SUp SG $ MkNetBytesP bytes
-      T -> MkSomeNet SUp ST $ MkNetBytesP bytes
-      P -> MkSomeNet SUp SP $ MkNetBytesP bytes
-      E -> MkSomeNet SUp SE $ MkNetBytesP bytes
-      Z -> MkSomeNet SUp SZ $ MkNetBytesP bytes
-      Y -> MkSomeNet SUp SY $ MkNetBytesP bytes
-{-# INLINEABLE parseSomeNet #-}
-
--- | Parser combinator for 'Direction'.
---
--- @since 0.1
-parseDirection :: Parsec Void Text Direction
-parseDirection =
-  MP.choice
-    [ parseU Up 'u' "p",
-      parseU Down 'd' "own"
-    ]
-  where
-    parseU u ushort ulong = do
-      _ <- MPC.char' ushort
-      _ <- MP.optional (MPC.string' ulong)
-      pure u
-{-# INLINEABLE parseDirection #-}
+-- | @since 0.1
+instance Read n => Parser (SomeNet n) where
+  parser = do
+    bytes <- Parser.parseDigits
+    MPC.space
+    size <- parser
+    MPC.space1
+    dir <- parser
+    MP.eof
+    pure $ case dir of
+      Down -> case size of
+        B -> MkSomeNet SDown SB $ MkNetBytesP bytes
+        K -> MkSomeNet SDown SK $ MkNetBytesP bytes
+        M -> MkSomeNet SDown SM $ MkNetBytesP bytes
+        G -> MkSomeNet SDown SG $ MkNetBytesP bytes
+        T -> MkSomeNet SDown ST $ MkNetBytesP bytes
+        P -> MkSomeNet SDown SP $ MkNetBytesP bytes
+        E -> MkSomeNet SDown SE $ MkNetBytesP bytes
+        Z -> MkSomeNet SDown SZ $ MkNetBytesP bytes
+        Y -> MkSomeNet SDown SY $ MkNetBytesP bytes
+      Up -> case size of
+        B -> MkSomeNet SUp SB $ MkNetBytesP bytes
+        K -> MkSomeNet SUp SK $ MkNetBytesP bytes
+        M -> MkSomeNet SUp SM $ MkNetBytesP bytes
+        G -> MkSomeNet SUp SG $ MkNetBytesP bytes
+        T -> MkSomeNet SUp ST $ MkNetBytesP bytes
+        P -> MkSomeNet SUp SP $ MkNetBytesP bytes
+        E -> MkSomeNet SUp SE $ MkNetBytesP bytes
+        Z -> MkSomeNet SUp SZ $ MkNetBytesP bytes
+        Y -> MkSomeNet SUp SY $ MkNetBytesP bytes
+  {-# INLINEABLE parser #-}

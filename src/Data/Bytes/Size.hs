@@ -21,9 +21,13 @@ module Data.Bytes.Size
   )
 where
 
+import Control.Applicative ((<|>))
+import Data.Bytes.Class.Parser (Parser (..))
 import Data.Kind (Constraint, Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
 import GHC.TypeLits (ErrorMessage (..), TypeError)
+import Text.Megaparsec qualified as MP
+import Text.Megaparsec.Char qualified as MPC
 
 -- | Byte units.
 --
@@ -74,6 +78,31 @@ data Size
       -- | @since 0.1
       Show
     )
+
+-- | @since 0.1
+instance Parser Size where
+  parser =
+    MP.choice
+      [ parseB,
+        parseU K 'k' "ilobytes",
+        parseU M 'm' "egabytes",
+        parseU G 'g' "igabytes",
+        parseU T 't' "erabytes",
+        parseU P 'p' "etabytes",
+        parseU E 'e' "xabytes",
+        parseU Z 'z' "ettabytes",
+        parseU Y 'y' "ottabytes"
+      ]
+    where
+      parseB = do
+        _ <- MPC.char' 'b'
+        _ <- MP.optional (MPC.string' "ytes")
+        pure B
+      parseU u ushort ulong = do
+        _ <- MPC.char' ushort
+        _ <- MP.optional (MP.try (MPC.string' "b") <|> MPC.string' ulong)
+        pure u
+  {-# INLINEABLE parser #-}
 
 -- | Singleton for 'Size'.
 --
@@ -224,7 +253,7 @@ type family NextSize (s :: Size) = (t :: Size) where
   NextSize P = E
   NextSize E = Z
   NextSize Z = Y
-  NextSize Y = TypeError (Text "The byte unit Y does not have a 'next size'.")
+  NextSize Y = TypeError ('Text "The byte unit Y does not have a 'next size'.")
 
 -- | Type family that relates units to the previous smaller one.
 --
@@ -241,7 +270,7 @@ type family NextSize (s :: Size) = (t :: Size) where
 -- @since 0.1
 type PrevSize :: Size -> Size
 type family PrevSize (s :: Size) = (t :: Size) where
-  PrevSize B = TypeError (Text "The byte unit B does not have a 'previous size'.")
+  PrevSize B = TypeError ('Text "The byte unit B does not have a 'previous size'.")
   PrevSize K = B
   PrevSize M = K
   PrevSize G = M

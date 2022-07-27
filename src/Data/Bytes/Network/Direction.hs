@@ -12,8 +12,11 @@ module Data.Bytes.Network.Direction
   )
 where
 
+import Data.Bytes.Class.Parser (Parser (..))
 import Data.Kind (Constraint, Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
+import Text.Megaparsec qualified as MP
+import Text.Megaparsec.Char qualified as MPC
 
 -- | Tags for differentiating downloaded vs. uploaded bytes.
 --
@@ -30,6 +33,20 @@ data Direction
       -- | @since 0.1
       Show
     )
+
+-- | @since 0.1
+instance Parser Direction where
+  parser =
+    MP.choice
+      [ parseU Up 'u' "p",
+        parseU Down 'd' "own"
+      ]
+    where
+      parseU u ushort ulong = do
+        _ <- MPC.char' ushort
+        _ <- MP.optional (MPC.string' ulong)
+        pure u
+  {-# INLINEABLE parser #-}
 
 -- | Singleton for 'Direction'.
 --

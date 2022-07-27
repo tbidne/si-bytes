@@ -7,11 +7,9 @@ module Data.Bytes.Network.NetBytes
   ( -- * Network Bytes
     NetBytes (..),
     hideNetSize,
-    Internal.textToNetBytes,
 
     -- * Unknown Size
     SomeNetSize,
-    Internal.textToSomeNetSize,
   )
 where
 
@@ -20,4 +18,3 @@ import Data.Bytes.Network.NetBytes.Internal
     SomeNetSize,
     hideNetSize,
   )
-import Data.Bytes.Network.NetBytes.Internal qualified as Internal

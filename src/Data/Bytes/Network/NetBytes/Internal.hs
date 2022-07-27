@@ -10,17 +10,11 @@ module Data.Bytes.Network.NetBytes.Internal
     NetBytes (.., MkNetBytesP),
     netToSSize,
     netToSDirection,
-    textToNetBytes,
 
     -- * Unknown Size
     SomeNetSize (..),
     hideNetSize,
     someNetSizeToSDirection,
-    textToSomeNetSize,
-
-    -- ** Helpers
-    parseNetBytes,
-    parseSomeNetSize,
   )
 where
 
@@ -28,9 +22,9 @@ import Control.Applicative (liftA2)
 import Control.DeepSeq (NFData)
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Parser (Parser (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
-import Data.Bytes.Internal qualified as BytesI
 import Data.Bytes.Network.Direction
   ( Directed (..),
     Direction (..),
@@ -41,12 +35,9 @@ import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..), Sized (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
-import Data.Text (Text)
-import Data.Text qualified as T
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
 #endif
-import Data.Void (Void)
 import GHC.Generics (Generic)
 import Numeric.Algebra
   ( AGroup (..),
@@ -71,8 +62,6 @@ import Optics.Core (A_Lens, An_Iso, LabelOptic (..), iso, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
-import Text.Megaparsec (Parsec)
-import Text.Megaparsec qualified as MP
 
 -- $setup
 -- >>> getUpTrafficRaw = pure (40, "K")
@@ -260,6 +249,11 @@ instance Unwrapper (NetBytes d s n) where
   unwrap (MkNetBytes b) = unwrap b
   {-# INLINEABLE unwrap #-}
 
+-- | @since 0.1
+instance Read n => Parser (NetBytes d s n) where
+  parser = MkNetBytes <$> parser
+  {-# INLINEABLE parser #-}
+
 -- | Wrapper for 'NetBytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return e.g.
 --
@@ -429,6 +423,12 @@ instance Unwrapper (SomeNetSize d n) where
   unwrap (MkSomeNetSize _ b) = unwrap b
   {-# INLINEABLE unwrap #-}
 
+-- | @since 0.1
+instance Read n => Parser (SomeNetSize d n) where
+  parser = do
+    MkSomeSize sz bytes <- parser
+    pure $ MkSomeNetSize sz (MkNetBytes bytes)
+
 -- | Retrieves the 'SingDirection' witness. Can be used to recover the
 -- 'Direction'.
 --
@@ -436,65 +436,6 @@ instance Unwrapper (SomeNetSize d n) where
 someNetSizeToSDirection :: SingDirection d => SomeNetSize d n -> SDirection d
 someNetSizeToSDirection _ = singDirection
 {-# INLINEABLE someNetSizeToSDirection #-}
-
--- | Attempts to read the text into a 'NetBytes'.
---
--- ==== __Examples__
--- >>> textToNetBytes @Int @Up @B "70"
--- Right (MkNetBytes (MkBytes 70))
---
--- >>> textToNetBytes @Int @Down @M "cat"
--- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
---
--- @since 0.1
-textToNetBytes :: Read n => Text -> Either Text (NetBytes d s n)
-textToNetBytes t = case MP.runParser parseNetBytes "" t of
-  Left err -> Left . T.pack . MP.errorBundlePretty $ err
-  Right netBytes -> Right netBytes
-{-# INLINEABLE textToNetBytes #-}
-
--- | Attempts to read the text into a 'SomeNetSize'. We accept both short and
--- long size e.g. @m@, @mb@, @megabytes@. The text comparisons are
--- case-insensitive, and whitespace between the number and size is optional.
---
--- ==== __Examples__
--- >>> textToSomeNetSize @Int "70 bytes"
--- Right (MkSomeNetSize SB (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNetSize @Int "70 b"
--- Right (MkSomeNetSize SB (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNetSize @Int "70 megabytes"
--- Right (MkSomeNetSize SM (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNetSize @Int "70 gb"
--- Right (MkSomeNetSize SG (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNetSize @Int "70tb"
--- Right (MkSomeNetSize ST (MkNetBytes (MkBytes 70)))
---
--- >>> textToSomeNetSize @Int "cat"
--- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
---
--- >>> textToSomeNetSize @Int "70 tx"
--- Left "1:5:\n  |\n1 | 70 tx\n  |     ^\nunexpected 'x'\nexpecting \"erabytes\", 'b', end of input, or white space\n"
---
--- @since 0.1
-textToSomeNetSize :: Read n => Text -> Either Text (SomeNetSize d n)
-textToSomeNetSize t = case MP.runParser parseSomeNetSize "" t of
-  Left err -> Left . T.pack . MP.errorBundlePretty $ err
-  Right someNetSize -> Right someNetSize
-{-# INLINEABLE textToSomeNetSize #-}
-
-parseNetBytes :: Read n => Parsec Void Text (NetBytes d s n)
-parseNetBytes = MkNetBytes <$> BytesI.parseBytes
-{-# INLINEABLE parseNetBytes #-}
-
-parseSomeNetSize :: Read n => Parsec Void Text (SomeNetSize d n)
-parseSomeNetSize = do
-  (MkSomeSize sz bytes) <- BytesI.parseSomeSize
-  pure $ MkSomeNetSize sz $ MkNetBytes bytes
-{-# INLINEABLE parseSomeNetSize #-}
 
 unNetBytes :: NetBytes d s n -> Bytes s n
 unNetBytes (MkNetBytes x) = x
