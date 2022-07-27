@@ -9,7 +9,7 @@ module Data.Bytes.Formatting.Size
     formatSize,
     sizedFormatterUnix,
     sizedFormatterNatural,
-    sizedFormatterSentence,
+    sizedFormatterVerbose,
   )
 where
 
@@ -149,7 +149,7 @@ sizedFormatterUnix = MkSizedFormatter CaseFormatUpper False SizeFormatShort
 sizedFormatterNatural :: SizedFormatter
 sizedFormatterNatural = MkSizedFormatter CaseFormatLower True SizeFormatMedium
 
--- | "Sentence"-style formatter:
+-- | Verbose formatter:
 --
 -- * Lower case.
 -- * Space between value and unit.
@@ -158,8 +158,8 @@ sizedFormatterNatural = MkSizedFormatter CaseFormatLower True SizeFormatMedium
 -- For example: @7 gigabytes@.
 --
 -- @since 0.1
-sizedFormatterSentence :: SizedFormatter
-sizedFormatterSentence = MkSizedFormatter CaseFormatLower True SizeFormatLong
+sizedFormatterVerbose :: SizedFormatter
+sizedFormatterVerbose = MkSizedFormatter CaseFormatLower True SizeFormatLong
 
 -- | Formats size units.
 --

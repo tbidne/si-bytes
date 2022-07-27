@@ -7,7 +7,7 @@ module Data.Bytes.Formatting.Direction
     DirectedFormatter (..),
     formatDirection,
     directedFormatterUnix,
-    directedFormatterSentence,
+    directedFormatterVerbose,
   )
 where
 
@@ -115,7 +115,7 @@ instance Formatter DirectedFormatter where
 directedFormatterUnix :: DirectedFormatter
 directedFormatterUnix = MkDirectedFormatter CaseFormatUpper DirectionFormatShort
 
--- | "Sentence"-style formatter:
+-- | Verbose formatter:
 --
 -- * Lower case.
 -- * Full spelling.
@@ -123,8 +123,8 @@ directedFormatterUnix = MkDirectedFormatter CaseFormatUpper DirectionFormatShort
 -- For example: @7 down@.
 --
 -- @since 0.1
-directedFormatterSentence :: DirectedFormatter
-directedFormatterSentence = MkDirectedFormatter CaseFormatLower DirectionFormatLong
+directedFormatterVerbose :: DirectedFormatter
+directedFormatterVerbose = MkDirectedFormatter CaseFormatLower DirectionFormatLong
 
 -- | Formats a directed value with the given formatter.
 --

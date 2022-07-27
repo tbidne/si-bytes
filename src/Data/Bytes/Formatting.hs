@@ -25,13 +25,13 @@ module Data.Bytes.Formatting
     SizedFormatter (MkSizedFormatter),
     sizedFormatterUnix,
     sizedFormatterNatural,
-    sizedFormatterSentence,
+    sizedFormatterVerbose,
 
     -- ** Direction
     DirectionFormat (..),
     DirectedFormatter (MkDirectedFormatter),
     directedFormatterUnix,
-    directedFormatterSentence,
+    directedFormatterVerbose,
   )
 where
 
@@ -47,7 +47,7 @@ import Data.Bytes.Formatting.Base
 import Data.Bytes.Formatting.Direction
   ( DirectedFormatter (MkDirectedFormatter),
     DirectionFormat (..),
-    directedFormatterSentence,
+    directedFormatterVerbose,
     directedFormatterUnix,
     formatDirection,
   )
@@ -56,7 +56,7 @@ import Data.Bytes.Formatting.Size
     SizedFormatter (MkSizedFormatter),
     formatSize,
     sizedFormatterNatural,
-    sizedFormatterSentence,
+    sizedFormatterVerbose,
     sizedFormatterUnix,
   )
 import Data.Bytes.Network.Direction (Directed)
@@ -80,7 +80,7 @@ import Text.Printf (PrintfArg)
 --
 -- >>> let bf2 = MkFloatingFormatter (Just 2)
 -- >>> let b2 = hideSize $ MkBytes @G @Float 20.248
--- >>> formatSized bf2 sizedFormatterSentence b2
+-- >>> formatSized bf2 sizedFormatterVerbose b2
 -- "20.25 gigabytes"
 --
 -- @since 0.1
@@ -118,7 +118,7 @@ formatSized basefmt sizefmt x = formatBase basefmt (unwrap x) <> formatSize size
 --
 -- >>> let bf2 = MkFloatingFormatter (Just 2)
 -- >>> let b2 = hideNetSize $ MkNetBytesP @Down @G @Float 20.248
--- >>> formatSizedDirected bf2 sizedFormatterSentence directedFormatterSentence b2
+-- >>> formatSizedDirected bf2 sizedFormatterVerbose directedFormatterVerbose b2
 -- "20.25 gigabytes down"
 --
 -- @since 0.1
