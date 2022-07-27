@@ -29,14 +29,14 @@ import Numeric.Data.NonZero (NonZero (..), reallyUnsafeNonZero)
 -- >>> :type gBytes
 -- gBytes :: Bytes 'G Int
 -- >>> gBytes
--- MkBytes {unBytes = 50}
+-- MkBytes 50
 --
 -- >>> let bytes = hideSize (MkBytes 0.2 :: Bytes 'T Float)
 -- >>> let mBytes = toM bytes
 -- >>> :type mBytes
 -- mBytes :: Bytes 'M Float
 -- >>> mBytes
--- MkBytes {unBytes = 200000.0}
+-- MkBytes 200000.0
 --
 -- @since 0.1
 class Conversion a where

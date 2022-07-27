@@ -8,14 +8,12 @@
 module Data.Bytes.Network.NetBytes.Internal
   ( -- * Network Bytes
     NetBytes (.., MkNetBytesP),
-    unNetBytesP,
     netToSSize,
     netToSDirection,
     textToNetBytes,
 
     -- * Unknown Size
     SomeNetSize (..),
-    unSomeNetSize,
     hideNetSize,
     someNetSizeToSDirection,
     textToSomeNetSize,
@@ -50,7 +48,6 @@ import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
 #endif
 import Data.Void (Void)
 import GHC.Generics (Generic)
-import GHC.Show qualified as Show
 import Numeric.Algebra
   ( AGroup (..),
     AMonoid (..),
@@ -84,31 +81,27 @@ import Text.Megaparsec qualified as MP
 --
 -- ==== __Examples__
 -- >>> MkNetBytesP @Up @M 1000
--- MkNetBytesP {unNetBytesP = 1000}
+-- MkNetBytes (MkBytes 1000)
 --
 -- @since 0.1
 type NetBytes :: Direction -> Size -> Type -> Type
-newtype NetBytes (d :: Direction) (s :: Size) (n :: Type) = MkNetBytes
-  { -- | Unwraps the 'NetBytes'.
-    --
-    -- @since 0.1
-    unNetBytes :: Bytes s n
-  }
+newtype NetBytes (d :: Direction) (s :: Size) (n :: Type) = MkNetBytes (Bytes s n)
   deriving stock
     ( -- | @since 0.1
-      Generic
+      Eq,
+      -- | @since 0.1
+      Functor,
+      -- | @since 0.1
+      Generic,
+      -- | @since 0.1
+      Ord,
+      -- | @since 0.1
+      Show
     )
   deriving anyclass
     ( -- | @since 0.1
       NFData
     )
-
--- | Convenience function using 'MkNetBytesP'.
---
--- @since 0.1
-unNetBytesP :: NetBytes d s n -> n
-unNetBytesP (MkNetBytesP x) = x
-{-# INLINEABLE unNetBytesP #-}
 
 -- | Pattern for de/constructing 'NetBytes'.
 --
@@ -144,20 +137,8 @@ netToSSize _ = singSize
 
 -- | @since 0.1
 instance (k ~ An_Iso, a ~ m, b ~ n) => LabelOptic "unNetBytes" k (NetBytes d s m) (NetBytes d s n) a b where
-  labelOptic = iso (unBytes . unNetBytes) (MkNetBytes . MkBytes)
+  labelOptic = iso unwrap (MkNetBytes . MkBytes)
   {-# INLINEABLE labelOptic #-}
-
--- | @since 0.1
-instance Show n => Show (NetBytes d s n) where
-  showsPrec p (MkNetBytesP x) =
-    showParen (p > Show.appPrec) $
-      showString "MkNetBytesP {unNetBytesP = "
-        . showsPrec Show.appPrec1 x
-        . showString "}"
-  {-# INLINEABLE showsPrec #-}
-
--- | @since 0.1
-deriving stock instance Functor (NetBytes d s)
 
 -- | @since 0.1
 instance Applicative (NetBytes d s) where
@@ -170,16 +151,6 @@ instance Applicative (NetBytes d s) where
 instance Monad (NetBytes d s) where
   MkNetBytes x >>= f = MkNetBytes $ x >>= (unNetBytes . f)
   {-# INLINEABLE (>>=) #-}
-
--- | @since 0.1
-instance Eq n => Eq (NetBytes d s n) where
-  MkNetBytes x == MkNetBytes y = x == y
-  {-# INLINEABLE (==) #-}
-
--- | @since 0.1
-instance Ord n => Ord (NetBytes d s n) where
-  MkNetBytes x <= MkNetBytes y = x <= y
-  {-# INLINEABLE (<=) #-}
 
 -- | @since 0.1
 instance ASemigroup n => ASemigroup (NetBytes d s n) where
@@ -286,7 +257,7 @@ instance SingDirection d => Directed (NetBytes d s n) where
 -- | @since 0.1
 instance Unwrapper (NetBytes d s n) where
   type Unwrapped (NetBytes d s n) = n
-  unwrap = unNetBytesP
+  unwrap (MkNetBytes b) = unwrap b
   {-# INLINEABLE unwrap #-}
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size. This is useful
@@ -326,13 +297,6 @@ data SomeNetSize (d :: Direction) (n :: Type) where
   -- | @since 0.1
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 
--- | Unwraps the 'SomeNetSize'.
---
--- @since 0.1
-unSomeNetSize :: SomeNetSize d n -> n
-unSomeNetSize (MkSomeNetSize _ b) = unNetBytesP b
-{-# INLINEABLE unSomeNetSize #-}
-
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetSize'.
 --
 -- @since 0.1
@@ -351,7 +315,7 @@ hideNetSize bytes = case singSize @s of
 
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetSize" k (SomeNetSize d m) (SomeNetSize d n) a b where
-  labelOptic = lens unSomeNetSize (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
+  labelOptic = lens unwrap (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
   {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
@@ -462,7 +426,7 @@ instance SingDirection d => Directed (SomeNetSize d n) where
 -- | @since 0.1
 instance Unwrapper (SomeNetSize d n) where
   type Unwrapped (SomeNetSize d n) = n
-  unwrap = unSomeNetSize
+  unwrap (MkSomeNetSize _ b) = unwrap b
   {-# INLINEABLE unwrap #-}
 
 -- | Retrieves the 'SingDirection' witness. Can be used to recover the
@@ -477,7 +441,7 @@ someNetSizeToSDirection _ = singDirection
 --
 -- ==== __Examples__
 -- >>> textToNetBytes @Int @Up @B "70"
--- Right (MkNetBytesP {unNetBytesP = 70})
+-- Right (MkNetBytes (MkBytes 70))
 --
 -- >>> textToNetBytes @Int @Down @M "cat"
 -- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
@@ -495,19 +459,19 @@ textToNetBytes t = case MP.runParser parseNetBytes "" t of
 --
 -- ==== __Examples__
 -- >>> textToSomeNetSize @Int "70 bytes"
--- Right (MkSomeNetSize SB (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNetSize SB (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNetSize @Int "70 b"
--- Right (MkSomeNetSize SB (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNetSize SB (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNetSize @Int "70 megabytes"
--- Right (MkSomeNetSize SM (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNetSize SM (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNetSize @Int "70 gb"
--- Right (MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNetSize SG (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNetSize @Int "70tb"
--- Right (MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNetSize ST (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNetSize @Int "cat"
 -- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
@@ -531,3 +495,6 @@ parseSomeNetSize = do
   (MkSomeSize sz bytes) <- BytesI.parseSomeSize
   pure $ MkSomeNetSize sz $ MkNetBytes bytes
 {-# INLINEABLE parseSomeNetSize #-}
+
+unNetBytes :: NetBytes d s n -> Bytes s n
+unNetBytes (MkNetBytes x) = x

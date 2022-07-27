@@ -3,9 +3,9 @@
 -- | Property tests for 'Bytes'.
 module Props.Data.Bytes (props) where
 
-import Data.Bytes qualified as Bytes
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
@@ -56,7 +56,7 @@ unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         (MkSomeSize _ bytes) <- H.forAll Gens.genSomeBytes
-        bytes === MkBytes (Bytes.unBytes bytes)
+        bytes === MkBytes (unwrap bytes)
 
 convertProps :: TestTree
 convertProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -89,15 +89,15 @@ convert ::
   PropertyT IO ()
 convert bytes@(MkBytes x) convertAndTestFn = do
   let original = x
-      bRes = Bytes.unBytes $ toB bytes
-      kRes = Bytes.unBytes $ toK bytes
-      mRes = Bytes.unBytes $ toM bytes
-      gRes = Bytes.unBytes $ toG bytes
-      tRes = Bytes.unBytes $ toT bytes
-      pRes = Bytes.unBytes $ toP bytes
-      eRes = Bytes.unBytes $ toE bytes
-      zRes = Bytes.unBytes $ toZ bytes
-      yRes = Bytes.unBytes $ toY bytes
+      bRes = unwrap $ toB bytes
+      kRes = unwrap $ toK bytes
+      mRes = unwrap $ toM bytes
+      gRes = unwrap $ toG bytes
+      tRes = unwrap $ toT bytes
+      pRes = unwrap $ toP bytes
+      eRes = unwrap $ toE bytes
+      zRes = unwrap $ toZ bytes
+      yRes = unwrap $ toY bytes
   convertAndTestFn MkResultConvs {..}
 
 normalizeProps :: TestTree

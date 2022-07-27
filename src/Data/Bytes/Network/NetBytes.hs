@@ -6,13 +6,11 @@
 module Data.Bytes.Network.NetBytes
   ( -- * Network Bytes
     NetBytes (..),
-    unNetBytesP,
     hideNetSize,
     Internal.textToNetBytes,
 
     -- * Unknown Size
     SomeNetSize,
-    Internal.unSomeNetSize,
     Internal.textToSomeNetSize,
   )
 where
@@ -21,6 +19,5 @@ import Data.Bytes.Network.NetBytes.Internal
   ( NetBytes (..),
     SomeNetSize,
     hideNetSize,
-    unNetBytesP,
   )
 import Data.Bytes.Network.NetBytes.Internal qualified as Internal

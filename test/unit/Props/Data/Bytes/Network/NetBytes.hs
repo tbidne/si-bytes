@@ -5,8 +5,8 @@ module Props.Data.Bytes.Network.NetBytes (props) where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Network.Direction (Direction (..))
-import Data.Bytes.Network.NetBytes qualified as NetBytes
 import Data.Bytes.Network.NetBytes.Internal (NetBytes (..), SomeNetSize (..))
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
@@ -57,7 +57,7 @@ unNetBytesProps = T.askOption $ \(MkMaxRuns limit) ->
     H.withTests limit $
       H.property $ do
         (MkSomeNetSize _ bytes) <- H.forAll NGens.genSomeNetSizeUp
-        bytes === MkNetBytesP (NetBytes.unNetBytesP bytes)
+        bytes === MkNetBytesP (unwrap bytes)
 
 convertProps :: TestTree
 convertProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -90,15 +90,15 @@ convert ::
   PropertyT IO ()
 convert bytes@(MkNetBytesP x) convertAndTestFn = do
   let original = x
-      bRes = NetBytes.unNetBytesP $ toB bytes
-      kRes = NetBytes.unNetBytesP $ toK bytes
-      mRes = NetBytes.unNetBytesP $ toM bytes
-      gRes = NetBytes.unNetBytesP $ toG bytes
-      tRes = NetBytes.unNetBytesP $ toT bytes
-      pRes = NetBytes.unNetBytesP $ toP bytes
-      eRes = NetBytes.unNetBytesP $ toE bytes
-      zRes = NetBytes.unNetBytesP $ toZ bytes
-      yRes = NetBytes.unNetBytesP $ toY bytes
+      bRes = unwrap $ toB bytes
+      kRes = unwrap $ toK bytes
+      mRes = unwrap $ toM bytes
+      gRes = unwrap $ toG bytes
+      tRes = unwrap $ toT bytes
+      pRes = unwrap $ toP bytes
+      eRes = unwrap $ toE bytes
+      zRes = unwrap $ toZ bytes
+      yRes = unwrap $ toY bytes
   convertAndTestFn MkResultConvs {..}
 
 normalizeProps :: TestTree

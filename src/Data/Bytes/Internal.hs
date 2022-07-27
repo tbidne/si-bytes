@@ -14,7 +14,6 @@ module Data.Bytes.Internal
 
     -- * Unknown Size
     SomeSize (..),
-    unSomeSize,
     hideSize,
     textToSomeSize,
 
@@ -91,19 +90,22 @@ import Text.Read qualified as TR
 --
 -- ==== __Examples__
 -- >>> MkBytes @M 1000
--- MkBytes {unBytes = 1000}
+-- MkBytes 1000
 --
 -- @since 0.1
 type Bytes :: Size -> Type -> Type
-newtype Bytes (s :: Size) (n :: Type) = MkBytes
-  { -- | Unwraps the 'Bytes'.
-    --
-    -- @since 0.1
-    unBytes :: n
-  }
+newtype Bytes (s :: Size) (n :: Type) = MkBytes n
   deriving stock
     ( -- | @since 0.1
-      Generic
+      Eq,
+      -- | @since 0.1
+      Functor,
+      -- | @since 0.1
+      Generic,
+      -- | @since 0.1
+      Ord,
+      -- | @since 0.1
+      Show
     )
   deriving anyclass
     ( -- | @since 0.1
@@ -129,14 +131,8 @@ bytesToSSize _ = singSize
 
 -- | @since 0.1
 instance (k ~ An_Iso, a ~ m, b ~ n) => LabelOptic "unBytes" k (Bytes s m) (Bytes s n) a b where
-  labelOptic = iso unBytes MkBytes
+  labelOptic = iso unwrap MkBytes
   {-# INLINEABLE labelOptic #-}
-
--- | @since 0.1
-deriving stock instance Show n => Show (Bytes s n)
-
--- | @since 0.1
-deriving stock instance Functor (Bytes s)
 
 -- | @since 0.1
 instance Applicative (Bytes s) where
@@ -149,16 +145,6 @@ instance Applicative (Bytes s) where
 instance Monad (Bytes s) where
   MkBytes x >>= f = f x
   {-# INLINEABLE (>>=) #-}
-
--- | @since 0.1
-instance Eq n => Eq (Bytes s n) where
-  MkBytes x == MkBytes y = x == y
-  {-# INLINEABLE (==) #-}
-
--- | @since 0.1
-instance Ord n => Ord (Bytes s n) where
-  MkBytes x <= MkBytes y = x <= y
-  {-# INLINEABLE (<=) #-}
 
 -- | @since 0.1
 instance ASemigroup n => ASemigroup (Bytes s n) where
@@ -306,7 +292,7 @@ instance SingSize s => Sized (Bytes s n) where
 -- | @since 0.1
 instance Unwrapper (Bytes s n) where
   type Unwrapped (Bytes s n) = n
-  unwrap = unBytes
+  unwrap (MkBytes x) = x
   {-# INLINEABLE unwrap #-}
 
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
@@ -346,13 +332,6 @@ data SomeSize (n :: Type) where
   -- | @since 0.1
   MkSomeSize :: SSize s -> Bytes s n -> SomeSize n
 
--- | Unwraps the 'SomeSize'.
---
--- @since 0.1
-unSomeSize :: SomeSize n -> n
-unSomeSize (MkSomeSize _ b) = unBytes b
-{-# INLINEABLE unSomeSize #-}
-
 -- | Wraps a 'Bytes' in an existentially quantified 'SomeSize'.
 --
 -- @since 0.1
@@ -371,7 +350,7 @@ hideSize bytes = case singSize @s of
 
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeSize" k (SomeSize m) (SomeSize n) a b where
-  labelOptic = lens unSomeSize (\(MkSomeSize sz _) x -> MkSomeSize sz (MkBytes x))
+  labelOptic = lens unwrap (\(MkSomeSize sz _) x -> MkSomeSize sz (MkBytes x))
   {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
@@ -482,7 +461,7 @@ instance Sized (SomeSize n) where
 -- | @since 0.1
 instance Unwrapper (SomeSize n) where
   type Unwrapped (SomeSize n) = n
-  unwrap = unSomeSize
+  unwrap (MkSomeSize _ b) = unwrap b
   {-# INLINEABLE unwrap #-}
 
 -- | Increases 'Bytes' to the next size.
@@ -490,14 +469,14 @@ instance Unwrapper (SomeSize n) where
 -- ==== __Examples__
 --
 -- >>> incSize $ MkBytes @M @Float 2_500
--- MkBytes {unBytes = 2.5}
+-- MkBytes 2.5
 --
 -- >>> -- type error: "The byte unit Y does not have a 'next size'."
 -- >>> --incSize $ MkBytes @Y @Float 2_500
 --
 -- @since 0.1
 incSize :: forall s n. (MGroup n, NumLiteral n) => Bytes s n -> Bytes (NextSize s) n
-incSize = resizeBytes . MkBytes . (.%. nz1000) . unBytes
+incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
   where
     nz1000 = reallyUnsafeNonZero $ fromLit 1_000
 {-# INLINEABLE incSize #-}
@@ -507,21 +486,21 @@ incSize = resizeBytes . MkBytes . (.%. nz1000) . unBytes
 -- ==== __Examples__
 --
 -- >>> decSize $ MkBytes @M @Float 2.5
--- MkBytes {unBytes = 2500.0}
+-- MkBytes 2500.0
 --
 -- >>> -- type error: "The byte unit B does not have a 'previous size'."
 -- >>> --decSize $ MkBytes @B @Float 2.5
 --
 -- @since 0.1
 decSize :: forall s n. (MSemigroup n, NumLiteral n) => Bytes s n -> Bytes (PrevSize s) n
-decSize = resizeBytes . MkBytes . (.*. fromLit @n 1_000) . unBytes
+decSize = resizeBytes . MkBytes . (.*. fromLit @n 1_000) . unwrap
 {-# INLINEABLE decSize #-}
 
 -- | Attempts to read the text into a 'Bytes'.
 --
 -- ==== __Examples__
 -- >>> textToBytes @Int @B "70"
--- Right (MkBytes {unBytes = 70})
+-- Right (MkBytes 70)
 --
 -- >>> textToBytes @Int "cat"
 -- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
@@ -539,19 +518,19 @@ textToBytes t = case MP.runParser parseBytes "" t of
 --
 -- ==== __Examples__
 -- >>> textToSomeSize @Int "70 bytes"
--- Right (MkSomeSize SB (MkBytes {unBytes = 70}))
+-- Right (MkSomeSize SB (MkBytes 70))
 --
 -- >>> textToSomeSize @Int "70 b"
--- Right (MkSomeSize SB (MkBytes {unBytes = 70}))
+-- Right (MkSomeSize SB (MkBytes 70))
 --
 -- >>> textToSomeSize @Int "70 megabytes"
--- Right (MkSomeSize SM (MkBytes {unBytes = 70}))
+-- Right (MkSomeSize SM (MkBytes 70))
 --
 -- >>> textToSomeSize @Int "70 gb"
--- Right (MkSomeSize SG (MkBytes {unBytes = 70}))
+-- Right (MkSomeSize SG (MkBytes 70))
 --
 -- >>> textToSomeSize @Int "70tb"
--- Right (MkSomeSize ST (MkBytes {unBytes = 70}))
+-- Right (MkSomeSize ST (MkBytes 70))
 --
 -- >>> textToSomeSize @Int "cat"
 -- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"

@@ -20,25 +20,21 @@ module Data.Bytes.Network
 
     -- ** Bytes
     NetBytes (..),
-    NetBytes.unNetBytesP,
     NetBytes.textToNetBytes,
 
     -- *** Unknown Size
     SomeNetSize,
     hideNetSize,
-    NetBytes.unSomeNetSize,
     NetBytes.textToSomeNetSize,
 
     -- *** Unknown Direction
     SomeNetDir,
     SomeNetDir.hideNetDir,
-    SomeNetDir.unSomeNetDir,
     SomeNetDir.textToSomeNetDir,
 
     -- *** Unknown Size and Direction
     SomeNet,
     SomeNetDir.hideNetSizeDir,
-    SomeNetDir.unSomeNet,
     SomeNetDir.textToSomeNet,
 
     -- * Transformations
@@ -113,9 +109,9 @@ import Data.Bytes.Size (Size (..))
 -- >>> let mb1 = MkNetBytesP 20 :: NetBytes 'Down 'M Int
 -- >>> let mb2 = MkNetBytesP 50 :: NetBytes 'Down 'M Int
 -- >>> mb1 .+. mb2
--- MkNetBytesP {unNetBytesP = 70}
+-- MkNetBytes (MkBytes 70)
 -- >>> mb1 .-. mb2
--- MkNetBytesP {unNetBytesP = (-30)}
+-- MkNetBytes (MkBytes (-30))
 --
 -- >>> let kb = MkNetBytesP 50 :: NetBytes 'Down 'K Int
 -- >>> -- mb1 .+. kb -- This would be a type error
@@ -126,13 +122,13 @@ import Data.Bytes.Size (Size (..))
 -- === Multiplication
 -- >>> import Numeric.Algebra (MSemiSpace ((.*)))
 -- >>> mb1 .* 10
--- MkNetBytesP {unNetBytesP = 200}
+-- MkNetBytes (MkBytes 200)
 --
 -- === Division
 -- >>> import Numeric.Algebra (MSpace ((.%)))
 -- >>> import Numeric.Data.NonZero (unsafeNonZero)
 -- >>> mb1 .% (unsafeNonZero 10)
--- MkNetBytesP {unNetBytesP = 2}
+-- MkNetBytes (MkBytes 2)
 --
 -- One may wonder how the 'Numeric.Algebra.Additive.AGroup.AGroup' instance
 -- for 'SomeNetSize' could possibly work. It is possible (indeed, expected)
@@ -144,8 +140,8 @@ import Data.Bytes.Size (Size (..))
 -- >>> let some1 = hideNetSize (MkNetBytesP 1000 :: NetBytes 'Down 'G Double)
 -- >>> let some2 = hideNetSize (MkNetBytesP 500_000 :: NetBytes 'Down 'M Double)
 -- >>> some1 .+. some2
--- MkSomeNetSize ST (MkNetBytesP {unNetBytesP = 1.5})
+-- MkSomeNetSize ST (MkNetBytes (MkBytes 1.5))
 -- >>> some1 .-. some2
--- MkSomeNetSize SG (MkNetBytesP {unNetBytesP = 500.0})
+-- MkSomeNetSize SG (MkNetBytes (MkBytes 500.0))
 --
 -- This respects 'SomeNetSize'\'s equivalence-class base 'Eq'.

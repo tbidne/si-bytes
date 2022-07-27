@@ -8,14 +8,12 @@
 module Data.Bytes.Network.SomeNetDir.Internal
   ( -- * Unknown Direction
     SomeNetDir (..),
-    unSomeNetDir,
     hideNetDir,
     someNetDirToSSize,
     textToSomeNetDir,
 
     -- * Unknown Direction and Size
     SomeNet (..),
-    unSomeNet,
     hideNetSizeDir,
     textToSomeNet,
 
@@ -38,7 +36,6 @@ import Data.Bytes.Network.Direction
   )
 import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Network.NetBytes.Internal (NetBytes (MkNetBytesP), SomeNetSize (..))
-import Data.Bytes.Network.NetBytes.Internal qualified as Internal
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..), Sized (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
@@ -107,13 +104,6 @@ data SomeNetDir (s :: Size) (n :: Type) where
   -- | @since 0.1
   MkSomeNetDir :: SDirection d -> NetBytes d s n -> SomeNetDir s n
 
--- | Unwraps the 'SomeNetDir'.
---
--- @since 0.1
-unSomeNetDir :: SomeNetDir s n -> n
-unSomeNetDir (MkSomeNetDir _ b) = Internal.unNetBytesP b
-{-# INLINEABLE unSomeNetDir #-}
-
 -- | Retrieves the 'SingSize' witness. Can be used to recover the
 -- 'Size'.
 --
@@ -133,7 +123,9 @@ hideNetDir bytes = case singDirection @d of
 
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetDir" k (SomeNetDir s m) (SomeNetDir s n) a b where
-  labelOptic = lens unSomeNetDir (\(MkSomeNetDir dx _) x -> MkSomeNetDir dx (MkNetBytesP x))
+  labelOptic = lens f (\(MkSomeNetDir dx _) x -> MkSomeNetDir dx (MkNetBytesP x))
+    where
+      f (MkSomeNetDir _ b) = unwrap b
   {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
@@ -224,7 +216,7 @@ instance Directed (SomeNetDir s n) where
 -- | @since 0.1
 instance Unwrapper (SomeNetDir s n) where
   type Unwrapped (SomeNetDir s n) = n
-  unwrap = unSomeNetDir
+  unwrap (MkSomeNetDir _ b) = unwrap b
   {-# INLINEABLE unwrap #-}
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size /and/
@@ -262,13 +254,6 @@ data SomeNet (n :: Type) where
   -- | @since 0.1
   MkSomeNet :: SDirection d -> SSize s -> NetBytes d s n -> SomeNet n
 
--- | Unwraps the 'SomeNetDir'.
---
--- @since 0.1
-unSomeNet :: SomeNet n -> n
-unSomeNet (MkSomeNet _ _ b) = Internal.unNetBytesP b
-{-# INLINEABLE unSomeNet #-}
-
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNet'.
 --
 -- @since 0.1
@@ -300,7 +285,7 @@ hideNetSizeDir bytes = case singDirection @d of
 
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNet" k (SomeNet m) (SomeNet n) a b where
-  labelOptic = lens unSomeNet (\(MkSomeNet dx sz _) x -> MkSomeNet dx sz (MkNetBytesP x))
+  labelOptic = lens unwrap (\(MkSomeNet dx sz _) x -> MkSomeNet dx sz (MkNetBytesP x))
   {-# INLINEABLE labelOptic #-}
 
 -- | @since 0.1
@@ -395,7 +380,7 @@ instance Directed (SomeNet n) where
 -- | @since 0.1
 instance Unwrapper (SomeNet n) where
   type Unwrapped (SomeNet n) = n
-  unwrap = unSomeNet
+  unwrap (MkSomeNet _ _ b) = unwrap b
   {-# INLINEABLE unwrap #-}
 
 -- | Attempts to read the text into a 'SomeNetDir'. We accept both short and
@@ -405,16 +390,16 @@ instance Unwrapper (SomeNet n) where
 -- ==== __Examples__
 --
 -- >>> textToSomeNetDir @Int "70 d"
--- Right (MkSomeNetDir SDown (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNetDir SDown (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNetDir @Int "70 down"
--- Right (MkSomeNetDir SDown (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNetDir SDown (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNetDir @Int "70 u"
--- Right (MkSomeNetDir SUp (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNetDir SUp (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNetDir @Int "70 up"
--- Right (MkSomeNetDir SUp (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNetDir SUp (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNetDir @Int "cat"
 -- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"
@@ -441,19 +426,19 @@ textToSomeNetDir txt = case MP.runParser parseSomeNetDir "" txt of
 --
 -- ==== __Examples__
 -- >>> textToSomeNet @Int "70 bytes d"
--- Right (MkSomeNet SDown SB (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNet SDown SB (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNet @Int "70 b down"
--- Right (MkSomeNet SDown SB (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNet SDown SB (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNet @Int "70 megabytes u"
--- Right (MkSomeNet SUp SM (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNet SUp SM (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNet @Int "70 gb up"
--- Right (MkSomeNet SUp SG (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNet SUp SG (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNet @Int "70tb down"
--- Right (MkSomeNet SDown ST (MkNetBytesP {unNetBytesP = 70}))
+-- Right (MkSomeNet SDown ST (MkNetBytes (MkBytes 70)))
 --
 -- >>> textToSomeNet @Int "cat"
 -- Left "1:1:\n  |\n1 | cat\n  | ^\nunexpected 'c'\n"

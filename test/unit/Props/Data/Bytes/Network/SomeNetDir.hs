@@ -5,7 +5,7 @@ module Props.Data.Bytes.Network.SomeNetDir (props) where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Network.NetBytes qualified as NetBytes
+import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Network.NetBytes.Internal (NetBytes (..), SomeNetSize (..))
 import Data.Bytes.Network.SomeNetDir.Internal (SomeNet (..), SomeNetDir (..))
 import Data.Bytes.Size (SingSize (..), Size (..))
@@ -92,9 +92,9 @@ normalizeSomeNetDirProps = T.askOption $ \(MkMaxRuns limit) ->
         (MkSomeNet dir szx originalBytes) <- H.forAll NGens.genSomeNet
         let someNetDir = MkSomeNetDir dir originalBytes
             someNetDirNorm = case Size.withSingSize szx $ normalize someNetDir of
-              MkSomeNet _ _ netDirBytes -> NetBytes.unNetBytesP netDirBytes
+              MkSomeNet _ _ netDirBytes -> unwrap netDirBytes
             netNorm = case Size.withSingSize szx $ normalize originalBytes of
-              MkSomeNetSize _ netBytes -> NetBytes.unNetBytesP netBytes
+              MkSomeNetSize _ netBytes -> unwrap netBytes
         someNetDirNorm === netNorm
 
 someNetDirEqProps :: TestTree
@@ -130,9 +130,9 @@ normalizeSomeNetProps = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         someNet@(MkSomeNet _ szx originalBytes) <- H.forAll NGens.genSomeNet
         let someNetDirNorm = case Size.withSingSize szx $ normalize someNet of
-              MkSomeNet _ _ netDirBytes -> NetBytes.unNetBytesP netDirBytes
+              MkSomeNet _ _ netDirBytes -> unwrap netDirBytes
             netNorm = case Size.withSingSize szx $ normalize originalBytes of
-              MkSomeNetSize _ netBytes -> NetBytes.unNetBytesP netBytes
+              MkSomeNetSize _ netBytes -> unwrap netBytes
         someNetDirNorm === netNorm
 
 someNetEqProps :: TestTree

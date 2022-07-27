@@ -22,7 +22,6 @@ module Data.Bytes
     -- *** Unknown Size
     SomeSize,
     hideSize,
-    Bytes.unSomeSize,
     Bytes.textToSomeSize,
 
     -- * Transformations
@@ -92,9 +91,9 @@ import Data.Bytes.Size (Size (..))
 -- >>> let mb1 = MkBytes 20 :: Bytes 'M Int
 -- >>> let mb2 = MkBytes 50 :: Bytes 'M Int
 -- >>> mb1 .+. mb2
--- MkBytes {unBytes = 70}
+-- MkBytes 70
 -- >>> mb1 .-. mb2
--- MkBytes {unBytes = -30}
+-- MkBytes (-30)
 --
 -- >>> let kb = MkBytes 50 :: Bytes 'K Int
 -- >>> -- mb1 .+. kb -- This would be a type error
@@ -102,13 +101,13 @@ import Data.Bytes.Size (Size (..))
 -- === Multiplication
 -- >>> import Numeric.Algebra (MSemiSpace ((.*)))
 -- >>> mb1 .* 10
--- MkBytes {unBytes = 200}
+-- MkBytes 200
 --
 -- === Division
 -- >>> import Numeric.Algebra (MSpace ((.%)))
 -- >>> import Numeric.Data.NonZero (unsafeNonZero)
 -- >>> mb1 .% (unsafeNonZero 10)
--- MkBytes {unBytes = 2}
+-- MkBytes 2
 --
 -- One may wonder how the 'Numeric.Algebra.Additive.AGroup.AGroup' instance
 -- for 'SomeSize' could possibly work. It is possible (indeed, expected) that
@@ -119,8 +118,8 @@ import Data.Bytes.Size (Size (..))
 -- >>> let some1 = hideSize (MkBytes 1000 :: Bytes 'G Double)
 -- >>> let some2 = hideSize (MkBytes 500_000 :: Bytes 'M Double)
 -- >>> some1 .+. some2
--- MkSomeSize ST (MkBytes {unBytes = 1.5})
+-- MkSomeSize ST (MkBytes 1.5)
 -- >>> some1 .-. some2
--- MkSomeSize SG (MkBytes {unBytes = 500.0})
+-- MkSomeSize SG (MkBytes 500.0)
 --
 -- This respects 'SomeSize'\'s equivalence-class based 'Eq'.

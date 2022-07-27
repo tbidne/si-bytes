@@ -18,11 +18,9 @@
 -- @since 0.1
 module Data.Bytes.Network.SomeNetDir
   ( SomeNetDir,
-    Internal.unSomeNetDir,
     hideNetDir,
     Internal.textToSomeNetDir,
     SomeNet,
-    Internal.unSomeNet,
     hideNetSizeDir,
     Internal.textToSomeNet,
   )
