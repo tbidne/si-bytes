@@ -16,10 +16,13 @@ module Data.Bytes.Network
 
     -- ** Units
     Size (..),
+    Sized (..),
     Direction (..),
+    Directed (..),
 
     -- ** Bytes
     NetBytes (..),
+    Unwrapper (..),
 
     -- *** Unknown Size
     SomeNetSize,
@@ -43,6 +46,9 @@ module Data.Bytes.Network
 
     -- * Algebra
     -- $algebra
+    module Numeric.Algebra,
+    module Numeric.Data.NonZero,
+    module Numeric.Class.Literal,
 
     -- * Text
 
@@ -53,18 +59,25 @@ module Data.Bytes.Network
     -- ** Parsing
     -- $parsing
     parse,
+
+    -- * Reexports
+    Default (def),
   )
 where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Parser (parse)
+import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting
-import Data.Bytes.Network.Direction (Direction (..))
+import Data.Bytes.Network.Direction (Directed (..), Direction (..))
 import Data.Bytes.Network.NetBytes (NetBytes (..), SomeNetSize, hideNetSize)
 import Data.Bytes.Network.SomeNetDir (SomeNet, SomeNetDir)
 import Data.Bytes.Network.SomeNetDir qualified as SomeNetDir
-import Data.Bytes.Size (Size (..))
+import Data.Bytes.Size (Size (..), Sized (..))
+import Numeric.Algebra
+import Numeric.Class.Literal
+import Numeric.Data.NonZero
 
 -- \$pretty
 
@@ -76,8 +89,6 @@ import Data.Bytes.Size (Size (..))
 -- >>> let b = MkNetBytesP @Up @G @Float 203.301
 -- >>> formatSizedDirected bf def def b
 -- "203.30 gb up"
---
--- See "Data.Bytes.Formatting" for more.
 
 -- $algebra
 --
@@ -136,15 +147,14 @@ import Data.Bytes.Size (Size (..))
 -- for 'SomeNetSize' could possibly work. It is possible (indeed, expected)
 -- that we could have two 'SomeNetSize's that have different underlying
 -- 'NetBytes' types. To handle this, the 'SomeNetSize' instance will convert
--- both 'NetBytes' to a 'NetBytes' ''B' before adding/subtracting. The result
--- will be normalized.
+-- both 'NetBytes' to a 'NetBytes' ''B' before adding/subtracting.
 --
 -- >>> let some1 = hideNetSize (MkNetBytesP 1000 :: NetBytes 'Down 'G Double)
 -- >>> let some2 = hideNetSize (MkNetBytesP 500_000 :: NetBytes 'Down 'M Double)
 -- >>> some1 .+. some2
--- MkSomeNetSize ST (MkNetBytes (MkBytes 1.5))
+-- MkSomeNetSize SB (MkNetBytes (MkBytes 1.5e12))
 -- >>> some1 .-. some2
--- MkSomeNetSize SG (MkNetBytes (MkBytes 500.0))
+-- MkSomeNetSize SB (MkNetBytes (MkBytes 5.0e11))
 --
 -- This respects 'SomeNetSize'\'s equivalence-class base 'Eq'.
 

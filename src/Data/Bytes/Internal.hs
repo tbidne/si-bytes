@@ -106,7 +106,7 @@ newtype Bytes (s :: Size) (n :: Type) = MkBytes n
 -- @since 0.1
 resizeBytes :: Bytes s n -> Bytes t n
 resizeBytes (MkBytes x) = MkBytes x
-{-# INLINEABLE resizeBytes #-}
+{-# INLINE resizeBytes #-}
 
 -- | Retrieves the 'SSize' witness. Can be used to recover the 'Size'.
 --
@@ -116,44 +116,44 @@ resizeBytes (MkBytes x) = MkBytes x
 -- @since 0.1
 bytesToSSize :: SingSize s => Bytes s n -> SSize s
 bytesToSSize _ = singSize
-{-# INLINEABLE bytesToSSize #-}
+{-# INLINE bytesToSSize #-}
 
 -- | @since 0.1
 instance (k ~ An_Iso, a ~ m, b ~ n) => LabelOptic "unBytes" k (Bytes s m) (Bytes s n) a b where
   labelOptic = iso unwrap MkBytes
-  {-# INLINEABLE labelOptic #-}
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 instance Applicative (Bytes s) where
   pure = MkBytes
-  {-# INLINEABLE pure #-}
+  {-# INLINE pure #-}
   MkBytes f <*> MkBytes x = MkBytes $ f x
-  {-# INLINEABLE (<*>) #-}
+  {-# INLINE (<*>) #-}
 
 -- | @since 0.1
 instance Monad (Bytes s) where
   MkBytes x >>= f = f x
-  {-# INLINEABLE (>>=) #-}
+  {-# INLINE (>>=) #-}
 
 -- | @since 0.1
 instance ASemigroup n => ASemigroup (Bytes s n) where
   (.+.) = liftA2 (.+.)
-  {-# INLINEABLE (.+.) #-}
+  {-# INLINE (.+.) #-}
 
 -- | @since 0.1
 instance AMonoid n => AMonoid (Bytes s n) where
   zero = MkBytes zero
-  {-# INLINEABLE zero #-}
+  {-# INLINE zero #-}
 
 -- | @since 0.1
 instance AGroup n => AGroup (Bytes s n) where
   (.-.) = liftA2 (.-.)
-  {-# INLINEABLE (.-.) #-}
+  {-# INLINE (.-.) #-}
 
 -- | @since 0.1
 instance MSemigroup n => MSemiSpace (Bytes s n) n where
   MkBytes x .* k = MkBytes $ x .*. k
-  {-# INLINEABLE (.*) #-}
+  {-# INLINE (.*) #-}
 
 -- | @since 0.1
 instance MGroup n => MSpace (Bytes s n) n where
@@ -163,7 +163,7 @@ instance MGroup n => MSpace (Bytes s n) n where
 -- | @since 0.1
 instance Normed n => Normed (Bytes s n) where
   norm (MkBytes x) = MkBytes (norm x)
-  {-# INLINEABLE norm #-}
+  {-# INLINE norm #-}
 
 -- | @since 0.1
 instance Semiring n => Semimodule (Bytes s n) n
@@ -196,23 +196,23 @@ instance
   type Converted Y (Bytes s n) = Bytes Y n
 
   toB (MkBytes x) = MkBytes $ Conv.convertWitness @s B x
-  {-# INLINEABLE toB #-}
+  {-# INLINE toB #-}
   toK (MkBytes x) = MkBytes $ Conv.convertWitness @s K x
-  {-# INLINEABLE toK #-}
+  {-# INLINE toK #-}
   toM (MkBytes x) = MkBytes $ Conv.convertWitness @s M x
-  {-# INLINEABLE toM #-}
+  {-# INLINE toM #-}
   toG (MkBytes x) = MkBytes $ Conv.convertWitness @s G x
-  {-# INLINEABLE toG #-}
+  {-# INLINE toG #-}
   toT (MkBytes x) = MkBytes $ Conv.convertWitness @s T x
-  {-# INLINEABLE toT #-}
+  {-# INLINE toT #-}
   toP (MkBytes x) = MkBytes $ Conv.convertWitness @s P x
-  {-# INLINEABLE toP #-}
+  {-# INLINE toP #-}
   toE (MkBytes x) = MkBytes $ Conv.convertWitness @s E x
-  {-# INLINEABLE toE #-}
+  {-# INLINE toE #-}
   toZ (MkBytes x) = MkBytes $ Conv.convertWitness @s Z x
-  {-# INLINEABLE toZ #-}
+  {-# INLINE toZ #-}
   toY (MkBytes x) = MkBytes $ Conv.convertWitness @s Y x
-  {-# INLINEABLE toY #-}
+  {-# INLINE toY #-}
 
 -- | @since 0.1
 instance forall n s. (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (Bytes s n) where
@@ -276,13 +276,13 @@ instance (Pretty n, SingSize s) => Pretty (Bytes s n) where
 -- | @since 0.1
 instance SingSize s => Sized (Bytes s n) where
   sizeOf = Size.ssizeToSize . bytesToSSize
-  {-# INLINEABLE sizeOf #-}
+  {-# INLINE sizeOf #-}
 
 -- | @since 0.1
 instance Unwrapper (Bytes s n) where
   type Unwrapped (Bytes s n) = n
   unwrap (MkBytes x) = x
-  {-# INLINEABLE unwrap #-}
+  {-# INLINE unwrap #-}
 
 -- | @since 0.1
 instance Read n => Parser (Bytes s n) where
@@ -344,7 +344,7 @@ hideSize bytes = case singSize @s of
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeSize" k (SomeSize m) (SomeSize n) a b where
   labelOptic = lens unwrap (\(MkSomeSize sz _) x -> MkSomeSize sz (MkBytes x))
-  {-# INLINEABLE labelOptic #-}
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeSize n)
@@ -355,42 +355,42 @@ deriving stock instance Functor SomeSize
 -- | @since 0.1
 instance (Eq n, MGroup n, NumLiteral n) => Eq (SomeSize n) where
   x == y = toB x == toB y
-  {-# INLINEABLE (==) #-}
+  {-# INLINE (==) #-}
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n, Ord n) => Ord (SomeSize n) where
   x <= y = toB x <= toB y
-  {-# INLINEABLE (<=) #-}
+  {-# INLINE (<=) #-}
 
 -- | @since 0.1
-instance (ASemigroup n, MGroup n, Normed n, NumLiteral n, Ord n) => ASemigroup (SomeSize n) where
-  x .+. y = normalize $ toB x .+. toB y
-  {-# INLINEABLE (.+.) #-}
+instance (ASemigroup n, MGroup n, NumLiteral n) => ASemigroup (SomeSize n) where
+  x .+. y = MkSomeSize SB $ toB x .+. toB y
+  {-# INLINE (.+.) #-}
 
 -- | @since 0.1
-instance (Normed n, NumLiteral n, Ord n, Semifield n) => AMonoid (SomeSize n) where
+instance (NumLiteral n, Semifield n) => AMonoid (SomeSize n) where
   zero = MkSomeSize SB zero
-  {-# INLINEABLE zero #-}
+  {-# INLINE zero #-}
 
 -- | @since 0.1
-instance (Field n, Normed n, NumLiteral n, Ord n) => AGroup (SomeSize n) where
-  x .-. y = normalize $ toB x .-. toB y
-  {-# INLINEABLE (.-.) #-}
+instance (Field n, NumLiteral n) => AGroup (SomeSize n) where
+  x .-. y = MkSomeSize SB $ toB x .-. toB y
+  {-# INLINE (.-.) #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSemiSpace (SomeSize n) n where
-  MkSomeSize sz x .* k = normalize $ MkSomeSize sz $ x .* k
-  {-# INLINEABLE (.*) #-}
+  MkSomeSize sz x .* k = MkSomeSize sz $ x .* k
+  {-# INLINE (.*) #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSpace (SomeSize n) n where
-  MkSomeSize sz x .% k = normalize $ MkSomeSize sz $ x .% k
+  MkSomeSize sz x .% k = MkSomeSize sz $ x .% k
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
 instance Normed n => Normed (SomeSize n) where
   norm (MkSomeSize sz x) = MkSomeSize sz (norm x)
-  {-# INLINEABLE norm #-}
+  {-# INLINE norm #-}
 
 -- | @since 0.1
 instance (Normed n, NumLiteral n, Ord n, Semifield n) => Semimodule (SomeSize n) n
@@ -417,45 +417,45 @@ instance (MGroup n, NumLiteral n) => Conversion (SomeSize n) where
   type Converted Y (SomeSize n) = Bytes Y n
 
   toB (MkSomeSize sz x) = Size.withSingSize sz $ toB x
-  {-# INLINEABLE toB #-}
+  {-# INLINE toB #-}
   toK (MkSomeSize sz x) = Size.withSingSize sz $ toK x
-  {-# INLINEABLE toK #-}
+  {-# INLINE toK #-}
   toM (MkSomeSize sz x) = Size.withSingSize sz $ toM x
-  {-# INLINEABLE toM #-}
+  {-# INLINE toM #-}
   toG (MkSomeSize sz x) = Size.withSingSize sz $ toG x
-  {-# INLINEABLE toG #-}
+  {-# INLINE toG #-}
   toT (MkSomeSize sz x) = Size.withSingSize sz $ toT x
-  {-# INLINEABLE toT #-}
+  {-# INLINE toT #-}
   toP (MkSomeSize sz x) = Size.withSingSize sz $ toP x
-  {-# INLINEABLE toP #-}
+  {-# INLINE toP #-}
   toE (MkSomeSize sz x) = Size.withSingSize sz $ toE x
-  {-# INLINEABLE toE #-}
+  {-# INLINE toE #-}
   toZ (MkSomeSize sz x) = Size.withSingSize sz $ toZ x
-  {-# INLINEABLE toZ #-}
+  {-# INLINE toZ #-}
   toY (MkSomeSize sz x) = Size.withSingSize sz $ toY x
-  {-# INLINEABLE toY #-}
+  {-# INLINE toY #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeSize n) where
   type Norm (SomeSize n) = SomeSize n
   normalize (MkSomeSize sz x) = Size.withSingSize sz $ normalize x
-  {-# INLINEABLE normalize #-}
+  {-# INLINE normalize #-}
 
 -- | @since 0.1
 instance Pretty n => Pretty (SomeSize n) where
   pretty (MkSomeSize sz b) = Size.withSingSize sz $ pretty b
-  {-# INLINEABLE pretty #-}
+  {-# INLINE pretty #-}
 
 -- | @since 0.1
 instance Sized (SomeSize n) where
   sizeOf (MkSomeSize sz _) = Size.ssizeToSize sz
-  {-# INLINEABLE sizeOf #-}
+  {-# INLINE sizeOf #-}
 
 -- | @since 0.1
 instance Unwrapper (SomeSize n) where
   type Unwrapped (SomeSize n) = n
   unwrap (MkSomeSize _ b) = unwrap b
-  {-# INLINEABLE unwrap #-}
+  {-# INLINE unwrap #-}
 
 -- | @since 0.1
 instance Read n => Parser (SomeSize n) where
@@ -492,7 +492,7 @@ incSize :: forall s n. (MGroup n, NumLiteral n) => Bytes s n -> Bytes (NextSize 
 incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
   where
     nz1000 = reallyUnsafeNonZero $ fromLit 1_000
-{-# INLINEABLE incSize #-}
+{-# INLINE incSize #-}
 
 -- | Decreases 'Bytes' to the previous size.
 --
@@ -507,4 +507,4 @@ incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
 -- @since 0.1
 decSize :: forall s n. (MSemigroup n, NumLiteral n) => Bytes s n -> Bytes (PrevSize s) n
 decSize = resizeBytes . MkBytes . (.*. fromLit @n 1_000) . unwrap
-{-# INLINEABLE decSize #-}
+{-# INLINE decSize #-}

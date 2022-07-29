@@ -32,6 +32,9 @@ module Data.Bytes.Formatting
     DirectedFormatter (MkDirectedFormatter),
     directedFormatterUnix,
     directedFormatterVerbose,
+
+    -- ** Reexports
+    Default (def),
   )
 where
 
@@ -61,6 +64,7 @@ import Data.Bytes.Formatting.Size
   )
 import Data.Bytes.Network.Direction (Directed)
 import Data.Bytes.Size (Sized)
+import Data.Default (Default (def))
 import Text.Printf (PrintfArg)
 
 -- | Formats a value with 'Data.Bytes.Size.Size' units. Can be used with all byte types

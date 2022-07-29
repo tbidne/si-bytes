@@ -86,12 +86,12 @@ class SingDirection (d :: Direction) where
 -- | @since 0.1
 instance SingDirection Down where
   singDirection = SDown
-  {-# INLINEABLE singDirection #-}
+  {-# INLINE singDirection #-}
 
 -- | @since 0.1
 instance SingDirection Up where
   singDirection = SUp
-  {-# INLINEABLE singDirection #-}
+  {-# INLINE singDirection #-}
 
 -- | Singleton \"with\"-style convenience function. Allows us to run a
 -- computation @SingDirection d => r@ without explicitly pattern-matching
@@ -105,6 +105,15 @@ withSingDirection s x = case s of
 {-# INLINEABLE withSingDirection #-}
 
 -- | Types that have a direction.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Bytes.Network
+-- >>> directionOf (MkNetBytesP @Up @G 7)
+-- Up
+--
+-- >>> directionOf (hideNetSizeDir $ MkNetBytesP @Down @M 100)
+-- Down
 --
 -- @since 0.1
 class Directed a where

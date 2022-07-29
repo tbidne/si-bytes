@@ -20,11 +20,13 @@ files =
     "src/Data/Bytes.hs",
     "src/Data/Bytes/Class/Conversion.hs",
     "src/Data/Bytes/Class/Normalize.hs",
+    "src/Data/Bytes/Class/Wrapper.hs",
     "src/Data/Bytes/Formatting.hs",
     "src/Data/Bytes/Formatting/Direction.hs",
     "src/Data/Bytes/Formatting/Size.hs",
     "src/Data/Bytes/Internal.hs",
     "src/Data/Bytes/Network.hs",
+    "src/Data/Bytes/Network/Direction.hs",
     "src/Data/Bytes/Network/NetBytes/Internal.hs",
     "src/Data/Bytes/Network/SomeNetDir/Internal.hs",
     "src/Data/Bytes/Size.hs"

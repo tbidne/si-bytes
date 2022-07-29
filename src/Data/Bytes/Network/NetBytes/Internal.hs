@@ -112,7 +112,7 @@ pattern MkNetBytesP x <-
 -- @since 0.1
 netToSDirection :: SingDirection d => NetBytes d s n -> SDirection d
 netToSDirection _ = singDirection
-{-# INLINEABLE netToSDirection #-}
+{-# INLINE netToSDirection #-}
 
 -- | Retrieves the 'SingSize' witness. Can be used to recover the 'Size'.
 --
@@ -122,49 +122,49 @@ netToSDirection _ = singDirection
 -- @since 0.1
 netToSSize :: SingSize s => NetBytes d s n -> SSize s
 netToSSize _ = singSize
-{-# INLINEABLE netToSSize #-}
+{-# INLINE netToSSize #-}
 
 -- | @since 0.1
 instance (k ~ An_Iso, a ~ m, b ~ n) => LabelOptic "unNetBytes" k (NetBytes d s m) (NetBytes d s n) a b where
   labelOptic = iso unwrap (MkNetBytes . MkBytes)
-  {-# INLINEABLE labelOptic #-}
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 instance Applicative (NetBytes d s) where
   pure = MkNetBytes . pure
-  {-# INLINEABLE pure #-}
+  {-# INLINE pure #-}
   MkNetBytes f <*> MkNetBytes x = MkNetBytes $ f <*> x
-  {-# INLINEABLE (<*>) #-}
+  {-# INLINE (<*>) #-}
 
 -- | @since 0.1
 instance Monad (NetBytes d s) where
   MkNetBytes x >>= f = MkNetBytes $ x >>= (unNetBytes . f)
-  {-# INLINEABLE (>>=) #-}
+  {-# INLINE (>>=) #-}
 
 -- | @since 0.1
 instance ASemigroup n => ASemigroup (NetBytes d s n) where
   (.+.) = liftA2 (.+.)
-  {-# INLINEABLE (.+.) #-}
+  {-# INLINE (.+.) #-}
 
 -- | @since 0.1
 instance AMonoid n => AMonoid (NetBytes d s n) where
   zero = MkNetBytes zero
-  {-# INLINEABLE zero #-}
+  {-# INLINE zero #-}
 
 -- | @since 0.1
 instance AGroup n => AGroup (NetBytes d s n) where
   (.-.) = liftA2 (.-.)
-  {-# INLINEABLE (.-.) #-}
+  {-# INLINE (.-.) #-}
 
 -- | @since 0.1
 instance Normed n => Normed (NetBytes d s n) where
   norm (MkNetBytes b) = MkNetBytes (norm b)
-  {-# INLINEABLE norm #-}
+  {-# INLINE norm #-}
 
 -- | @since 0.1
 instance MSemigroup n => MSemiSpace (NetBytes d s n) n where
   MkNetBytes x .* k = MkNetBytes $ x .* k
-  {-# INLINEABLE (.*) #-}
+  {-# INLINE (.*) #-}
 
 -- | @since 0.1
 instance MGroup n => MSpace (NetBytes d s n) n where
@@ -196,23 +196,23 @@ instance (MGroup n, NumLiteral n, SingSize s) => Conversion (NetBytes d s n) whe
   type Converted Y (NetBytes d s n) = NetBytes d Y n
 
   toB (MkNetBytes b) = MkNetBytes $ toB b
-  {-# INLINEABLE toB #-}
+  {-# INLINE toB #-}
   toK (MkNetBytes b) = MkNetBytes $ toK b
-  {-# INLINEABLE toK #-}
+  {-# INLINE toK #-}
   toM (MkNetBytes b) = MkNetBytes $ toM b
-  {-# INLINEABLE toM #-}
+  {-# INLINE toM #-}
   toG (MkNetBytes b) = MkNetBytes $ toG b
-  {-# INLINEABLE toG #-}
+  {-# INLINE toG #-}
   toT (MkNetBytes b) = MkNetBytes $ toT b
-  {-# INLINEABLE toT #-}
+  {-# INLINE toT #-}
   toP (MkNetBytes b) = MkNetBytes $ toP b
-  {-# INLINEABLE toP #-}
+  {-# INLINE toP #-}
   toE (MkNetBytes b) = MkNetBytes $ toE b
-  {-# INLINEABLE toE #-}
+  {-# INLINE toE #-}
   toZ (MkNetBytes b) = MkNetBytes $ toZ b
-  {-# INLINEABLE toZ #-}
+  {-# INLINE toZ #-}
   toY (MkNetBytes b) = MkNetBytes $ toY b
-  {-# INLINEABLE toY #-}
+  {-# INLINE toY #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (NetBytes d s n) where
@@ -220,7 +220,7 @@ instance (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (Net
 
   normalize (MkNetBytes bytes) = case normalize bytes of
     MkSomeSize sz bytes' -> MkSomeNetSize sz $ MkNetBytes bytes'
-  {-# INLINEABLE normalize #-}
+  {-# INLINE normalize #-}
 
 -- | @since 0.1
 instance
@@ -236,23 +236,23 @@ instance
 -- | @since 0.1
 instance SingSize s => Sized (NetBytes d s n) where
   sizeOf = Size.ssizeToSize . netToSSize
-  {-# INLINEABLE sizeOf #-}
+  {-# INLINE sizeOf #-}
 
 -- | @since 0.1
 instance SingDirection d => Directed (NetBytes d s n) where
   directionOf = Direction.sdirectionToDirection . netToSDirection
-  {-# INLINEABLE directionOf #-}
+  {-# INLINE directionOf #-}
 
 -- | @since 0.1
 instance Unwrapper (NetBytes d s n) where
   type Unwrapped (NetBytes d s n) = n
   unwrap (MkNetBytes b) = unwrap b
-  {-# INLINEABLE unwrap #-}
+  {-# INLINE unwrap #-}
 
 -- | @since 0.1
 instance Read n => Parser (NetBytes d s n) where
   parser = MkNetBytes <$> parser
-  {-# INLINEABLE parser #-}
+  {-# INLINE parser #-}
 
 -- | Wrapper for 'NetBytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return e.g.
@@ -310,7 +310,7 @@ hideNetSize bytes = case singSize @s of
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetSize" k (SomeNetSize d m) (SomeNetSize d n) a b where
   labelOptic = lens unwrap (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
-  {-# INLINEABLE labelOptic #-}
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNetSize d n)
@@ -321,36 +321,36 @@ deriving stock instance Functor (SomeNetSize d)
 -- | @since 0.1
 instance (MGroup n, Eq n, NumLiteral n) => Eq (SomeNetSize d n) where
   x == y = toB x == toB y
-  {-# INLINEABLE (==) #-}
+  {-# INLINE (==) #-}
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n, Ord n) => Ord (SomeNetSize d n) where
   x <= y = toB x <= toB y
-  {-# INLINEABLE (<=) #-}
+  {-# INLINE (<=) #-}
 
 -- | @since 0.1
-instance (ASemigroup n, MGroup n, Normed n, NumLiteral n, Ord n) => ASemigroup (SomeNetSize d n) where
-  x .+. y = normalize $ toB x .+. toB y
-  {-# INLINEABLE (.+.) #-}
+instance (ASemigroup n, MGroup n, NumLiteral n) => ASemigroup (SomeNetSize d n) where
+  x .+. y = MkSomeNetSize SB $ toB x .+. toB y
+  {-# INLINE (.+.) #-}
 
 -- | @since 0.1
-instance (Normed n, NumLiteral n, Ord n, Semifield n) => AMonoid (SomeNetSize d n) where
+instance (NumLiteral n, Semifield n) => AMonoid (SomeNetSize d n) where
   zero = MkSomeNetSize SB zero
-  {-# INLINEABLE zero #-}
+  {-# INLINE zero #-}
 
 -- | @since 0.1
-instance (Field n, Normed n, NumLiteral n, Ord n) => AGroup (SomeNetSize d n) where
-  x .-. y = normalize $ toB x .-. toB y
-  {-# INLINEABLE (.-.) #-}
+instance (Field n, NumLiteral n) => AGroup (SomeNetSize d n) where
+  x .-. y = MkSomeNetSize SB $ toB x .-. toB y
+  {-# INLINE (.-.) #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSemiSpace (SomeNetSize d n) n where
-  MkSomeNetSize sz x .* k = normalize $ MkSomeNetSize sz $ x .* k
-  {-# INLINEABLE (.*) #-}
+  MkSomeNetSize sz x .* k = MkSomeNetSize sz $ x .* k
+  {-# INLINE (.*) #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSpace (SomeNetSize d n) n where
-  MkSomeNetSize sz x .% k = normalize $ MkSomeNetSize sz $ x .% k
+  MkSomeNetSize sz x .% k = MkSomeNetSize sz $ x .% k
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
@@ -378,50 +378,50 @@ instance (MGroup n, NumLiteral n) => Conversion (SomeNetSize d n) where
   type Converted Y (SomeNetSize d n) = NetBytes d Y n
 
   toB (MkSomeNetSize sz x) = Size.withSingSize sz $ toB x
-  {-# INLINEABLE toB #-}
+  {-# INLINE toB #-}
   toK (MkSomeNetSize sz x) = Size.withSingSize sz $ toK x
-  {-# INLINEABLE toK #-}
+  {-# INLINE toK #-}
   toM (MkSomeNetSize sz x) = Size.withSingSize sz $ toM x
-  {-# INLINEABLE toM #-}
+  {-# INLINE toM #-}
   toG (MkSomeNetSize sz x) = Size.withSingSize sz $ toG x
-  {-# INLINEABLE toG #-}
+  {-# INLINE toG #-}
   toT (MkSomeNetSize sz x) = Size.withSingSize sz $ toT x
-  {-# INLINEABLE toT #-}
+  {-# INLINE toT #-}
   toP (MkSomeNetSize sz x) = Size.withSingSize sz $ toP x
-  {-# INLINEABLE toP #-}
+  {-# INLINE toP #-}
   toE (MkSomeNetSize sz x) = Size.withSingSize sz $ toE x
-  {-# INLINEABLE toE #-}
+  {-# INLINE toE #-}
   toZ (MkSomeNetSize sz x) = Size.withSingSize sz $ toZ x
-  {-# INLINEABLE toZ #-}
+  {-# INLINE toZ #-}
   toY (MkSomeNetSize sz x) = Size.withSingSize sz $ toY x
-  {-# INLINEABLE toY #-}
+  {-# INLINE toY #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeNetSize d n) where
   type Norm (SomeNetSize d n) = SomeNetSize d n
   normalize (MkSomeNetSize sz x) = Size.withSingSize sz $ normalize x
-  {-# INLINEABLE normalize #-}
+  {-# INLINE normalize #-}
 
 -- | @since 0.1
 instance (Pretty n, SingDirection d) => Pretty (SomeNetSize d n) where
   pretty (MkSomeNetSize sz b) = Size.withSingSize sz $ pretty b
-  {-# INLINEABLE pretty #-}
+  {-# INLINE pretty #-}
 
 -- | @since 0.1
 instance Sized (SomeNetSize d n) where
   sizeOf (MkSomeNetSize sz _) = Size.ssizeToSize sz
-  {-# INLINEABLE sizeOf #-}
+  {-# INLINE sizeOf #-}
 
 -- | @since 0.1
 instance SingDirection d => Directed (SomeNetSize d n) where
   directionOf = Direction.sdirectionToDirection . someNetSizeToSDirection
-  {-# INLINEABLE directionOf #-}
+  {-# INLINE directionOf #-}
 
 -- | @since 0.1
 instance Unwrapper (SomeNetSize d n) where
   type Unwrapped (SomeNetSize d n) = n
   unwrap (MkSomeNetSize _ b) = unwrap b
-  {-# INLINEABLE unwrap #-}
+  {-# INLINE unwrap #-}
 
 -- | @since 0.1
 instance Read n => Parser (SomeNetSize d n) where
@@ -435,7 +435,7 @@ instance Read n => Parser (SomeNetSize d n) where
 -- @since 0.1
 someNetSizeToSDirection :: SingDirection d => SomeNetSize d n -> SDirection d
 someNetSizeToSDirection _ = singDirection
-{-# INLINEABLE someNetSizeToSDirection #-}
+{-# INLINE someNetSizeToSDirection #-}
 
 unNetBytes :: NetBytes d s n -> Bytes s n
 unNetBytes (MkNetBytes x) = x

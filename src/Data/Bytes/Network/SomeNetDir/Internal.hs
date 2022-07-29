@@ -100,7 +100,7 @@ data SomeNetDir (s :: Size) (n :: Type) where
 -- @since 0.1
 someNetDirToSSize :: SingSize s => SomeNetDir s n -> SSize s
 someNetDirToSSize _ = singSize
-{-# INLINEABLE someNetDirToSSize #-}
+{-# INLINE someNetDirToSSize #-}
 
 -- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetDir'.
 --
@@ -116,7 +116,7 @@ instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetDir" k (SomeNetDir s
   labelOptic = lens f (\(MkSomeNetDir dx _) x -> MkSomeNetDir dx (MkNetBytesP x))
     where
       f (MkSomeNetDir _ b) = unwrap b
-  {-# INLINEABLE labelOptic #-}
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNetDir s n)
@@ -136,7 +136,7 @@ instance (Eq n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
 -- | @since 0.1
 instance MSemigroup n => MSemiSpace (SomeNetDir s n) n where
   MkSomeNetDir dx x .* k = MkSomeNetDir dx (x .* k)
-  {-# INLINEABLE (.*) #-}
+  {-# INLINE (.*) #-}
 
 -- | @since 0.1
 instance MGroup n => MSpace (SomeNetDir s n) n where
@@ -146,7 +146,7 @@ instance MGroup n => MSpace (SomeNetDir s n) n where
 -- | @since 0.1
 instance Normed n => Normed (SomeNetDir s n) where
   norm (MkSomeNetDir dx x) = MkSomeNetDir dx (norm x)
-  {-# INLINEABLE norm #-}
+  {-# INLINE norm #-}
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) where
@@ -161,23 +161,23 @@ instance (MGroup n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) whe
   type Converted Y (SomeNetDir s n) = SomeNetDir Y n
 
   toB (MkSomeNetDir dir x) = MkSomeNetDir dir $ toB x
-  {-# INLINEABLE toB #-}
+  {-# INLINE toB #-}
   toK (MkSomeNetDir dir x) = MkSomeNetDir dir $ toK x
-  {-# INLINEABLE toK #-}
+  {-# INLINE toK #-}
   toM (MkSomeNetDir dir x) = MkSomeNetDir dir $ toM x
-  {-# INLINEABLE toM #-}
+  {-# INLINE toM #-}
   toG (MkSomeNetDir dir x) = MkSomeNetDir dir $ toG x
-  {-# INLINEABLE toG #-}
+  {-# INLINE toG #-}
   toT (MkSomeNetDir dir x) = MkSomeNetDir dir $ toT x
-  {-# INLINEABLE toT #-}
+  {-# INLINE toT #-}
   toP (MkSomeNetDir dir x) = MkSomeNetDir dir $ toP x
-  {-# INLINEABLE toP #-}
+  {-# INLINE toP #-}
   toE (MkSomeNetDir dir x) = MkSomeNetDir dir $ toE x
-  {-# INLINEABLE toE #-}
+  {-# INLINE toE #-}
   toZ (MkSomeNetDir dir x) = MkSomeNetDir dir $ toZ x
-  {-# INLINEABLE toZ #-}
+  {-# INLINE toZ #-}
   toY (MkSomeNetDir dir x) = MkSomeNetDir dir $ toY x
-  {-# INLINEABLE toY #-}
+  {-# INLINE toY #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
@@ -191,23 +191,23 @@ instance (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (Som
 instance (Pretty n, SingSize s) => Pretty (SomeNetDir s n) where
   pretty (MkSomeNetDir dir x) =
     Direction.withSingDirection dir $ pretty x
-  {-# INLINEABLE pretty #-}
+  {-# INLINE pretty #-}
 
 -- | @since 0.1
 instance SingSize s => Sized (SomeNetDir s n) where
   sizeOf = Size.ssizeToSize . someNetDirToSSize
-  {-# INLINEABLE sizeOf #-}
+  {-# INLINE sizeOf #-}
 
 -- | @since 0.1
 instance Directed (SomeNetDir s n) where
   directionOf (MkSomeNetDir d _) = Direction.sdirectionToDirection d
-  {-# INLINEABLE directionOf #-}
+  {-# INLINE directionOf #-}
 
 -- | @since 0.1
 instance Unwrapper (SomeNetDir s n) where
   type Unwrapped (SomeNetDir s n) = n
   unwrap (MkSomeNetDir _ b) = unwrap b
-  {-# INLINEABLE unwrap #-}
+  {-# INLINE unwrap #-}
 
 -- | @since 0.1
 instance Read n => Parser (SomeNetDir s n) where
@@ -288,7 +288,7 @@ hideNetSizeDir bytes = case singDirection @d of
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNet" k (SomeNet m) (SomeNet n) a b where
   labelOptic = lens unwrap (\(MkSomeNet dx sz _) x -> MkSomeNet dx sz (MkNetBytesP x))
-  {-# INLINEABLE labelOptic #-}
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNet n)
@@ -310,7 +310,7 @@ instance (MGroup n, Eq n, NumLiteral n) => Eq (SomeNet n) where
 -- | @since 0.1
 instance MSemigroup n => MSemiSpace (SomeNet n) n where
   MkSomeNet d s x .* k = MkSomeNet d s (x .* k)
-  {-# INLINEABLE (.*) #-}
+  {-# INLINE (.*) #-}
 
 -- | @since 0.1
 instance MGroup n => MSpace (SomeNet n) n where
@@ -320,7 +320,7 @@ instance MGroup n => MSpace (SomeNet n) n where
 -- | @since 0.1
 instance Normed n => Normed (SomeNet n) where
   norm (MkSomeNet d s x) = MkSomeNet d s (norm x)
-  {-# INLINEABLE norm #-}
+  {-# INLINE norm #-}
 
 -- | @since 0.1
 instance (MGroup n, NumLiteral n) => Conversion (SomeNet n) where
@@ -335,23 +335,23 @@ instance (MGroup n, NumLiteral n) => Conversion (SomeNet n) where
   type Converted Y (SomeNet n) = SomeNetDir Y n
 
   toB (MkSomeNet dir sz x) = Size.withSingSize sz $ toB (MkSomeNetDir dir x)
-  {-# INLINEABLE toB #-}
+  {-# INLINE toB #-}
   toK (MkSomeNet dir sz x) = Size.withSingSize sz $ toK (MkSomeNetDir dir x)
-  {-# INLINEABLE toK #-}
+  {-# INLINE toK #-}
   toM (MkSomeNet dir sz x) = Size.withSingSize sz $ toM (MkSomeNetDir dir x)
-  {-# INLINEABLE toM #-}
+  {-# INLINE toM #-}
   toG (MkSomeNet dir sz x) = Size.withSingSize sz $ toG (MkSomeNetDir dir x)
-  {-# INLINEABLE toG #-}
+  {-# INLINE toG #-}
   toT (MkSomeNet dir sz x) = Size.withSingSize sz $ toT (MkSomeNetDir dir x)
-  {-# INLINEABLE toT #-}
+  {-# INLINE toT #-}
   toP (MkSomeNet dir sz x) = Size.withSingSize sz $ toP (MkSomeNetDir dir x)
-  {-# INLINEABLE toP #-}
+  {-# INLINE toP #-}
   toE (MkSomeNet dir sz x) = Size.withSingSize sz $ toE (MkSomeNetDir dir x)
-  {-# INLINEABLE toE #-}
+  {-# INLINE toE #-}
   toZ (MkSomeNet dir sz x) = Size.withSingSize sz $ toZ (MkSomeNetDir dir x)
-  {-# INLINEABLE toZ #-}
+  {-# INLINE toZ #-}
   toY (MkSomeNet dir sz x) = Size.withSingSize sz $ toY (MkSomeNetDir dir x)
-  {-# INLINEABLE toY #-}
+  {-# INLINE toY #-}
 
 -- | @since 0.1
 instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeNet n) where
@@ -372,18 +372,18 @@ instance Pretty n => Pretty (SomeNet n) where
 -- | @since 0.1
 instance Sized (SomeNet n) where
   sizeOf (MkSomeNet _ sz _) = Size.ssizeToSize sz
-  {-# INLINEABLE sizeOf #-}
+  {-# INLINE sizeOf #-}
 
 -- | @since 0.1
 instance Directed (SomeNet n) where
   directionOf (MkSomeNet d _ _) = Direction.sdirectionToDirection d
-  {-# INLINEABLE directionOf #-}
+  {-# INLINE directionOf #-}
 
 -- | @since 0.1
 instance Unwrapper (SomeNet n) where
   type Unwrapped (SomeNet n) = n
   unwrap (MkSomeNet _ _ b) = unwrap b
-  {-# INLINEABLE unwrap #-}
+  {-# INLINE unwrap #-}
 
 -- | @since 0.1
 instance Read n => Parser (SomeNet n) where

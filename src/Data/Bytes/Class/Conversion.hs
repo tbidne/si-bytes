@@ -76,7 +76,6 @@ class Conversion a where
 -- >>> convertWitness @K M 5_000
 -- 5
 --
---
 -- This is slightly more principled than 'convert', but the higher level
 -- byte types and functions should still be preferred
 -- (e.g. 'Data.Bytes', 'Data.Bytes.Class.Normalize').
@@ -205,4 +204,4 @@ convert Y Y n = n
 
 nzFromLit :: forall n. NumLiteral n => Integer -> NonZero n
 nzFromLit = reallyUnsafeNonZero . fromLit
-{-# INLINEABLE nzFromLit #-}
+{-# INLINE nzFromLit #-}

@@ -170,47 +170,47 @@ class SingSize (s :: Size) where
 -- | @since 0.1
 instance SingSize B where
   singSize = SB
-  {-# INLINEABLE singSize #-}
+  {-# INLINE singSize #-}
 
 -- | @since 0.1
 instance SingSize K where
   singSize = SK
-  {-# INLINEABLE singSize #-}
+  {-# INLINE singSize #-}
 
 -- | @since 0.1
 instance SingSize M where
   singSize = SM
-  {-# INLINEABLE singSize #-}
+  {-# INLINE singSize #-}
 
 -- | @since 0.1
 instance SingSize G where
   singSize = SG
-  {-# INLINEABLE singSize #-}
+  {-# INLINE singSize #-}
 
 -- | @since 0.1
 instance SingSize T where
   singSize = ST
-  {-# INLINEABLE singSize #-}
+  {-# INLINE singSize #-}
 
 -- | @since 0.1
 instance SingSize P where
   singSize = SP
-  {-# INLINEABLE singSize #-}
+  {-# INLINE singSize #-}
 
 -- | @since 0.1
 instance SingSize E where
   singSize = SE
-  {-# INLINEABLE singSize #-}
+  {-# INLINE singSize #-}
 
 -- | @since 0.1
 instance SingSize Z where
   singSize = SZ
-  {-# INLINEABLE singSize #-}
+  {-# INLINE singSize #-}
 
 -- | @since 0.1
 instance SingSize Y where
   singSize = SY
-  {-# INLINEABLE singSize #-}
+  {-# INLINE singSize #-}
 
 -- | Singleton \"with\"-style convenience function. Allows us to run a
 -- computation @SingSize d => r@ without explicitly pattern-matching
@@ -281,6 +281,15 @@ type family PrevSize (s :: Size) = (t :: Size) where
   PrevSize Y = Z
 
 -- | Types that have a size.
+--
+-- ==== __Examples__
+--
+-- >>> import Data.Bytes
+-- >>> sizeOf (MkBytes @G 7)
+-- G
+--
+-- >>> sizeOf (hideSize $ MkBytes @M 7)
+-- M
 --
 -- @since 0.1
 class Sized a where

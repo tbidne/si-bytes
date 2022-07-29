@@ -21,7 +21,7 @@ import Text.Read qualified as TR
 --
 -- @since 0.1
 class Parser a where
-  -- | Attempts to parse the text.
+  -- | Megaparsec parser for the given type.
   --
   -- @since 0.1
   parser :: Parsec Void Text a
@@ -43,7 +43,7 @@ parseDigits = do
 --
 -- @since 0.1
 parse :: Parser a => Text -> Either Text a
-parse t = case MP.runParser parser "Data.Bytes.Class.Parser.runMegaparsec" t of
+parse t = case MP.runParser parser "Data.Bytes.Class.Parser.parse" t of
   Left err -> Left . T.pack . MP.errorBundlePretty $ err
   Right v -> Right v
 {-# INLINEABLE parse #-}

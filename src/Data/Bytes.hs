@@ -14,9 +14,11 @@ module Data.Bytes
 
     -- ** Units
     Size (..),
+    Sized (..),
 
     -- ** Bytes
     Bytes (..),
+    Unwrapper (..),
 
     -- *** Unknown Size
     SomeSize,
@@ -32,6 +34,9 @@ module Data.Bytes
 
     -- * Algebra
     -- $algebra
+    module Numeric.Algebra,
+    module Numeric.Data.NonZero,
+    module Numeric.Class.Literal,
 
     -- * Text
 
@@ -42,15 +47,22 @@ module Data.Bytes
     -- ** Parsing
     -- $parsing
     parse,
+
+    -- * Reexports
+    Default (def),
   )
 where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Parser (parse)
+import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting
 import Data.Bytes.Internal (Bytes (..), SomeSize, hideSize)
-import Data.Bytes.Size (Size (..))
+import Data.Bytes.Size (Size (..), Sized (..))
+import Numeric.Algebra
+import Numeric.Class.Literal
+import Numeric.Data.NonZero
 
 -- $pretty
 -- We provide several formatters for pretty-printing different byte types.
@@ -60,8 +72,6 @@ import Data.Bytes.Size (Size (..))
 -- >>> let b = MkBytes @G @Float 20.248
 -- >>> formatSized bf def b
 -- "20.25 gb"
---
--- See "Data.Bytes.Formatting" for more.
 
 -- $algebra
 --
@@ -117,14 +127,14 @@ import Data.Bytes.Size (Size (..))
 -- for 'SomeSize' could possibly work. It is possible (indeed, expected) that
 -- we could have two 'SomeSize's that have different underlying 'Bytes' types.
 -- To handle this, the 'SomeSize' instance will convert both 'Bytes' to a
--- 'Bytes' ''B' before adding/subtracting. The result will be normalized.
+-- 'Bytes' ''B' before adding/subtracting.
 --
 -- >>> let some1 = hideSize (MkBytes 1000 :: Bytes 'G Double)
 -- >>> let some2 = hideSize (MkBytes 500_000 :: Bytes 'M Double)
 -- >>> some1 .+. some2
--- MkSomeSize ST (MkBytes 1.5)
+-- MkSomeSize SB (MkBytes 1.5e12)
 -- >>> some1 .-. some2
--- MkSomeSize SG (MkBytes 500.0)
+-- MkSomeSize SB (MkBytes 5.0e11)
 --
 -- This respects 'SomeSize'\'s equivalence-class based 'Eq'.
 
