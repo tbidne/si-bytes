@@ -19,8 +19,8 @@ import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
 import Numeric.Algebra (Field, MGroup (..), MSemigroup (..))
 import Numeric.Algebra qualified as Algebra
-import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (NonZero)
+import Numeric.Literal.Integer (FromInteger (..))
 
 data ExpectedConvs n = MkExpectedConvs
   { bExp :: n -> n,
@@ -50,136 +50,136 @@ data ResultConvs n = MkResultConvs
   }
 
 -- | Tests that the \"to bytes\" conversion matches expectations.
-convertB :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertB :: (Eq n, Field n, FromInteger n, Show n) => ResultConvs n -> PropertyT IO ()
 convertB results = do
-  let bExp = (.%. nzFromLit 1)
-      kExp = (.%. nzFromLit 1_000)
-      mExp = (.%. nzFromLit 1_000_000)
-      gExp = (.%. nzFromLit 1_000_000_000)
-      tExp = (.%. nzFromLit 1_000_000_000_000)
-      pExp = (.%. nzFromLit 1_000_000_000_000_000)
-      eExp = (.%. nzFromLit 1_000_000_000_000_000_000)
-      zExp = (.%. nzFromLit 1_000_000_000_000_000_000_000)
-      yExp = (.%. nzFromLit 1_000_000_000_000_000_000_000_000)
+  let bExp = (.%. nzafromInteger 1)
+      kExp = (.%. nzafromInteger 1_000)
+      mExp = (.%. nzafromInteger 1_000_000)
+      gExp = (.%. nzafromInteger 1_000_000_000)
+      tExp = (.%. nzafromInteger 1_000_000_000_000)
+      pExp = (.%. nzafromInteger 1_000_000_000_000_000)
+      eExp = (.%. nzafromInteger 1_000_000_000_000_000_000)
+      zExp = (.%. nzafromInteger 1_000_000_000_000_000_000_000)
+      yExp = (.%. nzafromInteger 1_000_000_000_000_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to kilobytes\" conversion matches expectations.
-convertK :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertK :: (Eq n, Field n, FromInteger n, Show n) => ResultConvs n -> PropertyT IO ()
 convertK results = do
-  let bExp = (.*. fromLit 1_000)
+  let bExp = (.*. afromInteger 1_000)
       kExp = id
-      mExp = (.%. nzFromLit 1_000)
-      gExp = (.%. nzFromLit 1_000_000)
-      tExp = (.%. nzFromLit 1_000_000_000)
-      pExp = (.%. nzFromLit 1_000_000_000_000)
-      eExp = (.%. nzFromLit 1_000_000_000_000_000)
-      zExp = (.%. nzFromLit 1_000_000_000_000_000_000)
-      yExp = (.%. nzFromLit 1_000_000_000_000_000_000_000)
+      mExp = (.%. nzafromInteger 1_000)
+      gExp = (.%. nzafromInteger 1_000_000)
+      tExp = (.%. nzafromInteger 1_000_000_000)
+      pExp = (.%. nzafromInteger 1_000_000_000_000)
+      eExp = (.%. nzafromInteger 1_000_000_000_000_000)
+      zExp = (.%. nzafromInteger 1_000_000_000_000_000_000)
+      yExp = (.%. nzafromInteger 1_000_000_000_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to megabytes\" conversion matches expectations.
-convertM :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertM :: (Eq n, Field n, FromInteger n, Show n) => ResultConvs n -> PropertyT IO ()
 convertM results = do
-  let bExp = (.*. fromLit 1_000_000)
-      kExp = (.*. fromLit 1_000)
+  let bExp = (.*. afromInteger 1_000_000)
+      kExp = (.*. afromInteger 1_000)
       mExp = id
-      gExp = (.%. nzFromLit 1_000)
-      tExp = (.%. nzFromLit 1_000_000)
-      pExp = (.%. nzFromLit 1_000_000_000)
-      eExp = (.%. nzFromLit 1_000_000_000_000)
-      zExp = (.%. nzFromLit 1_000_000_000_000_000)
-      yExp = (.%. nzFromLit 1_000_000_000_000_000_000)
+      gExp = (.%. nzafromInteger 1_000)
+      tExp = (.%. nzafromInteger 1_000_000)
+      pExp = (.%. nzafromInteger 1_000_000_000)
+      eExp = (.%. nzafromInteger 1_000_000_000_000)
+      zExp = (.%. nzafromInteger 1_000_000_000_000_000)
+      yExp = (.%. nzafromInteger 1_000_000_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to gigabytes\" conversion matches expectations.
-convertG :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertG :: (Eq n, Field n, FromInteger n, Show n) => ResultConvs n -> PropertyT IO ()
 convertG results = do
-  let bExp = (.*. fromLit 1_000_000_000)
-      kExp = (.*. fromLit 1_000_000)
-      mExp = (.*. fromLit 1_000)
+  let bExp = (.*. afromInteger 1_000_000_000)
+      kExp = (.*. afromInteger 1_000_000)
+      mExp = (.*. afromInteger 1_000)
       gExp = id
-      tExp = (.%. nzFromLit 1_000)
-      pExp = (.%. nzFromLit 1_000_000)
-      eExp = (.%. nzFromLit 1_000_000_000)
-      zExp = (.%. nzFromLit 1_000_000_000_000)
-      yExp = (.%. nzFromLit 1_000_000_000_000_000)
+      tExp = (.%. nzafromInteger 1_000)
+      pExp = (.%. nzafromInteger 1_000_000)
+      eExp = (.%. nzafromInteger 1_000_000_000)
+      zExp = (.%. nzafromInteger 1_000_000_000_000)
+      yExp = (.%. nzafromInteger 1_000_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to terabytes\" conversion matches expectations.
-convertT :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertT :: (Eq n, Field n, FromInteger n, Show n) => ResultConvs n -> PropertyT IO ()
 convertT results = do
-  let bExp = (.*. fromLit 1_000_000_000_000)
-      kExp = (.*. fromLit 1_000_000_000)
-      mExp = (.*. fromLit 1_000_000)
-      gExp = (.*. fromLit 1_000)
+  let bExp = (.*. afromInteger 1_000_000_000_000)
+      kExp = (.*. afromInteger 1_000_000_000)
+      mExp = (.*. afromInteger 1_000_000)
+      gExp = (.*. afromInteger 1_000)
       tExp = id
-      pExp = (.%. nzFromLit 1_000)
-      eExp = (.%. nzFromLit 1_000_000)
-      zExp = (.%. nzFromLit 1_000_000_000)
-      yExp = (.%. nzFromLit 1_000_000_000_000)
+      pExp = (.%. nzafromInteger 1_000)
+      eExp = (.%. nzafromInteger 1_000_000)
+      zExp = (.%. nzafromInteger 1_000_000_000)
+      yExp = (.%. nzafromInteger 1_000_000_000_000)
 
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to petabytes\" conversion matches expectations.
-convertP :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertP :: (Eq n, Field n, FromInteger n, Show n) => ResultConvs n -> PropertyT IO ()
 convertP results = do
-  let bExp = (.*. fromLit 1_000_000_000_000_000)
-      kExp = (.*. fromLit 1_000_000_000_000)
-      mExp = (.*. fromLit 1_000_000_000)
-      gExp = (.*. fromLit 1_000_000)
-      tExp = (.*. fromLit 1_000)
+  let bExp = (.*. afromInteger 1_000_000_000_000_000)
+      kExp = (.*. afromInteger 1_000_000_000_000)
+      mExp = (.*. afromInteger 1_000_000_000)
+      gExp = (.*. afromInteger 1_000_000)
+      tExp = (.*. afromInteger 1_000)
       pExp = id
-      eExp = (.%. nzFromLit 1_000)
-      zExp = (.%. nzFromLit 1_000_000)
-      yExp = (.%. nzFromLit 1_000_000_000)
+      eExp = (.%. nzafromInteger 1_000)
+      zExp = (.%. nzafromInteger 1_000_000)
+      yExp = (.%. nzafromInteger 1_000_000_000)
 
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to exabytes\" conversion matches expectations.
-convertE :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertE :: (Eq n, Field n, FromInteger n, Show n) => ResultConvs n -> PropertyT IO ()
 convertE results = do
-  let bExp = (.*. fromLit 1_000_000_000_000_000_000)
-      kExp = (.*. fromLit 1_000_000_000_000_000)
-      mExp = (.*. fromLit 1_000_000_000_000)
-      gExp = (.*. fromLit 1_000_000_000)
-      tExp = (.*. fromLit 1_000_000)
-      pExp = (.*. fromLit 1_000)
+  let bExp = (.*. afromInteger 1_000_000_000_000_000_000)
+      kExp = (.*. afromInteger 1_000_000_000_000_000)
+      mExp = (.*. afromInteger 1_000_000_000_000)
+      gExp = (.*. afromInteger 1_000_000_000)
+      tExp = (.*. afromInteger 1_000_000)
+      pExp = (.*. afromInteger 1_000)
       eExp = id
-      zExp = (.%. nzFromLit 1_000)
-      yExp = (.%. nzFromLit 1_000_000)
+      zExp = (.%. nzafromInteger 1_000)
+      yExp = (.%. nzafromInteger 1_000_000)
 
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to zettabytes\" conversion matches expectations.
-convertZ :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertZ :: (Eq n, Field n, FromInteger n, Show n) => ResultConvs n -> PropertyT IO ()
 convertZ results = do
-  let bExp = (.*. fromLit 1_000_000_000_000_000_000_000)
-      kExp = (.*. fromLit 1_000_000_000_000_000_000)
-      mExp = (.*. fromLit 1_000_000_000_000_000)
-      gExp = (.*. fromLit 1_000_000_000_000)
-      tExp = (.*. fromLit 1_000_000_000)
-      pExp = (.*. fromLit 1_000_000)
-      eExp = (.*. fromLit 1_000)
+  let bExp = (.*. afromInteger 1_000_000_000_000_000_000_000)
+      kExp = (.*. afromInteger 1_000_000_000_000_000_000)
+      mExp = (.*. afromInteger 1_000_000_000_000_000)
+      gExp = (.*. afromInteger 1_000_000_000_000)
+      tExp = (.*. afromInteger 1_000_000_000)
+      pExp = (.*. afromInteger 1_000_000)
+      eExp = (.*. afromInteger 1_000)
       zExp = id
-      yExp = (.%. nzFromLit 1_000)
+      yExp = (.%. nzafromInteger 1_000)
 
   convert MkExpectedConvs {..} results
 
 -- | Tests that the \"to yottabytes\" conversion matches expectations.
-convertY :: (Eq n, Field n, NumLiteral n, Show n) => ResultConvs n -> PropertyT IO ()
+convertY :: (Eq n, Field n, FromInteger n, Show n) => ResultConvs n -> PropertyT IO ()
 convertY results = do
-  let bExp = (.*. fromLit 1_000_000_000_000_000_000_000_000)
-      kExp = (.*. fromLit 1_000_000_000_000_000_000_000)
-      mExp = (.*. fromLit 1_000_000_000_000_000_000)
-      gExp = (.*. fromLit 1_000_000_000_000_000)
-      tExp = (.*. fromLit 1_000_000_000_000)
-      pExp = (.*. fromLit 1_000_000_000)
-      eExp = (.*. fromLit 1_000_000)
-      zExp = (.*. fromLit 1_000)
+  let bExp = (.*. afromInteger 1_000_000_000_000_000_000_000_000)
+      kExp = (.*. afromInteger 1_000_000_000_000_000_000_000)
+      mExp = (.*. afromInteger 1_000_000_000_000_000_000)
+      gExp = (.*. afromInteger 1_000_000_000_000_000)
+      tExp = (.*. afromInteger 1_000_000_000_000)
+      pExp = (.*. afromInteger 1_000_000_000)
+      eExp = (.*. afromInteger 1_000_000)
+      zExp = (.*. afromInteger 1_000)
       yExp = id
 
   convert MkExpectedConvs {..} results
@@ -208,5 +208,5 @@ convertAndTest convFn original result label = do
   H.footnote label
   expected === result
 
-nzFromLit :: (Eq n, Field n, NumLiteral n) => Integer -> NonZero n
-nzFromLit = Algebra.unsafeAMonoidNonZero . fromLit
+nzafromInteger :: (Eq n, Field n, FromInteger n) => Integer -> NonZero n
+nzafromInteger = Algebra.unsafeAMonoidNonZero . afromInteger

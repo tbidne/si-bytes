@@ -48,7 +48,8 @@ module Data.Bytes.Network
     -- $algebra
     module Numeric.Algebra,
     module Numeric.Data.NonZero,
-    module Numeric.Class.Literal,
+    module Numeric.Literal.Integer,
+    module Numeric.Literal.Rational,
 
     -- * Text
 
@@ -76,8 +77,9 @@ import Data.Bytes.Network.SomeNetDir (SomeNet, SomeNetDir)
 import Data.Bytes.Network.SomeNetDir qualified as SomeNetDir
 import Data.Bytes.Size (Size (..), Sized (..))
 import Numeric.Algebra
-import Numeric.Class.Literal
 import Numeric.Data.NonZero
+import Numeric.Literal.Integer
+import Numeric.Literal.Rational
 
 -- \$pretty
 

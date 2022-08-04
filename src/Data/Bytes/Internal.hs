@@ -58,8 +58,9 @@ import Numeric.Algebra
     SemivectorSpace,
     VectorSpace,
   )
-import Numeric.Class.Literal (NumLiteral (..))
 import Numeric.Data.NonZero (reallyUnsafeNonZero)
+import Numeric.Literal.Integer (FromInteger (..))
+import Numeric.Literal.Rational (FromRational (..))
 import Optics.Core (A_Lens, An_Iso, LabelOptic (..), iso, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
@@ -136,6 +137,16 @@ instance Monad (Bytes s) where
   {-# INLINE (>>=) #-}
 
 -- | @since 0.1
+instance FromInteger n => FromInteger (Bytes s n) where
+  afromInteger = MkBytes . afromInteger
+  {-# INLINE afromInteger #-}
+
+-- | @since 0.1
+instance FromRational n => FromRational (Bytes s n) where
+  afromRational = MkBytes . afromRational
+  {-# INLINE afromRational #-}
+
+-- | @since 0.1
 instance ASemigroup n => ASemigroup (Bytes s n) where
   (.+.) = liftA2 (.+.)
   {-# INLINE (.+.) #-}
@@ -179,8 +190,8 @@ instance Field n => VectorSpace (Bytes s n) n
 
 -- | @since 0.1
 instance
-  ( MGroup n,
-    NumLiteral n,
+  ( FromInteger n,
+    MGroup n,
     SingSize s
   ) =>
   Conversion (Bytes s n)
@@ -215,44 +226,48 @@ instance
   {-# INLINE toY #-}
 
 -- | @since 0.1
-instance forall n s. (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (Bytes s n) where
+instance
+  forall n s.
+  (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) =>
+  Normalize (Bytes s n)
+  where
   type Norm (Bytes s n) = SomeSize n
 
   normalize bytes@(MkBytes x) =
     case bytesToSSize bytes of
       SB
-        | absBytes < fromLit 1_000 -> MkSomeSize SB bytes
+        | absBytes < afromInteger 1_000 -> MkSomeSize SB bytes
         | otherwise -> normalize $ incSize bytes
       SY
-        | absBytes >= fromLit 1 -> MkSomeSize SY bytes
+        | absBytes >= afromInteger 1 -> MkSomeSize SY bytes
         | otherwise -> normalize $ decSize bytes
       SK
-        | absBytes < fromLit 1 -> normalize $ decSize bytes
-        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
+        | absBytes < afromInteger 1 -> normalize $ decSize bytes
+        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SM
-        | absBytes < fromLit 1 -> normalize $ decSize bytes
-        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
+        | absBytes < afromInteger 1 -> normalize $ decSize bytes
+        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SG
-        | absBytes < fromLit 1 -> normalize $ decSize bytes
-        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
+        | absBytes < afromInteger 1 -> normalize $ decSize bytes
+        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       ST
-        | absBytes < fromLit 1 -> normalize $ decSize bytes
-        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
+        | absBytes < afromInteger 1 -> normalize $ decSize bytes
+        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SP
-        | absBytes < fromLit 1 -> normalize $ decSize bytes
-        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
+        | absBytes < afromInteger 1 -> normalize $ decSize bytes
+        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SE
-        | absBytes < fromLit 1 -> normalize $ decSize bytes
-        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
+        | absBytes < afromInteger 1 -> normalize $ decSize bytes
+        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SZ
-        | absBytes < fromLit 1 -> normalize $ decSize bytes
-        | absBytes >= fromLit 1_000 -> normalize $ incSize bytes
+        | absBytes < afromInteger 1 -> normalize $ decSize bytes
+        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
     where
       sz = bytesToSSize bytes
@@ -353,37 +368,51 @@ deriving stock instance Show n => Show (SomeSize n)
 deriving stock instance Functor SomeSize
 
 -- | @since 0.1
-instance (Eq n, MGroup n, NumLiteral n) => Eq (SomeSize n) where
+instance (Eq n, FromInteger n, MGroup n) => Eq (SomeSize n) where
   x == y = toB x == toB y
   {-# INLINE (==) #-}
 
 -- | @since 0.1
-instance (MGroup n, NumLiteral n, Ord n) => Ord (SomeSize n) where
+instance (FromInteger n, MGroup n, Ord n) => Ord (SomeSize n) where
   x <= y = toB x <= toB y
   {-# INLINE (<=) #-}
 
+-- | Fixed size 'B'.
+--
+-- @since 0.1
+instance FromInteger n => FromInteger (SomeSize n) where
+  afromInteger = MkSomeSize SB . afromInteger
+  {-# INLINE afromInteger #-}
+
+-- | Fixed size 'B'.
+--
+-- @since 0.1
+instance FromRational n => FromRational (SomeSize n) where
+  afromRational = MkSomeSize SB . afromRational
+  {-# INLINE afromRational #-}
+
 -- | @since 0.1
-instance (ASemigroup n, MGroup n, NumLiteral n) => ASemigroup (SomeSize n) where
+instance (ASemigroup n, FromInteger n, MGroup n) => ASemigroup (SomeSize n) where
   x .+. y = MkSomeSize SB $ toB x .+. toB y
   {-# INLINE (.+.) #-}
 
 -- | @since 0.1
-instance (NumLiteral n, Semifield n) => AMonoid (SomeSize n) where
+instance (FromInteger n, Semifield n) => AMonoid (SomeSize n) where
   zero = MkSomeSize SB zero
   {-# INLINE zero #-}
 
 -- | @since 0.1
-instance (Field n, NumLiteral n) => AGroup (SomeSize n) where
+instance (Field n, FromInteger n) => AGroup (SomeSize n) where
   x .-. y = MkSomeSize SB $ toB x .-. toB y
   {-# INLINE (.-.) #-}
 
 -- | @since 0.1
-instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSemiSpace (SomeSize n) n where
+instance (FromInteger n, MGroup n, Normed n, Ord n) => MSemiSpace (SomeSize n) n where
   MkSomeSize sz x .* k = MkSomeSize sz $ x .* k
   {-# INLINE (.*) #-}
 
 -- | @since 0.1
-instance (MGroup n, Normed n, NumLiteral n, Ord n) => MSpace (SomeSize n) n where
+instance (FromInteger n, MGroup n, Normed n, Ord n) => MSpace (SomeSize n) n where
   MkSomeSize sz x .% k = MkSomeSize sz $ x .% k
   {-# INLINEABLE (.%) #-}
 
@@ -393,19 +422,19 @@ instance Normed n => Normed (SomeSize n) where
   {-# INLINE norm #-}
 
 -- | @since 0.1
-instance (Normed n, NumLiteral n, Ord n, Semifield n) => Semimodule (SomeSize n) n
+instance (FromInteger n, Normed n, Ord n, Semifield n) => Semimodule (SomeSize n) n
 
 -- | @since 0.1
-instance (Field n, Normed n, NumLiteral n, Ord n) => Module (SomeSize n) n
+instance (Field n, FromInteger n, Normed n, Ord n) => Module (SomeSize n) n
 
 -- | @since 0.1
-instance (Normed n, NumLiteral n, Ord n, Semifield n) => SemivectorSpace (SomeSize n) n
+instance (FromInteger n, Normed n, Ord n, Semifield n) => SemivectorSpace (SomeSize n) n
 
 -- | @since 0.1
-instance (Field n, Normed n, NumLiteral n, Ord n) => VectorSpace (SomeSize n) n
+instance (Field n, FromInteger n, Normed n, Ord n) => VectorSpace (SomeSize n) n
 
 -- | @since 0.1
-instance (MGroup n, NumLiteral n) => Conversion (SomeSize n) where
+instance (FromInteger n, MGroup n) => Conversion (SomeSize n) where
   type Converted B (SomeSize n) = Bytes B n
   type Converted K (SomeSize n) = Bytes K n
   type Converted M (SomeSize n) = Bytes M n
@@ -436,7 +465,7 @@ instance (MGroup n, NumLiteral n) => Conversion (SomeSize n) where
   {-# INLINE toY #-}
 
 -- | @since 0.1
-instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeSize n) where
+instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeSize n) where
   type Norm (SomeSize n) = SomeSize n
   normalize (MkSomeSize sz x) = Size.withSingSize sz $ normalize x
   {-# INLINE normalize #-}
@@ -488,10 +517,10 @@ instance Read n => Parser (SomeSize n) where
 -- >>> --incSize $ MkBytes @Y @Float 2_500
 --
 -- @since 0.1
-incSize :: forall s n. (MGroup n, NumLiteral n) => Bytes s n -> Bytes (NextSize s) n
+incSize :: forall s n. (FromInteger n, MGroup n) => Bytes s n -> Bytes (NextSize s) n
 incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
   where
-    nz1000 = reallyUnsafeNonZero $ fromLit 1_000
+    nz1000 = reallyUnsafeNonZero $ afromInteger 1_000
 {-# INLINE incSize #-}
 
 -- | Decreases 'Bytes' to the previous size.
@@ -505,6 +534,6 @@ incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
 -- >>> --decSize $ MkBytes @B @Float 2.5
 --
 -- @since 0.1
-decSize :: forall s n. (MSemigroup n, NumLiteral n) => Bytes s n -> Bytes (PrevSize s) n
-decSize = resizeBytes . MkBytes . (.*. fromLit @n 1_000) . unwrap
+decSize :: forall s n. (FromInteger n, MSemigroup n) => Bytes s n -> Bytes (PrevSize s) n
+decSize = resizeBytes . MkBytes . (.*. afromInteger @n 1_000) . unwrap
 {-# INLINE decSize #-}

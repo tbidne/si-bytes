@@ -43,7 +43,7 @@ import Numeric.Algebra
     MSpace (..),
     Normed (..),
   )
-import Numeric.Class.Literal (NumLiteral (..))
+import Numeric.Literal.Integer (FromInteger (..))
 import Optics.Core (A_Lens, LabelOptic (..), lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..))
@@ -125,7 +125,7 @@ deriving stock instance Show n => Show (SomeNetDir s n)
 deriving stock instance Functor (SomeNetDir s)
 
 -- | @since 0.1
-instance (Eq n, NumLiteral n, SingSize s) => Eq (SomeNetDir s n) where
+instance (Eq n, FromInteger n, SingSize s) => Eq (SomeNetDir s n) where
   MkSomeNetDir dx x == MkSomeNetDir dy y =
     case (dx, dy) of
       (SDown, SDown) -> x == y
@@ -149,7 +149,7 @@ instance Normed n => Normed (SomeNetDir s n) where
   {-# INLINE norm #-}
 
 -- | @since 0.1
-instance (MGroup n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) where
+instance (FromInteger n, MGroup n, SingSize s) => Conversion (SomeNetDir s n) where
   type Converted B (SomeNetDir s n) = SomeNetDir B n
   type Converted K (SomeNetDir s n) = SomeNetDir K n
   type Converted M (SomeNetDir s n) = SomeNetDir M n
@@ -180,7 +180,7 @@ instance (MGroup n, NumLiteral n, SingSize s) => Conversion (SomeNetDir s n) whe
   {-# INLINE toY #-}
 
 -- | @since 0.1
-instance (MGroup n, Normed n, NumLiteral n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
+instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
   type Norm (SomeNetDir s n) = SomeNet n
   normalize (MkSomeNetDir dir x) =
     case normalize x of
@@ -297,7 +297,7 @@ deriving stock instance Show n => Show (SomeNet n)
 deriving stock instance Functor SomeNet
 
 -- | @since 0.1
-instance (MGroup n, Eq n, NumLiteral n) => Eq (SomeNet n) where
+instance (Eq n, FromInteger n, MGroup n) => Eq (SomeNet n) where
   MkSomeNet dx szx x == MkSomeNet dy szy y =
     Size.withSingSize szx $
       Size.withSingSize szy $
@@ -323,7 +323,7 @@ instance Normed n => Normed (SomeNet n) where
   {-# INLINE norm #-}
 
 -- | @since 0.1
-instance (MGroup n, NumLiteral n) => Conversion (SomeNet n) where
+instance (FromInteger n, MGroup n) => Conversion (SomeNet n) where
   type Converted B (SomeNet n) = SomeNetDir B n
   type Converted K (SomeNet n) = SomeNetDir K n
   type Converted M (SomeNet n) = SomeNetDir M n
@@ -354,7 +354,7 @@ instance (MGroup n, NumLiteral n) => Conversion (SomeNet n) where
   {-# INLINE toY #-}
 
 -- | @since 0.1
-instance (MGroup n, Normed n, NumLiteral n, Ord n) => Normalize (SomeNet n) where
+instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNet n) where
   type Norm (SomeNet n) = SomeNet n
   normalize (MkSomeNet dir sz x) =
     case Size.withSingSize sz normalize x of
