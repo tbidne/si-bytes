@@ -36,7 +36,7 @@ import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
 import Data.Text (Text)
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
-import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
+import Data.Text.Prettyprint.Doc (Pretty (..))
 #endif
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import GHC.Generics (Generic)
@@ -63,7 +63,7 @@ import Numeric.Literal.Integer (FromInteger (..))
 import Numeric.Literal.Rational (FromRational (..))
 import Optics.Core (A_Lens, An_Iso, LabelOptic (..), iso, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
-import Prettyprinter (Pretty (..), (<+>))
+import Prettyprinter (Pretty (..))
 #endif
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
@@ -277,15 +277,15 @@ instance
 -- | @since 0.1
 instance (Pretty n, SingSize s) => Pretty (Bytes s n) where
   pretty (MkBytes x) = case singSize @s of
-    SB -> pretty x <+> pretty @Text "B"
-    SK -> pretty x <+> pretty @Text "K"
-    SM -> pretty x <+> pretty @Text "M"
-    SG -> pretty x <+> pretty @Text "G"
-    ST -> pretty x <+> pretty @Text "T"
-    SP -> pretty x <+> pretty @Text "P"
-    SE -> pretty x <+> pretty @Text "E"
-    SZ -> pretty x <+> pretty @Text "Z"
-    SY -> pretty x <+> pretty @Text "Y"
+    SB -> pretty x <> pretty @Text "B"
+    SK -> pretty x <> pretty @Text "K"
+    SM -> pretty x <> pretty @Text "M"
+    SG -> pretty x <> pretty @Text "G"
+    ST -> pretty x <> pretty @Text "T"
+    SP -> pretty x <> pretty @Text "P"
+    SE -> pretty x <> pretty @Text "E"
+    SZ -> pretty x <> pretty @Text "Z"
+    SY -> pretty x <> pretty @Text "Y"
   {-# INLINEABLE pretty #-}
 
 -- | @since 0.1
