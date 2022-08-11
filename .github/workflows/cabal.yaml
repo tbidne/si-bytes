@@ -28,4 +28,4 @@ jobs:
         run: cabal build
 
       - name: Unit Tests
-        run: cabal test unit
+        run: cabal test unit --test-options "--max-runs 100000"

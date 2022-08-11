@@ -3,6 +3,7 @@ module Props.Generators.Bytes
   ( genBytes,
     genNormalizedBytes,
     genSomeBytes,
+    genSomeSizeFromSSize,
   )
 where
 
@@ -32,6 +33,10 @@ genSomeBytes = do
       MkSomeSize SZ <$> genBytes,
       MkSomeSize SY <$> genBytes
     ]
+
+-- | Generates 'SomeSize' from the given 'SSize'.
+genSomeSizeFromSSize :: SSize s -> Gen (SomeSize Rational)
+genSomeSizeFromSSize sz = MkSomeSize sz <$> genBytes
 
 -- | Generates a normalized 'Bytes', i.e., the numeric value
 -- is \[ 0 \le x < 1,000 \].

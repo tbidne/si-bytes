@@ -72,6 +72,10 @@ data Size
     Y
   deriving stock
     ( -- | @since 0.1
+      Bounded,
+      -- | @since 0.1
+      Enum,
+      -- | @since 0.1
       Eq,
       -- | @since 0.1
       Ord,

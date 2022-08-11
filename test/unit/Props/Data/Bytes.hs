@@ -1,23 +1,20 @@
-{-# LANGUAGE RecordWildCards #-}
-
 -- | Property tests for 'Bytes'.
 module Props.Data.Bytes (props) where
 
-import Data.Bytes.Class.Conversion (Conversion (..))
+import Control.Monad (join)
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
-import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
+import Data.Bytes.Size (SSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
-import Hedgehog (PropertyT, (===))
+import Hedgehog ((===))
 import Hedgehog qualified as H
 import Props.Generators.Bytes qualified as Gens
 import Props.Generators.Size qualified as SGens
 import Props.MaxRuns (MaxRuns (..))
 import Props.Utils qualified as U
 import Props.Verify.Algebra qualified as VAlgebra
-import Props.Verify.Conversion (ResultConvs (..))
-import Props.Verify.Conversion qualified as VConversion
+import Props.Verify.Conversion qualified as VConv
 import Props.Verify.Normalize qualified as VNormalize
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
@@ -27,28 +24,34 @@ props :: TestTree
 props =
   T.testGroup
     "Bytes.Data.Bytes"
-    $ bytesProps <> someSizeProps
+    [ bytesProps,
+      someSizeProps
+    ]
 
-bytesProps :: [TestTree]
+bytesProps :: TestTree
 bytesProps =
-  [ unBytesProps,
-    convertProps,
-    normalizeProps,
-    bytesEqProps,
-    bytesOrdProps,
-    bytesGroupProps,
-    bytesVectorSpaceProps
-  ]
+  T.testGroup
+    "Bytes"
+    [ unBytesProps,
+      convertProps,
+      normalizeProps,
+      bytesEqProps,
+      bytesOrdProps,
+      bytesGroupProps,
+      bytesVectorSpaceProps
+    ]
 
-someSizeProps :: [TestTree]
+someSizeProps :: TestTree
 someSizeProps =
-  [ someConvertProps,
-    someSizeEqProps,
-    someSizeOrdProps,
-    someSizeGroupProps,
-    someVectorSpaceProps,
-    someNormalizeProps
-  ]
+  T.testGroup
+    "SomeSize"
+    [ someConvertProps,
+      someSizeEqProps,
+      someSizeOrdProps,
+      someSizeGroupProps,
+      someVectorSpaceProps,
+      someNormalizeProps
+    ]
 
 unBytesProps :: TestTree
 unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -59,46 +62,20 @@ unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
         bytes === MkBytes (unwrap bytes)
 
 convertProps :: TestTree
-convertProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "Bytes Conversions" "convertProps" $
-    H.withTests limit $
-      H.property $ do
-        b <- H.forAll (Gens.genBytes @'B)
-        k <- H.forAll (Gens.genBytes @'K)
-        m <- H.forAll (Gens.genBytes @'M)
-        g <- H.forAll (Gens.genBytes @'G)
-        t <- H.forAll (Gens.genBytes @'T)
-        p <- H.forAll (Gens.genBytes @'P)
-        e <- H.forAll (Gens.genBytes @'E)
-        z <- H.forAll (Gens.genBytes @'Z)
-        y <- H.forAll (Gens.genBytes @'Y)
-        convert b VConversion.convertB
-        convert k VConversion.convertK
-        convert m VConversion.convertM
-        convert g VConversion.convertG
-        convert t VConversion.convertT
-        convert p VConversion.convertP
-        convert e VConversion.convertE
-        convert z VConversion.convertZ
-        convert y VConversion.convertY
-
-convert ::
-  SingSize s =>
-  Bytes s Rational ->
-  (ResultConvs Rational -> PropertyT IO ()) ->
-  PropertyT IO ()
-convert bytes@(MkBytes x) convertAndTestFn = do
-  let original = x
-      bRes = unwrap $ toB bytes
-      kRes = unwrap $ toK bytes
-      mRes = unwrap $ toM bytes
-      gRes = unwrap $ toG bytes
-      tRes = unwrap $ toT bytes
-      pRes = unwrap $ toP bytes
-      eRes = unwrap $ toE bytes
-      zRes = unwrap $ toZ bytes
-      yRes = unwrap $ toY bytes
-  convertAndTestFn MkResultConvs {..}
+convertProps =
+  T.testGroup
+    "Conversions"
+    $ join
+      [ VConv.testConvertToAll (Gens.genBytes @B) VConv.expectedB "B",
+        VConv.testConvertToAll (Gens.genBytes @K) VConv.expectedK "K",
+        VConv.testConvertToAll (Gens.genBytes @M) VConv.expectedM "M",
+        VConv.testConvertToAll (Gens.genBytes @G) VConv.expectedG "G",
+        VConv.testConvertToAll (Gens.genBytes @T) VConv.expectedT "T",
+        VConv.testConvertToAll (Gens.genBytes @P) VConv.expectedP "P",
+        VConv.testConvertToAll (Gens.genBytes @E) VConv.expectedE "E",
+        VConv.testConvertToAll (Gens.genBytes @Z) VConv.expectedZ "Z",
+        VConv.testConvertToAll (Gens.genBytes @Y) VConv.expectedY "Y"
+      ]
 
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -154,20 +131,20 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         VAlgebra.vectorSpaceLaws x y k l
 
 someConvertProps :: TestTree
-someConvertProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "SomeSize conversions match underlying Bytes" "someConvertProps" $
-    H.withTests limit $
-      H.property $ do
-        someSize@(MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
-        toB someSize === Size.withSingSize sz (toB bytes)
-        toK someSize === Size.withSingSize sz (toK bytes)
-        toM someSize === Size.withSingSize sz (toM bytes)
-        toG someSize === Size.withSingSize sz (toG bytes)
-        toT someSize === Size.withSingSize sz (toT bytes)
-        toP someSize === Size.withSingSize sz (toP bytes)
-        toE someSize === Size.withSingSize sz (toE bytes)
-        toZ someSize === Size.withSingSize sz (toZ bytes)
-        toY someSize === Size.withSingSize sz (toY bytes)
+someConvertProps =
+  T.testGroup
+    "Conversions"
+    $ join
+      [ VConv.testConvertToAll (Gens.genSomeSizeFromSSize SB) VConv.expectedB "B",
+        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SK) VConv.expectedK "K",
+        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SM) VConv.expectedM "M",
+        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SG) VConv.expectedG "G",
+        VConv.testConvertToAll (Gens.genSomeSizeFromSSize ST) VConv.expectedT "T",
+        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SP) VConv.expectedP "P",
+        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SE) VConv.expectedE "E",
+        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SZ) VConv.expectedZ "Z",
+        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SY) VConv.expectedY "Y"
+      ]
 
 someSizeToLabel :: SomeSize n -> Size
 someSizeToLabel (MkSomeSize sz _) = case sz of

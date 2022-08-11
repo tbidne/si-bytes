@@ -2,11 +2,13 @@
 module Props.Generators.Network
   ( genNet,
     genNormalizedNetBytes,
+    genSomeNetSizeUpFromSSize,
     genSomeNetSizeDown,
     genSomeNetSizeUp,
     genSomeNetDirUp,
     genSomeNetDirDown,
     genSomeNet,
+    genSomeNetFromSSize,
   )
 where
 
@@ -39,6 +41,10 @@ genSomeNetSizeDown =
       MkSomeNetSize SZ <$> genNet,
       MkSomeNetSize SY <$> genNet
     ]
+
+-- | Generates 'SomeNetSize' from 'SSize'.
+genSomeNetSizeUpFromSSize :: SSize s -> Gen (SomeNetSize 'Up Rational)
+genSomeNetSizeUpFromSSize sz = MkSomeNetSize sz <$> genNet
 
 -- | Generates 'SomeNetSize' 'Up' over 'BGens.genNet'.
 genSomeNetSizeUp :: Gen (SomeNetSize 'Up Rational)
@@ -78,6 +84,14 @@ genSomeNetDirUp = MkSomeNetDir SUp <$> genNet
 -- | Generates 'SomeNetDir' 'Down' over 'genNet'.
 genSomeNetDirDown :: Gen (SomeNetDir s Rational)
 genSomeNetDirDown = MkSomeNetDir SDown <$> genNet
+
+-- | Generates 'SomeNet' from 'SSize'.
+genSomeNetFromSSize :: SSize s -> Gen (SomeNet Rational)
+genSomeNetFromSSize sz = do
+  dir <- DGens.genDirection
+  case dir of
+    Down -> MkSomeNet SDown sz <$> genNet
+    Up -> MkSomeNet SUp sz <$> genNet
 
 -- | Generates 'SomeNet'.
 genSomeNet :: Gen (SomeNet Rational)

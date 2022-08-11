@@ -1,24 +1,21 @@
-{-# LANGUAGE RecordWildCards #-}
-
 -- | Property tests for 'NetBytes'.
 module Props.Data.Bytes.Network.NetBytes (props) where
 
-import Data.Bytes.Class.Conversion (Conversion (..))
+import Control.Monad (join)
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Network.Direction (Direction (..))
 import Data.Bytes.Network.NetBytes.Internal (NetBytes (..), SomeNetSize (..))
-import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
+import Data.Bytes.Size (SSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
-import Hedgehog (PropertyT, (===))
+import Hedgehog ((===))
 import Hedgehog qualified as H
 import Props.Generators.Network qualified as NGens
 import Props.Generators.Size qualified as SGens
 import Props.MaxRuns (MaxRuns (..))
 import Props.Utils qualified as U
 import Props.Verify.Algebra qualified as VAlgebra
-import Props.Verify.Conversion (ResultConvs (..))
-import Props.Verify.Conversion qualified as VConversion
+import Props.Verify.Conversion qualified as VConv
 import Props.Verify.Normalize qualified as VNormalize
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
@@ -60,46 +57,20 @@ unNetBytesProps = T.askOption $ \(MkMaxRuns limit) ->
         bytes === MkNetBytesP (unwrap bytes)
 
 convertProps :: TestTree
-convertProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "NetBytes Conversions" "convertProps" $
-    H.withTests limit $
-      H.property $ do
-        b <- H.forAll (NGens.genNet @'Up @'B)
-        k <- H.forAll (NGens.genNet @'Up @'K)
-        m <- H.forAll (NGens.genNet @'Up @'M)
-        g <- H.forAll (NGens.genNet @'Up @'G)
-        t <- H.forAll (NGens.genNet @'Up @'T)
-        p <- H.forAll (NGens.genNet @'Up @'P)
-        e <- H.forAll (NGens.genNet @'Up @'E)
-        z <- H.forAll (NGens.genNet @'Up @'Z)
-        y <- H.forAll (NGens.genNet @'Up @'Y)
-        convert b VConversion.convertB
-        convert k VConversion.convertK
-        convert m VConversion.convertM
-        convert g VConversion.convertG
-        convert t VConversion.convertT
-        convert p VConversion.convertP
-        convert e VConversion.convertE
-        convert z VConversion.convertZ
-        convert y VConversion.convertY
-
-convert ::
-  SingSize s =>
-  NetBytes d s Rational ->
-  (ResultConvs Rational -> PropertyT IO ()) ->
-  PropertyT IO ()
-convert bytes@(MkNetBytesP x) convertAndTestFn = do
-  let original = x
-      bRes = unwrap $ toB bytes
-      kRes = unwrap $ toK bytes
-      mRes = unwrap $ toM bytes
-      gRes = unwrap $ toG bytes
-      tRes = unwrap $ toT bytes
-      pRes = unwrap $ toP bytes
-      eRes = unwrap $ toE bytes
-      zRes = unwrap $ toZ bytes
-      yRes = unwrap $ toY bytes
-  convertAndTestFn MkResultConvs {..}
+convertProps =
+  T.testGroup
+    "Conversions"
+    $ join
+      [ VConv.testConvertToAll (NGens.genNet @'Up @'B) VConv.expectedB "B",
+        VConv.testConvertToAll (NGens.genNet @'Up @'K) VConv.expectedK "K",
+        VConv.testConvertToAll (NGens.genNet @'Up @'M) VConv.expectedM "M",
+        VConv.testConvertToAll (NGens.genNet @'Up @'G) VConv.expectedG "G",
+        VConv.testConvertToAll (NGens.genNet @'Up @'T) VConv.expectedT "T",
+        VConv.testConvertToAll (NGens.genNet @'Up @'P) VConv.expectedP "P",
+        VConv.testConvertToAll (NGens.genNet @'Up @'E) VConv.expectedE "E",
+        VConv.testConvertToAll (NGens.genNet @'Up @'Z) VConv.expectedZ "Z",
+        VConv.testConvertToAll (NGens.genNet @'Up @'Y) VConv.expectedY "Y"
+      ]
 
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -156,20 +127,20 @@ netBytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         VAlgebra.vectorSpaceLaws x y k l
 
 someConvertProps :: TestTree
-someConvertProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "SomeNetSize conversions match underlying NetBytes" "someConvertProps" $
-    H.withTests limit $
-      H.property $ do
-        someSize@(MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
-        toB someSize === Size.withSingSize sz (toB bytes)
-        toK someSize === Size.withSingSize sz (toK bytes)
-        toM someSize === Size.withSingSize sz (toM bytes)
-        toG someSize === Size.withSingSize sz (toG bytes)
-        toT someSize === Size.withSingSize sz (toT bytes)
-        toP someSize === Size.withSingSize sz (toP bytes)
-        toE someSize === Size.withSingSize sz (toE bytes)
-        toZ someSize === Size.withSingSize sz (toZ bytes)
-        toY someSize === Size.withSingSize sz (toY bytes)
+someConvertProps =
+  T.testGroup
+    "Conversions"
+    $ join
+      [ VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SB) VConv.expectedB "B",
+        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SK) VConv.expectedK "K",
+        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SM) VConv.expectedM "M",
+        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SG) VConv.expectedG "G",
+        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize ST) VConv.expectedT "T",
+        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SP) VConv.expectedP "P",
+        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SE) VConv.expectedE "E",
+        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SZ) VConv.expectedZ "Z",
+        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SY) VConv.expectedY "Y"
+      ]
 
 someNetSizeEqProps :: TestTree
 someNetSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->

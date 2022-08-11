@@ -30,9 +30,9 @@ jobs:
       - name: Compile
         env:
           STACK_YAML: ${{ matrix.stack_yaml }}
-        run: stack build --ghc-options -Werror
-      
-      - name: Test
+        run: stack build
+
+      - name: Unit Tests
         env:
           STACK_YAML: ${{ matrix.stack_yaml }}
-        run: stack test --ghc-options -Werror
+        run: stack test byte-types:unit --test-arguments "--max-runs 100000"
