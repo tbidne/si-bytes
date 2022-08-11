@@ -33,6 +33,7 @@ import Data.Bytes.Network.NetBytes.Internal (NetBytes (..), SomeNetSize (..))
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..), Sized (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
+import Data.Proxy (Proxy (..))
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..))
 #endif
@@ -44,7 +45,6 @@ import Numeric.Algebra
     Normed (..),
   )
 import Numeric.Literal.Integer (FromInteger (..))
-import Optics.Core (A_Lens, LabelOptic (..), lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..))
 #endif
@@ -112,13 +112,6 @@ hideNetDir bytes = case singDirection @d of
 {-# INLINEABLE hideNetDir #-}
 
 -- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetDir" k (SomeNetDir s m) (SomeNetDir s n) a b where
-  labelOptic = lens f (\(MkSomeNetDir dx _) x -> MkSomeNetDir dx (MkNetBytesP x))
-    where
-      f (MkSomeNetDir _ b) = unwrap b
-  {-# INLINE labelOptic #-}
-
--- | @since 0.1
 deriving stock instance Show n => Show (SomeNetDir s n)
 
 -- | @since 0.1
@@ -150,34 +143,10 @@ instance Normed n => Normed (SomeNetDir s n) where
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (SomeNetDir s n) where
-  type Converted B (SomeNetDir s n) = SomeNetDir B n
-  type Converted K (SomeNetDir s n) = SomeNetDir K n
-  type Converted M (SomeNetDir s n) = SomeNetDir M n
-  type Converted G (SomeNetDir s n) = SomeNetDir G n
-  type Converted T (SomeNetDir s n) = SomeNetDir T n
-  type Converted P (SomeNetDir s n) = SomeNetDir P n
-  type Converted E (SomeNetDir s n) = SomeNetDir E n
-  type Converted Z (SomeNetDir s n) = SomeNetDir Z n
-  type Converted Y (SomeNetDir s n) = SomeNetDir Y n
+  type Converted t (SomeNetDir s n) = SomeNetDir t n
 
-  toB (MkSomeNetDir dir x) = MkSomeNetDir dir $ toB x
-  {-# INLINE toB #-}
-  toK (MkSomeNetDir dir x) = MkSomeNetDir dir $ toK x
-  {-# INLINE toK #-}
-  toM (MkSomeNetDir dir x) = MkSomeNetDir dir $ toM x
-  {-# INLINE toM #-}
-  toG (MkSomeNetDir dir x) = MkSomeNetDir dir $ toG x
-  {-# INLINE toG #-}
-  toT (MkSomeNetDir dir x) = MkSomeNetDir dir $ toT x
-  {-# INLINE toT #-}
-  toP (MkSomeNetDir dir x) = MkSomeNetDir dir $ toP x
-  {-# INLINE toP #-}
-  toE (MkSomeNetDir dir x) = MkSomeNetDir dir $ toE x
-  {-# INLINE toE #-}
-  toZ (MkSomeNetDir dir x) = MkSomeNetDir dir $ toZ x
-  {-# INLINE toZ #-}
-  toY (MkSomeNetDir dir x) = MkSomeNetDir dir $ toY x
-  {-# INLINE toY #-}
+  convert :: forall t. SingSize t => Proxy t -> SomeNetDir s n -> SomeNetDir t n
+  convert proxy (MkSomeNetDir dir x) = MkSomeNetDir dir $ convert proxy x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
@@ -286,11 +255,6 @@ hideNetSizeDir bytes = case singDirection @d of
 {-# INLINEABLE hideNetSizeDir #-}
 
 -- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNet" k (SomeNet m) (SomeNet n) a b where
-  labelOptic = lens unwrap (\(MkSomeNet dx sz _) x -> MkSomeNet dx sz (MkNetBytesP x))
-  {-# INLINE labelOptic #-}
-
--- | @since 0.1
 deriving stock instance Show n => Show (SomeNet n)
 
 -- | @since 0.1
@@ -302,8 +266,8 @@ instance (Eq n, FromInteger n, MGroup n) => Eq (SomeNet n) where
     Size.withSingSize szx $
       Size.withSingSize szy $
         case (dx, dy) of
-          (SDown, SDown) -> toB x == toB y
-          (SUp, SUp) -> toB x == toB y
+          (SDown, SDown) -> convert @_ @B Proxy x == convert Proxy y
+          (SUp, SUp) -> convert @_ @B Proxy x == convert Proxy y
           _ -> False
   {-# INLINEABLE (==) #-}
 
@@ -324,34 +288,10 @@ instance Normed n => Normed (SomeNet n) where
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n) => Conversion (SomeNet n) where
-  type Converted B (SomeNet n) = SomeNetDir B n
-  type Converted K (SomeNet n) = SomeNetDir K n
-  type Converted M (SomeNet n) = SomeNetDir M n
-  type Converted G (SomeNet n) = SomeNetDir G n
-  type Converted T (SomeNet n) = SomeNetDir T n
-  type Converted P (SomeNet n) = SomeNetDir P n
-  type Converted E (SomeNet n) = SomeNetDir E n
-  type Converted Z (SomeNet n) = SomeNetDir Z n
-  type Converted Y (SomeNet n) = SomeNetDir Y n
+  type Converted t (SomeNet n) = SomeNetDir t n
 
-  toB (MkSomeNet dir sz x) = Size.withSingSize sz $ toB (MkSomeNetDir dir x)
-  {-# INLINE toB #-}
-  toK (MkSomeNet dir sz x) = Size.withSingSize sz $ toK (MkSomeNetDir dir x)
-  {-# INLINE toK #-}
-  toM (MkSomeNet dir sz x) = Size.withSingSize sz $ toM (MkSomeNetDir dir x)
-  {-# INLINE toM #-}
-  toG (MkSomeNet dir sz x) = Size.withSingSize sz $ toG (MkSomeNetDir dir x)
-  {-# INLINE toG #-}
-  toT (MkSomeNet dir sz x) = Size.withSingSize sz $ toT (MkSomeNetDir dir x)
-  {-# INLINE toT #-}
-  toP (MkSomeNet dir sz x) = Size.withSingSize sz $ toP (MkSomeNetDir dir x)
-  {-# INLINE toP #-}
-  toE (MkSomeNet dir sz x) = Size.withSingSize sz $ toE (MkSomeNetDir dir x)
-  {-# INLINE toE #-}
-  toZ (MkSomeNet dir sz x) = Size.withSingSize sz $ toZ (MkSomeNetDir dir x)
-  {-# INLINE toZ #-}
-  toY (MkSomeNet dir sz x) = Size.withSingSize sz $ toY (MkSomeNetDir dir x)
-  {-# INLINE toY #-}
+  convert :: forall t. SingSize t => Proxy t -> SomeNet n -> SomeNetDir t n
+  convert proxy (MkSomeNet dir sz x) = Size.withSingSize sz $ MkSomeNetDir dir $ convert proxy x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNet n) where

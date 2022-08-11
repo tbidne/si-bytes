@@ -22,7 +22,7 @@ import Test.Tasty qualified as T
 props :: TestTree
 props =
   T.testGroup
-    "Bytes.Data.Network.SomeNetDir"
+    "Data.Bytes.Network.SomeNetDir"
     $ someNetDirBytesProps <> someNetBytesProps
 
 someNetDirBytesProps :: [TestTree]

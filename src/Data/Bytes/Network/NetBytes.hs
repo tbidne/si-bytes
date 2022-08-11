@@ -6,10 +6,12 @@
 module Data.Bytes.Network.NetBytes
   ( -- * Network Bytes
     NetBytes (..),
+    _MkNetBytes,
     hideNetSize,
 
     -- * Unknown Size
     SomeNetSize,
+    _MkSomeNetSize,
   )
 where
 
@@ -17,4 +19,6 @@ import Data.Bytes.Network.NetBytes.Internal
   ( NetBytes (..),
     SomeNetSize,
     hideNetSize,
+    _MkNetBytes,
+    _MkSomeNetSize,
   )

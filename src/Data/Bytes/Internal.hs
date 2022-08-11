@@ -9,10 +9,12 @@
 module Data.Bytes.Internal
   ( -- * Bytes
     Bytes (..),
+    _MkBytes,
     bytesToSSize,
 
     -- * Unknown Size
     SomeSize (..),
+    _MkSomeSize,
     hideSize,
   )
 where
@@ -34,6 +36,7 @@ import Data.Bytes.Size
   )
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
+import Data.Proxy (Proxy (..))
 import Data.Text (Text)
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..))
@@ -61,7 +64,7 @@ import Numeric.Algebra
 import Numeric.Data.NonZero (reallyUnsafeNonZero)
 import Numeric.Literal.Integer (FromInteger (..))
 import Numeric.Literal.Rational (FromRational (..))
-import Optics.Core (A_Lens, An_Iso, LabelOptic (..), iso, lens)
+import Optics.Core (Iso', iso)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..))
 #endif
@@ -120,9 +123,9 @@ bytesToSSize _ = singSize
 {-# INLINE bytesToSSize #-}
 
 -- | @since 0.1
-instance (k ~ An_Iso, a ~ m, b ~ n) => LabelOptic "unBytes" k (Bytes s m) (Bytes s n) a b where
-  labelOptic = iso unwrap MkBytes
-  {-# INLINE labelOptic #-}
+_MkBytes :: Iso' (Bytes s n) n
+_MkBytes = iso unwrap MkBytes
+{-# INLINE _MkBytes #-}
 
 -- | @since 0.1
 instance Applicative (Bytes s) where
@@ -189,41 +192,11 @@ instance Semifield n => SemivectorSpace (Bytes s n) n
 instance Field n => VectorSpace (Bytes s n) n
 
 -- | @since 0.1
-instance
-  ( FromInteger n,
-    MGroup n,
-    SingSize s
-  ) =>
-  Conversion (Bytes s n)
-  where
-  type Converted B (Bytes s n) = Bytes B n
-  type Converted K (Bytes s n) = Bytes K n
-  type Converted M (Bytes s n) = Bytes M n
-  type Converted G (Bytes s n) = Bytes G n
-  type Converted T (Bytes s n) = Bytes T n
-  type Converted P (Bytes s n) = Bytes P n
-  type Converted E (Bytes s n) = Bytes E n
-  type Converted Z (Bytes s n) = Bytes Z n
-  type Converted Y (Bytes s n) = Bytes Y n
+instance (FromInteger n, MGroup n, SingSize s) => Conversion (Bytes s n) where
+  type Converted t (Bytes s n) = Bytes t n
 
-  toB (MkBytes x) = MkBytes $ Conv.convertWitness @s B x
-  {-# INLINE toB #-}
-  toK (MkBytes x) = MkBytes $ Conv.convertWitness @s K x
-  {-# INLINE toK #-}
-  toM (MkBytes x) = MkBytes $ Conv.convertWitness @s M x
-  {-# INLINE toM #-}
-  toG (MkBytes x) = MkBytes $ Conv.convertWitness @s G x
-  {-# INLINE toG #-}
-  toT (MkBytes x) = MkBytes $ Conv.convertWitness @s T x
-  {-# INLINE toT #-}
-  toP (MkBytes x) = MkBytes $ Conv.convertWitness @s P x
-  {-# INLINE toP #-}
-  toE (MkBytes x) = MkBytes $ Conv.convertWitness @s E x
-  {-# INLINE toE #-}
-  toZ (MkBytes x) = MkBytes $ Conv.convertWitness @s Z x
-  {-# INLINE toZ #-}
-  toY (MkBytes x) = MkBytes $ Conv.convertWitness @s Y x
-  {-# INLINE toY #-}
+  convert :: forall t. SingSize t => Proxy t -> Bytes s n -> Bytes t n
+  convert _ (MkBytes x) = MkBytes $ Conv.convertWitness @s (Size.ssizeToSize $ singSize @t) x
 
 -- | @since 0.1
 instance
@@ -344,22 +317,16 @@ data SomeSize (n :: Type) where
 --
 -- @since 0.1
 hideSize :: forall s n. SingSize s => Bytes s n -> SomeSize n
-hideSize bytes = case singSize @s of
-  SB -> MkSomeSize SB bytes
-  SK -> MkSomeSize SK bytes
-  SM -> MkSomeSize SM bytes
-  SG -> MkSomeSize SG bytes
-  ST -> MkSomeSize ST bytes
-  SP -> MkSomeSize SP bytes
-  SE -> MkSomeSize SE bytes
-  SZ -> MkSomeSize SZ bytes
-  SY -> MkSomeSize SY bytes
+hideSize = MkSomeSize (singSize @s)
 {-# INLINEABLE hideSize #-}
 
--- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeSize" k (SomeSize m) (SomeSize n) a b where
-  labelOptic = lens unwrap (\(MkSomeSize sz _) x -> MkSomeSize sz (MkBytes x))
-  {-# INLINE labelOptic #-}
+-- | 'Iso' between 'SomeSize' and underlying 'Bytes'. Performs any necessary
+-- conversions when going from @SomeSize n -> Bytes s n@.
+--
+-- @since 0.1
+_MkSomeSize :: (FromInteger n, MGroup n, SingSize s) => Iso' (SomeSize n) (Bytes s n)
+_MkSomeSize = iso (convert Proxy) hideSize
+{-# INLINE _MkSomeSize #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeSize n)
@@ -369,12 +336,12 @@ deriving stock instance Functor SomeSize
 
 -- | @since 0.1
 instance (Eq n, FromInteger n, MGroup n) => Eq (SomeSize n) where
-  x == y = toB x == toB y
+  x == y = convert @_ @B Proxy x == convert Proxy y
   {-# INLINE (==) #-}
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Ord n) => Ord (SomeSize n) where
-  x <= y = toB x <= toB y
+  x <= y = convert @_ @B Proxy x <= convert Proxy y
   {-# INLINE (<=) #-}
 
 -- | Fixed size 'B'.
@@ -393,7 +360,7 @@ instance FromRational n => FromRational (SomeSize n) where
 
 -- | @since 0.1
 instance (ASemigroup n, FromInteger n, MGroup n) => ASemigroup (SomeSize n) where
-  x .+. y = MkSomeSize SB $ toB x .+. toB y
+  x .+. y = MkSomeSize SB $ convert Proxy x .+. convert Proxy y
   {-# INLINE (.+.) #-}
 
 -- | @since 0.1
@@ -403,7 +370,7 @@ instance (FromInteger n, Semifield n) => AMonoid (SomeSize n) where
 
 -- | @since 0.1
 instance (Field n, FromInteger n) => AGroup (SomeSize n) where
-  x .-. y = MkSomeSize SB $ toB x .-. toB y
+  x .-. y = MkSomeSize SB $ convert Proxy x .-. convert Proxy y
   {-# INLINE (.-.) #-}
 
 -- | @since 0.1
@@ -435,34 +402,10 @@ instance (Field n, FromInteger n, Normed n, Ord n) => VectorSpace (SomeSize n) n
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n) => Conversion (SomeSize n) where
-  type Converted B (SomeSize n) = Bytes B n
-  type Converted K (SomeSize n) = Bytes K n
-  type Converted M (SomeSize n) = Bytes M n
-  type Converted G (SomeSize n) = Bytes G n
-  type Converted T (SomeSize n) = Bytes T n
-  type Converted P (SomeSize n) = Bytes P n
-  type Converted E (SomeSize n) = Bytes E n
-  type Converted Z (SomeSize n) = Bytes Z n
-  type Converted Y (SomeSize n) = Bytes Y n
+  type Converted t (SomeSize n) = Bytes t n
 
-  toB (MkSomeSize sz x) = Size.withSingSize sz $ toB x
-  {-# INLINE toB #-}
-  toK (MkSomeSize sz x) = Size.withSingSize sz $ toK x
-  {-# INLINE toK #-}
-  toM (MkSomeSize sz x) = Size.withSingSize sz $ toM x
-  {-# INLINE toM #-}
-  toG (MkSomeSize sz x) = Size.withSingSize sz $ toG x
-  {-# INLINE toG #-}
-  toT (MkSomeSize sz x) = Size.withSingSize sz $ toT x
-  {-# INLINE toT #-}
-  toP (MkSomeSize sz x) = Size.withSingSize sz $ toP x
-  {-# INLINE toP #-}
-  toE (MkSomeSize sz x) = Size.withSingSize sz $ toE x
-  {-# INLINE toE #-}
-  toZ (MkSomeSize sz x) = Size.withSingSize sz $ toZ x
-  {-# INLINE toZ #-}
-  toY (MkSomeSize sz x) = Size.withSingSize sz $ toY x
-  {-# INLINE toY #-}
+  convert :: forall t. SingSize t => Proxy t -> SomeSize n -> Bytes t n
+  convert proxy (MkSomeSize sz x) = Size.withSingSize sz $ convert proxy x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeSize n) where

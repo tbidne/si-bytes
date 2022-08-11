@@ -22,10 +22,12 @@ module Data.Bytes.Network
 
     -- ** Bytes
     NetBytes (..),
+    _MkNetBytes,
     Unwrapper (..),
 
     -- *** Unknown Size
     SomeNetSize,
+    _MkSomeNetSize,
     hideNetSize,
 
     -- *** Unknown Direction
@@ -72,7 +74,13 @@ import Data.Bytes.Class.Parser (parse)
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting
 import Data.Bytes.Network.Direction (Directed (..), Direction (..))
-import Data.Bytes.Network.NetBytes (NetBytes (..), SomeNetSize, hideNetSize)
+import Data.Bytes.Network.NetBytes
+  ( NetBytes (..),
+    SomeNetSize,
+    hideNetSize,
+    _MkNetBytes,
+    _MkSomeNetSize,
+  )
 import Data.Bytes.Network.SomeNetDir (SomeNet, SomeNetDir)
 import Data.Bytes.Network.SomeNetDir qualified as SomeNetDir
 import Data.Bytes.Size (Size (..), Sized (..))

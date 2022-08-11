@@ -1,3 +1,4 @@
+{-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Exports functions for verifying 'Conversion' properties.
@@ -19,6 +20,8 @@ where
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Size (Size (..))
+import Data.Kind (Constraint, Type)
+import Data.Proxy (Proxy (..))
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
 import Numeric.Algebra (AMonoid, MGroup (..), MSemigroup (..), Semifield)
@@ -171,6 +174,31 @@ expectedY =
 nzafromInteger :: (AMonoid n, Eq n, FromInteger n) => Integer -> NonZero n
 nzafromInteger = Algebra.unsafeAMonoidNonZero . afromInteger
 
+-- | This class exists so that we can tell testConvertToAll that
+-- @Unwrapped (Converted s a) ~ c@ for /all/ @s@. We would like to write
+-- it directly i.e. @forall s. Unwrapped (Converted s a) ~ c@, but this runs
+-- afoul of the type checker; see:
+--
+-- * https://gitlab.haskell.org/ghc/ghc/-/issues/17959
+-- * https://gitlab.haskell.org/ghc/ghc/-/issues/14046
+--
+-- As a workaround, we can use this class to separate the quantified
+-- constraint from the type family, which is the whole problem.
+--
+-- This saves us from having to write e.g.
+--
+-- @
+-- Unwrapper (Converted B a),
+-- Unwrapped (Converted B a) ~ c
+-- ...
+-- @
+--
+-- for every single size.
+type ConvEquality :: Size -> Type -> Type -> Constraint
+class (Unwrapper (Converted s a), Unwrapped (Converted s a) ~ c) => ConvEquality s a c
+
+instance (Unwrapper (Converted s a), Unwrapped (Converted s a) ~ c) => ConvEquality s a c
+
 -- | For a bytes type with fixed size @s@, test that all @s -> t@ conversions
 -- are performed correctly.
 testConvertToAll ::
@@ -180,24 +208,7 @@ testConvertToAll ::
     Show (Unwrapped a),
     Unwrapper a,
     Unwrapped a ~ c,
-    Unwrapper (Converted 'B a),
-    Unwrapped (Converted B a) ~ c,
-    Unwrapper (Converted 'K a),
-    Unwrapped (Converted K a) ~ c,
-    Unwrapper (Converted 'M a),
-    Unwrapped (Converted M a) ~ c,
-    Unwrapper (Converted 'G a),
-    Unwrapped (Converted G a) ~ c,
-    Unwrapper (Converted 'P a),
-    Unwrapped (Converted P a) ~ c,
-    Unwrapper (Converted 'T a),
-    Unwrapped (Converted T a) ~ c,
-    Unwrapper (Converted 'E a),
-    Unwrapped (Converted E a) ~ c,
-    Unwrapper (Converted 'Z a),
-    Unwrapped (Converted Z a) ~ c,
-    Unwrapper (Converted 'Y a),
-    Unwrapped (Converted Y a) ~ c,
+    forall s. ConvEquality s a c,
     Conversion a
   ) =>
   -- | Generator for the type to test
@@ -209,15 +220,15 @@ testConvertToAll ::
   [TestTree]
 testConvertToAll gen e desc = f <$> [minBound .. maxBound]
   where
-    f B = testConversion gen toB (bExp e) (desc <> " -> B")
-    f K = testConversion gen toK (kExp e) (desc <> " -> K")
-    f M = testConversion gen toM (mExp e) (desc <> " -> M")
-    f G = testConversion gen toG (gExp e) (desc <> " -> G")
-    f T = testConversion gen toT (tExp e) (desc <> " -> T")
-    f P = testConversion gen toP (pExp e) (desc <> " -> P")
-    f E = testConversion gen toE (eExp e) (desc <> " -> E")
-    f Z = testConversion gen toZ (zExp e) (desc <> " -> Z")
-    f Y = testConversion gen toY (yExp e) (desc <> " -> Y")
+    f B = testConversion gen (convert @_ @B Proxy) (bExp e) (desc <> " -> B")
+    f K = testConversion gen (convert @_ @K Proxy) (kExp e) (desc <> " -> K")
+    f M = testConversion gen (convert @_ @M Proxy) (mExp e) (desc <> " -> M")
+    f G = testConversion gen (convert @_ @G Proxy) (gExp e) (desc <> " -> G")
+    f T = testConversion gen (convert @_ @T Proxy) (tExp e) (desc <> " -> T")
+    f P = testConversion gen (convert @_ @P Proxy) (pExp e) (desc <> " -> P")
+    f E = testConversion gen (convert @_ @E Proxy) (eExp e) (desc <> " -> E")
+    f Z = testConversion gen (convert @_ @Z Proxy) (zExp e) (desc <> " -> Z")
+    f Y = testConversion gen (convert @_ @Y Proxy) (yExp e) (desc <> " -> Y")
 
 -- | Tests that a bytes conversion matches an expectation. More precisely,
 -- for a given bytes b with @unwrap b === x@, tests that

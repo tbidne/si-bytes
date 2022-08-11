@@ -18,10 +18,12 @@ module Data.Bytes
 
     -- ** Bytes
     Bytes (..),
+    _MkBytes,
     Unwrapper (..),
 
     -- *** Unknown Size
     SomeSize,
+    _MkSomeSize,
     hideSize,
 
     -- * Transformations
@@ -59,7 +61,13 @@ import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Parser (parse)
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting
-import Data.Bytes.Internal (Bytes (..), SomeSize, hideSize)
+import Data.Bytes.Internal
+  ( Bytes (..),
+    SomeSize,
+    hideSize,
+    _MkBytes,
+    _MkSomeSize,
+  )
 import Data.Bytes.Size (Size (..), Sized (..))
 import Numeric.Algebra
 import Numeric.Data.NonZero

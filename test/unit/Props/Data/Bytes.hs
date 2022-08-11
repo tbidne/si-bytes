@@ -23,7 +23,7 @@ import Test.Tasty qualified as T
 props :: TestTree
 props =
   T.testGroup
-    "Bytes.Data.Bytes"
+    "Data.Bytes"
     [ bytesProps,
       someSizeProps
     ]

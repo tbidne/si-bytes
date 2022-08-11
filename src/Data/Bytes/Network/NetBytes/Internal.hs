@@ -8,11 +8,13 @@
 module Data.Bytes.Network.NetBytes.Internal
   ( -- * Network Bytes
     NetBytes (.., MkNetBytesP),
+    _MkNetBytes,
     netToSSize,
     netToSDirection,
 
     -- * Unknown Size
     SomeNetSize (..),
+    _MkSomeNetSize,
     hideNetSize,
     someNetSizeToSDirection,
   )
@@ -35,6 +37,7 @@ import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..), Sized (..))
 import Data.Bytes.Size qualified as Size
 import Data.Kind (Type)
+import Data.Proxy (Proxy (..))
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
 import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
 #endif
@@ -59,7 +62,7 @@ import Numeric.Algebra
   )
 import Numeric.Literal.Integer (FromInteger (..))
 import Numeric.Literal.Rational (FromRational (..))
-import Optics.Core (A_Lens, An_Iso, LabelOptic (..), iso, lens)
+import Optics.Core (A_Lens, Iso', LabelOptic (..), iso, lens)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
@@ -126,9 +129,9 @@ netToSSize _ = singSize
 {-# INLINE netToSSize #-}
 
 -- | @since 0.1
-instance (k ~ An_Iso, a ~ m, b ~ n) => LabelOptic "unNetBytes" k (NetBytes d s m) (NetBytes d s n) a b where
-  labelOptic = iso unwrap (MkNetBytes . MkBytes)
-  {-# INLINE labelOptic #-}
+_MkNetBytes :: Iso' (NetBytes d s n) (Bytes s n)
+_MkNetBytes = iso (\(MkNetBytes x) -> x) MkNetBytes
+{-# INLINE _MkNetBytes #-}
 
 -- | @since 0.1
 instance Applicative (NetBytes d s) where
@@ -196,34 +199,10 @@ instance Field n => VectorSpace (NetBytes d s n) n
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (NetBytes d s n) where
-  type Converted B (NetBytes d s n) = NetBytes d B n
-  type Converted K (NetBytes d s n) = NetBytes d K n
-  type Converted M (NetBytes d s n) = NetBytes d M n
-  type Converted G (NetBytes d s n) = NetBytes d G n
-  type Converted T (NetBytes d s n) = NetBytes d T n
-  type Converted P (NetBytes d s n) = NetBytes d P n
-  type Converted E (NetBytes d s n) = NetBytes d E n
-  type Converted Z (NetBytes d s n) = NetBytes d Z n
-  type Converted Y (NetBytes d s n) = NetBytes d Y n
+  type Converted t (NetBytes d s n) = NetBytes d t n
 
-  toB (MkNetBytes b) = MkNetBytes $ toB b
-  {-# INLINE toB #-}
-  toK (MkNetBytes b) = MkNetBytes $ toK b
-  {-# INLINE toK #-}
-  toM (MkNetBytes b) = MkNetBytes $ toM b
-  {-# INLINE toM #-}
-  toG (MkNetBytes b) = MkNetBytes $ toG b
-  {-# INLINE toG #-}
-  toT (MkNetBytes b) = MkNetBytes $ toT b
-  {-# INLINE toT #-}
-  toP (MkNetBytes b) = MkNetBytes $ toP b
-  {-# INLINE toP #-}
-  toE (MkNetBytes b) = MkNetBytes $ toE b
-  {-# INLINE toE #-}
-  toZ (MkNetBytes b) = MkNetBytes $ toZ b
-  {-# INLINE toZ #-}
-  toY (MkNetBytes b) = MkNetBytes $ toY b
-  {-# INLINE toY #-}
+  convert :: forall t. SingSize t => Proxy t -> NetBytes d s n -> NetBytes d t n
+  convert proxy (MkNetBytes x) = MkNetBytes $ convert proxy x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (NetBytes d s n) where
@@ -323,6 +302,14 @@ instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetSize" k (SomeNetSize
   labelOptic = lens unwrap (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
   {-# INLINE labelOptic #-}
 
+-- | 'Iso' between 'SomeNetSize' and underlying 'NetBytes'. Performs any
+-- necessary conversions when going from @SomeNetSize d n -> NetBytes d s n@.
+--
+-- @since 0.1
+_MkSomeNetSize :: (FromInteger n, MGroup n, SingSize s) => Iso' (SomeNetSize d n) (NetBytes d s n)
+_MkSomeNetSize = iso (convert Proxy) hideNetSize
+{-# INLINE _MkSomeNetSize #-}
+
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNetSize d n)
 
@@ -331,12 +318,12 @@ deriving stock instance Functor (SomeNetSize d)
 
 -- | @since 0.1
 instance (Eq n, FromInteger n, MGroup n) => Eq (SomeNetSize d n) where
-  x == y = toB x == toB y
+  x == y = convert @_ @B Proxy x == convert Proxy y
   {-# INLINE (==) #-}
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Ord n) => Ord (SomeNetSize d n) where
-  x <= y = toB x <= toB y
+  x <= y = convert @_ @B Proxy x <= convert Proxy y
   {-# INLINE (<=) #-}
 
 -- | Fixed size 'B'.
@@ -355,7 +342,7 @@ instance FromRational n => FromRational (SomeNetSize d n) where
 
 -- | @since 0.1
 instance (ASemigroup n, FromInteger n, MGroup n) => ASemigroup (SomeNetSize d n) where
-  x .+. y = MkSomeNetSize SB $ toB x .+. toB y
+  x .+. y = MkSomeNetSize SB $ convert Proxy x .+. convert Proxy y
   {-# INLINE (.+.) #-}
 
 -- | @since 0.1
@@ -365,7 +352,7 @@ instance (FromInteger n, Semifield n) => AMonoid (SomeNetSize d n) where
 
 -- | @since 0.1
 instance (Field n, FromInteger n) => AGroup (SomeNetSize d n) where
-  x .-. y = MkSomeNetSize SB $ toB x .-. toB y
+  x .-. y = MkSomeNetSize SB $ convert Proxy x .-. convert Proxy y
   {-# INLINE (.-.) #-}
 
 -- | @since 0.1
@@ -392,34 +379,10 @@ instance (FromInteger n, Field n, Normed n, Ord n) => VectorSpace (SomeNetSize d
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n) => Conversion (SomeNetSize d n) where
-  type Converted B (SomeNetSize d n) = NetBytes d B n
-  type Converted K (SomeNetSize d n) = NetBytes d K n
-  type Converted M (SomeNetSize d n) = NetBytes d M n
-  type Converted G (SomeNetSize d n) = NetBytes d G n
-  type Converted T (SomeNetSize d n) = NetBytes d T n
-  type Converted P (SomeNetSize d n) = NetBytes d P n
-  type Converted E (SomeNetSize d n) = NetBytes d E n
-  type Converted Z (SomeNetSize d n) = NetBytes d Z n
-  type Converted Y (SomeNetSize d n) = NetBytes d Y n
+  type Converted t (SomeNetSize d n) = NetBytes d t n
 
-  toB (MkSomeNetSize sz x) = Size.withSingSize sz $ toB x
-  {-# INLINE toB #-}
-  toK (MkSomeNetSize sz x) = Size.withSingSize sz $ toK x
-  {-# INLINE toK #-}
-  toM (MkSomeNetSize sz x) = Size.withSingSize sz $ toM x
-  {-# INLINE toM #-}
-  toG (MkSomeNetSize sz x) = Size.withSingSize sz $ toG x
-  {-# INLINE toG #-}
-  toT (MkSomeNetSize sz x) = Size.withSingSize sz $ toT x
-  {-# INLINE toT #-}
-  toP (MkSomeNetSize sz x) = Size.withSingSize sz $ toP x
-  {-# INLINE toP #-}
-  toE (MkSomeNetSize sz x) = Size.withSingSize sz $ toE x
-  {-# INLINE toE #-}
-  toZ (MkSomeNetSize sz x) = Size.withSingSize sz $ toZ x
-  {-# INLINE toZ #-}
-  toY (MkSomeNetSize sz x) = Size.withSingSize sz $ toY x
-  {-# INLINE toY #-}
+  convert :: forall t. SingSize t => Proxy t -> SomeNetSize d n -> NetBytes d t n
+  convert proxy (MkSomeNetSize sz x) = Size.withSingSize sz $ convert proxy x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNetSize d n) where
