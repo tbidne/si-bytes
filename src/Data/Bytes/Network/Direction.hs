@@ -112,12 +112,22 @@ withSingDirection s x = case s of
 -- >>> directionOf (MkNetBytesP @Up @G 7)
 -- Up
 --
--- >>> directionOf (hideNetSizeDir $ MkNetBytesP @Down @M 100)
+-- >>> directionOf (hideSize $ hideDirection $ MkNetBytesP @Down @M 100)
 -- Down
 --
 -- @since 0.1
 class Directed a where
+  -- | Type used to hide the size.
+  --
+  -- @since 0.1
+  type HideDirection a
+
   -- | Retrieve the direction.
   --
   -- @since 0.1
   directionOf :: a -> Direction
+
+  -- | Hides the direction.
+  --
+  -- @since 0.1
+  hideDirection :: a -> HideDirection a

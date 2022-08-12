@@ -19,12 +19,10 @@ module Data.Bytes.Network.Internal
 
     -- * Unknown Direction
     SomeNetDir (..),
-    hideNetDir,
     someNetDirToSSize,
 
     -- * Unknown Direction and Size
     SomeNet (..),
-    hideNetSizeDir,
   )
 where
 
@@ -248,8 +246,13 @@ instance SingSize s => Sized (NetBytes d s n) where
 
 -- | @since 0.1
 instance SingDirection d => Directed (NetBytes d s n) where
+  type HideDirection (NetBytes d s n) = SomeNetDir s n
+
   directionOf = Direction.sdirectionToDirection . netToSDirection
   {-# INLINE directionOf #-}
+
+  hideDirection b@(MkNetBytes _) = MkSomeNetDir (singDirection @d) b
+  {-# INLINE hideDirection #-}
 
 -- | @since 0.1
 instance Unwrapper (NetBytes d s n) where
@@ -409,8 +412,13 @@ instance Sized (SomeNetSize d n) where
 
 -- | @since 0.1
 instance SingDirection d => Directed (SomeNetSize d n) where
+  type HideDirection (SomeNetSize d n) = SomeNet n
+
   directionOf = Direction.sdirectionToDirection . someNetSizeToSDirection
   {-# INLINE directionOf #-}
+
+  hideDirection (MkSomeNetSize sz b) = MkSomeNet (singDirection @d) sz b
+  {-# INLINE hideDirection #-}
 
 -- | @since 0.1
 instance Unwrapper (SomeNetSize d n) where
@@ -445,8 +453,8 @@ unNetBytes (MkNetBytes x) = x
 --     -- getMaxTrafficKRaw :: IO (Double, String)
 --     (bytes, direction) <- getMaxTrafficKRaw
 --     pure $ case direction of
---       "down" -> hideNetDir $ MkNetBytesP @Down bytes
---       "up" -> hideNetDir $ MkNetBytesP @Up bytes
+--       "down" -> hideDirection $ MkNetBytesP @Down bytes
+--       "up" -> hideDirection $ MkNetBytesP @Up bytes
 --       _ -> error "bad direction"
 -- :}
 --
@@ -458,9 +466,9 @@ unNetBytes (MkNetBytes x) = x
 -- Equality is determined by the usual equivalence class -- that takes units
 -- into account -- and by considering the direction.
 --
--- >>> hideNetDir (MkNetBytesP @Up @K 1000) == hideNetDir (MkNetBytesP @Up @K 1000)
+-- >>> hideDirection (MkNetBytesP @Up @K 1000) == hideDirection (MkNetBytesP @Up @K 1000)
 -- True
--- >>> hideNetDir (MkNetBytesP @Up @K 1000) /= hideNetDir (MkNetBytesP @Down @K 1000)
+-- >>> hideDirection (MkNetBytesP @Up @K 1000) /= hideDirection (MkNetBytesP @Down @K 1000)
 -- True
 --
 -- Notice no 'Ord' instance is provided, as we provide no ordering for
@@ -479,15 +487,6 @@ data SomeNetDir (s :: Size) (n :: Type) where
 someNetDirToSSize :: SingSize s => SomeNetDir s n -> SSize s
 someNetDirToSSize _ = singSize
 {-# INLINE someNetDirToSSize #-}
-
--- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetDir'.
---
--- @since 0.1
-hideNetDir :: forall d s n. SingDirection d => NetBytes d s n -> SomeNetDir s n
-hideNetDir bytes = case singDirection @d of
-  SDown -> MkSomeNetDir SDown bytes
-  SUp -> MkSomeNetDir SUp bytes
-{-# INLINEABLE hideNetDir #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNetDir s n)
@@ -551,8 +550,13 @@ instance SingSize s => Sized (SomeNetDir s n) where
 
 -- | @since 0.1
 instance Directed (SomeNetDir s n) where
+  type HideDirection (SomeNetDir s n) = SomeNetDir s n
+
   directionOf (MkSomeNetDir d _) = Direction.sdirectionToDirection d
   {-# INLINE directionOf #-}
+
+  hideDirection = id
+  {-# INLINE hideDirection #-}
 
 -- | @since 0.1
 instance Unwrapper (SomeNetDir s n) where
@@ -582,8 +586,8 @@ instance Read n => Parser (SomeNetDir s n) where
 --     -- getMaxTrafficNetRaw :: IO (Double, String, String)
 --     (bytes, direction, size) <- getMaxTrafficNetRaw
 --     pure $ case (direction, size) of
---       ("Down", "K") -> hideNetSizeDir $ MkNetBytesP @Down @K bytes
---       ("Up", "M") -> hideNetSizeDir $ MkNetBytesP @Up @M bytes
+--       ("Down", "K") -> hideDirection $ hideSize $ MkNetBytesP @Down @K bytes
+--       ("Up", "M") -> hideDirection $ hideSize $ MkNetBytesP @Up @M bytes
 --       _ -> error "todo"
 -- :}
 --
@@ -595,10 +599,10 @@ instance Read n => Parser (SomeNetDir s n) where
 -- w.r.t the size, and also includes an equality check on the direction.
 -- Thus we have, for instance,
 --
--- >>> hideNetSizeDir (MkNetBytesP @Up @K 1_000) == hideNetSizeDir (MkNetBytesP @Up @M 1)
+-- >>> hideDirection (hideSize (MkNetBytesP @Up @K 1_000)) == hideDirection (hideSize (MkNetBytesP @Up @M 1))
 -- True
 --
--- >>> hideNetSizeDir (MkNetBytesP @Up @K 1_000) /= hideNetSizeDir (MkNetBytesP @Down @M 1)
+-- >>> hideDirection (hideSize (MkNetBytesP @Up @K 1_000)) /= hideDirection (hideSize (MkNetBytesP @Down @M 1))
 -- True
 --
 -- @since 0.1
@@ -606,35 +610,6 @@ type SomeNet :: Type -> Type
 data SomeNet (n :: Type) where
   -- | @since 0.1
   MkSomeNet :: SDirection d -> SSize s -> NetBytes d s n -> SomeNet n
-
--- | Wraps a 'NetBytes' in an existentially quantified 'SomeNet'.
---
--- @since 0.1
-hideNetSizeDir :: forall d s n. (SingDirection d, SingSize s) => NetBytes d s n -> SomeNet n
-hideNetSizeDir bytes = case singDirection @d of
-  SDown ->
-    case singSize @s of
-      SB -> MkSomeNet SDown SB bytes
-      SK -> MkSomeNet SDown SK bytes
-      SM -> MkSomeNet SDown SM bytes
-      SG -> MkSomeNet SDown SG bytes
-      ST -> MkSomeNet SDown ST bytes
-      SP -> MkSomeNet SDown SP bytes
-      SE -> MkSomeNet SDown SE bytes
-      SZ -> MkSomeNet SDown SZ bytes
-      SY -> MkSomeNet SDown SY bytes
-  SUp ->
-    case singSize @s of
-      SB -> MkSomeNet SUp SB bytes
-      SK -> MkSomeNet SUp SK bytes
-      SM -> MkSomeNet SUp SM bytes
-      SG -> MkSomeNet SUp SG bytes
-      ST -> MkSomeNet SUp ST bytes
-      SP -> MkSomeNet SUp SP bytes
-      SE -> MkSomeNet SUp SE bytes
-      SZ -> MkSomeNet SUp SZ bytes
-      SY -> MkSomeNet SUp SY bytes
-{-# INLINEABLE hideNetSizeDir #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNet n)
@@ -702,8 +677,13 @@ instance Sized (SomeNet n) where
 
 -- | @since 0.1
 instance Directed (SomeNet n) where
+  type HideDirection (SomeNet n) = SomeNet n
+
   directionOf (MkSomeNet d _ _) = Direction.sdirectionToDirection d
   {-# INLINE directionOf #-}
+
+  hideDirection = id
+  {-# INLINE hideDirection #-}
 
 -- | @since 0.1
 instance Unwrapper (SomeNet n) where
