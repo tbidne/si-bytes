@@ -141,7 +141,18 @@ netToSSize :: SingSize s => NetBytes d s n -> SSize s
 netToSSize _ = singSize
 {-# INLINE netToSSize #-}
 
--- | @since 0.1
+-- | 'Iso' between 'NetBytes' and underlying 'Bytes'.
+--
+-- ==== __Examples__
+--
+-- >>> import Optics.Core (review, view)
+-- >>> review _MkNetBytes (MkBytes @K @Int 70)
+-- MkNetBytes (MkBytes 70)
+--
+-- >>> view _MkNetBytes (MkNetBytes $ MkBytes @K @Int 70)
+-- MkBytes 70
+--
+-- @since 0.1
 _MkNetBytes :: Iso' (NetBytes d s n) (Bytes s n)
 _MkNetBytes = iso (\(MkNetBytes x) -> x) MkNetBytes
 {-# INLINE _MkNetBytes #-}
@@ -306,6 +317,15 @@ data SomeNetSize (d :: Direction) (n :: Type) where
 
 -- | 'Iso' between 'SomeNetSize' and underlying 'NetBytes'. Performs any
 -- necessary conversions when going from @SomeNetSize d n -> NetBytes d s n@.
+--
+-- ==== __Examples__
+--
+-- >>> import Optics.Core (review, view)
+-- >>> review _MkSomeNetSize (MkNetBytesP @Up @K @Int 70)
+-- MkSomeNetSize SK (MkNetBytes (MkBytes 70))
+--
+-- >>> (view _MkSomeNetSize (hideSize $ MkNetBytesP @Up @K @Int 70)) :: NetBytes Up B Int
+-- MkNetBytes (MkBytes 70000)
 --
 -- @since 0.1
 _MkSomeNetSize :: (FromInteger n, MGroup n, SingSize s) => Iso' (SomeNetSize d n) (NetBytes d s n)
@@ -485,7 +505,18 @@ someNetDirToSSize :: SingSize s => SomeNetDir s n -> SSize s
 someNetDirToSSize _ = singSize
 {-# INLINE someNetDirToSSize #-}
 
--- | @since 0.1
+-- | 'Review' between 'SomeNetDir' and underlying 'NetBytes'. This is not an
+-- iso (i.e. only allows @NetBytes -> SomeNetDir@) because the opposite
+-- direction would require dropping the 'Direction' and the user arbitrarily
+-- choosing a new one.
+--
+-- ==== __Examples__
+--
+-- >>> import Optics.Core (review)
+-- >>> review _MkSomeNetDir (MkNetBytesP @Up @K @Int 70)
+-- MkSomeNetDir SUp (MkNetBytes (MkBytes 70))
+--
+-- @since 0.1
 _MkSomeNetDir :: SingDirection d => Review (SomeNetDir s n) (NetBytes d s n)
 _MkSomeNetDir = unto (\b -> MkSomeNetDir (netToSDirection b) b)
 {-# INLINE _MkSomeNetDir #-}
@@ -613,7 +644,18 @@ data SomeNet (n :: Type) where
   -- | @since 0.1
   MkSomeNet :: SDirection d -> SSize s -> NetBytes d s n -> SomeNet n
 
--- | @since 0.1
+-- | 'Review' between 'SomeNet' and underlying 'NetBytes'. This is not an
+-- iso (i.e. only allows @NetBytes -> SomeNet@) because the opposite
+-- direction would require dropping the 'Direction' and the user arbitrarily
+-- choosing a new one.
+--
+-- ==== __Examples__
+--
+-- >>> import Optics.Core (review)
+-- >>> review _MkSomeNet (MkNetBytesP @Up @K @Int 70)
+-- MkSomeNet SUp SK (MkNetBytes (MkBytes 70))
+--
+-- @since 0.1
 _MkSomeNet :: (SingDirection d, SingSize s) => Review (SomeNet n) (NetBytes d s n)
 _MkSomeNet = unto (\b -> MkSomeNet (netToSDirection b) (netToSSize b) b)
 {-# INLINE _MkSomeNet #-}

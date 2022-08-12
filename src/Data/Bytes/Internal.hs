@@ -121,7 +121,18 @@ bytesToSSize :: SingSize s => Bytes s n -> SSize s
 bytesToSSize _ = singSize
 {-# INLINE bytesToSSize #-}
 
--- | @since 0.1
+-- | Iso between 'Bytes' and underlying value.
+--
+-- ==== __Examples__
+--
+-- >>> import Optics.Core (review, view)
+-- >>> review @_ @_ @(Bytes K Int) _MkBytes 70
+-- MkBytes 70
+--
+-- >>> view _MkBytes (MkBytes @K @Int 70)
+-- 70
+--
+-- @since 0.1
 _MkBytes :: Iso' (Bytes s n) n
 _MkBytes = iso unwrap MkBytes
 {-# INLINE _MkBytes #-}
@@ -319,6 +330,15 @@ data SomeSize (n :: Type) where
 
 -- | 'Iso' between 'SomeSize' and underlying 'Bytes'. Performs any necessary
 -- conversions when going from @SomeSize n -> Bytes s n@.
+--
+-- ==== __Examples__
+--
+-- >>> import Optics.Core (review, view)
+-- >>> review _MkSomeSize (MkBytes @K @Int 70)
+-- MkSomeSize SK (MkBytes 70)
+--
+-- >>> (view _MkSomeSize (hideSize $ MkBytes @K @Int 70)) :: Bytes B Int
+-- MkBytes 70000
 --
 -- @since 0.1
 _MkSomeSize :: (FromInteger n, MGroup n, SingSize s) => Iso' (SomeSize n) (Bytes s n)
