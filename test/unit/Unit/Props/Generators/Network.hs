@@ -1,5 +1,5 @@
 -- | Exports generators for 'NetBytes'.
-module Props.Generators.Network
+module Unit.Props.Generators.Network
   ( genNet,
     genNormalizedNetBytes,
     genSomeNetSizeUpFromSSize,
@@ -14,14 +14,18 @@ where
 
 import Data.Bytes.Internal (SomeSize (..))
 import Data.Bytes.Network.Direction (Direction (..), SDirection (..))
-import Data.Bytes.Network.NetBytes.Internal (NetBytes (..), SomeNetSize (..))
-import Data.Bytes.Network.SomeNetDir.Internal (SomeNet (..), SomeNetDir (..))
+import Data.Bytes.Network.Internal
+  ( NetBytes (..),
+    SomeNet (..),
+    SomeNetDir (..),
+    SomeNetSize (..),
+  )
 import Data.Bytes.Size (SSize (..), Size (..))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
-import Props.Generators.Bytes qualified as BGens
-import Props.Generators.Direction qualified as DGens
-import Props.Generators.Size qualified as SGens
+import Unit.Props.Generators.Bytes qualified as BGens
+import Unit.Props.Generators.Direction qualified as DGens
+import Unit.Props.Generators.Size qualified as SGens
 
 -- | Generates 'NetBytes' 'Down' over 'BGens.genBytes'.
 genNet :: Gen (NetBytes d s Rational)

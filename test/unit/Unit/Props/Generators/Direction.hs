@@ -1,5 +1,5 @@
 -- | Exports generators for 'Direction'.
-module Props.Generators.Direction
+module Unit.Props.Generators.Direction
   ( genDirection,
   )
 where

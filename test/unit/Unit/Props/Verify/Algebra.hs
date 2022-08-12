@@ -1,5 +1,5 @@
 -- | Exports functions for verifying algebraic laws
-module Props.Verify.Algebra
+module Unit.Props.Verify.Algebra
   ( -- * Verifying laws
     eqLaws,
     ordLaws,
@@ -29,7 +29,7 @@ import Numeric.Algebra
   )
 import Numeric.Algebra qualified as Algebra
 import Numeric.Data.NonZero (NonZero (..))
-import Props.Utils ((<=>), (==>))
+import Unit.Props.Utils ((<=>), (==>))
 
 -- | Verifies 'Eq' laws for 'BytesEq'.
 eqLaws :: (Eq a, Show a) => a -> a -> a -> PropertyT IO ()

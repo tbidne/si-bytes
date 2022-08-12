@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 
 -- | Utilities for property tests.
-module Props.Utils
+module Unit.Props.Utils
   ( -- * Logical operators
     (==>),
     (<=>),

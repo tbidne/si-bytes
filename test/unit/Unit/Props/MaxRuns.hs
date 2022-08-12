@@ -1,5 +1,5 @@
 -- | Provides the 'MaxRuns' typeclass.
-module Props.MaxRuns
+module Unit.Props.MaxRuns
   ( MaxRuns (..),
   )
 where

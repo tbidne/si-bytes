@@ -31,11 +31,11 @@ module Data.Bytes.Network
 
     -- *** Unknown Direction
     SomeNetDir,
-    SomeNetDir.hideNetDir,
+    Internal.hideNetDir,
 
     -- *** Unknown Size and Direction
     SomeNet,
-    SomeNetDir.hideNetSizeDir,
+    Internal.hideNetSizeDir,
 
     -- * Transformations
 
@@ -73,14 +73,15 @@ import Data.Bytes.Class.Parser (parse)
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting
 import Data.Bytes.Network.Direction (Directed (..), Direction (..))
-import Data.Bytes.Network.NetBytes
+import Data.Bytes.Network.Internal
   ( NetBytes (..),
+    SomeNet,
+    SomeNetDir,
     SomeNetSize,
     _MkNetBytes,
     _MkSomeNetSize,
   )
-import Data.Bytes.Network.SomeNetDir (SomeNet, SomeNetDir)
-import Data.Bytes.Network.SomeNetDir qualified as SomeNetDir
+import Data.Bytes.Network.Internal qualified as Internal
 import Data.Bytes.Size (Size (..), Sized (..))
 import Numeric.Algebra
 import Numeric.Data.NonZero

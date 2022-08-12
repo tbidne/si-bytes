@@ -1,5 +1,5 @@
 -- | Property tests for 'Bytes'.
-module Props.Data.Bytes (props) where
+module Unit.Data.Bytes (props) where
 
 import Control.Monad (join)
 import Data.Bytes.Class.Normalize (Normalize (..))
@@ -9,15 +9,15 @@ import Data.Bytes.Size (SSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
 import Hedgehog ((===))
 import Hedgehog qualified as H
-import Props.Generators.Bytes qualified as Gens
-import Props.Generators.Size qualified as SGens
-import Props.MaxRuns (MaxRuns (..))
-import Props.Utils qualified as U
-import Props.Verify.Algebra qualified as VAlgebra
-import Props.Verify.Conversion qualified as VConv
-import Props.Verify.Normalize qualified as VNormalize
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
+import Unit.Props.Generators.Bytes qualified as Gens
+import Unit.Props.Generators.Size qualified as SGens
+import Unit.Props.MaxRuns (MaxRuns (..))
+import Unit.Props.Utils qualified as U
+import Unit.Props.Verify.Algebra qualified as VAlgebra
+import Unit.Props.Verify.Conversion qualified as VConv
+import Unit.Props.Verify.Normalize qualified as VNormalize
 
 -- | 'TestTree' of properties.
 props :: TestTree

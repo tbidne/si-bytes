@@ -27,8 +27,7 @@ files =
     "src/Data/Bytes/Internal.hs",
     "src/Data/Bytes/Network.hs",
     "src/Data/Bytes/Network/Direction.hs",
-    "src/Data/Bytes/Network/NetBytes/Internal.hs",
-    "src/Data/Bytes/Network/SomeNetDir/Internal.hs",
+    "src/Data/Bytes/Network/Internal.hs",
     "src/Data/Bytes/Size.hs"
   ]
 

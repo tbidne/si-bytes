@@ -1,5 +1,5 @@
 -- | Exports generators for 'Size'.
-module Props.Generators.Size
+module Unit.Props.Generators.Size
   ( genSize,
     genD,
     genNonZero,

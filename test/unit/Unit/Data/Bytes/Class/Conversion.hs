@@ -1,16 +1,16 @@
 -- | Property tests for 'Conversion'.
-module Props.Data.Bytes.Class.Conversion (props) where
+module Unit.Data.Bytes.Class.Conversion (props) where
 
 import Data.Bytes.Class.Conversion qualified as Conv
 import Data.Bytes.Size (Size (..))
 import GHC.Real (Ratio (..))
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
-import Props.Generators.Size qualified as Gens
-import Props.MaxRuns (MaxRuns (..))
-import Props.Utils qualified as U
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
+import Unit.Props.Generators.Size qualified as Gens
+import Unit.Props.MaxRuns (MaxRuns (..))
+import Unit.Props.Utils qualified as U
 
 -- | 'TestTree' of properties.
 props :: TestTree

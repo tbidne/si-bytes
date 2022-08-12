@@ -86,10 +86,7 @@ library
     Data.Bytes.Internal
     Data.Bytes.Network
     Data.Bytes.Network.Direction
-    Data.Bytes.Network.NetBytes
-    Data.Bytes.Network.NetBytes.Internal
-    Data.Bytes.Network.SomeNetDir
-    Data.Bytes.Network.SomeNetDir.Internal
+    Data.Bytes.Network.Internal
     Data.Bytes.Size
 
   build-depends:
@@ -122,19 +119,18 @@ test-suite unit
   type:             exitcode-stdio-1.0
   main-is:          Main.hs
   other-modules:
-    Props.Data.Bytes
-    Props.Data.Bytes.Class.Conversion
-    Props.Data.Bytes.Network.NetBytes
-    Props.Data.Bytes.Network.SomeNetDir
-    Props.Generators.Bytes
-    Props.Generators.Direction
-    Props.Generators.Network
-    Props.Generators.Size
-    Props.MaxRuns
-    Props.Utils
-    Props.Verify.Algebra
-    Props.Verify.Conversion
-    Props.Verify.Normalize
+    Unit.Data.Bytes
+    Unit.Data.Bytes.Class.Conversion
+    Unit.Data.Bytes.Network
+    Unit.Props.Generators.Bytes
+    Unit.Props.Generators.Direction
+    Unit.Props.Generators.Network
+    Unit.Props.Generators.Size
+    Unit.Props.MaxRuns
+    Unit.Props.Utils
+    Unit.Props.Verify.Algebra
+    Unit.Props.Verify.Conversion
+    Unit.Props.Verify.Normalize
 
   build-depends:
     , algebra-simple

@@ -2,13 +2,12 @@
 module Main (main) where
 
 import Data.Proxy (Proxy (..))
-import Props.Data.Bytes qualified as PBytes
-import Props.Data.Bytes.Class.Conversion qualified as PConv
-import Props.Data.Bytes.Network.NetBytes qualified as PNetBytes
-import Props.Data.Bytes.Network.SomeNetDir qualified as PSomeNetDir
-import Props.MaxRuns (MaxRuns)
 import Test.Tasty qualified as T
 import Test.Tasty.Options (OptionDescription (..))
+import Unit.Data.Bytes qualified as PBytes
+import Unit.Data.Bytes.Class.Conversion qualified as PConv
+import Unit.Data.Bytes.Network qualified as PNetwork
+import Unit.Props.MaxRuns (MaxRuns)
 
 -- | Runs all property tests
 main :: IO ()
@@ -20,6 +19,5 @@ main = do
       "Property tests"
       [ PConv.props,
         PBytes.props,
-        PNetBytes.props,
-        PSomeNetDir.props
+        PNetwork.props
       ]

@@ -2,7 +2,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Exports functions for verifying 'Conversion' properties.
-module Props.Verify.Conversion
+module Unit.Props.Verify.Conversion
   ( testConvertToAll,
     ExpectedConvs (..),
     expectedB,
@@ -28,10 +28,10 @@ import Numeric.Algebra (AMonoid, MGroup (..), MSemigroup (..), Semifield)
 import Numeric.Algebra qualified as Algebra
 import Numeric.Data.NonZero (NonZero)
 import Numeric.Literal.Integer (FromInteger (..))
-import Props.MaxRuns (MaxRuns (..))
-import Props.Utils qualified as U
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
+import Unit.Props.MaxRuns (MaxRuns (..))
+import Unit.Props.Utils qualified as U
 
 data ExpectedConvs n = MkExpectedConvs
   { bExp :: n -> n,
