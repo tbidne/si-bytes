@@ -19,10 +19,12 @@ module Data.Bytes.Network.Internal
 
     -- * Unknown Direction
     SomeNetDir (..),
+    _MkSomeNetDir,
     someNetDirToSSize,
 
     -- * Unknown Direction and Size
     SomeNet (..),
+    _MkSomeNet,
   )
 where
 
@@ -69,7 +71,7 @@ import Numeric.Algebra
   )
 import Numeric.Literal.Integer (FromInteger (..))
 import Numeric.Literal.Rational (FromRational (..))
-import Optics.Core (A_Lens, Iso', LabelOptic (..), iso, lens)
+import Optics.Core (Iso', Review, iso, unto)
 #if MIN_VERSION_prettyprinter(1, 7, 1)
 import Prettyprinter (Pretty (..), (<+>))
 #endif
@@ -302,11 +304,6 @@ data SomeNetSize (d :: Direction) (n :: Type) where
   -- | @since 0.1
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 
--- | @since 0.1
-instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetSize" k (SomeNetSize d m) (SomeNetSize d n) a b where
-  labelOptic = lens unwrap (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
-  {-# INLINE labelOptic #-}
-
 -- | 'Iso' between 'SomeNetSize' and underlying 'NetBytes'. Performs any
 -- necessary conversions when going from @SomeNetSize d n -> NetBytes d s n@.
 --
@@ -489,6 +486,11 @@ someNetDirToSSize _ = singSize
 {-# INLINE someNetDirToSSize #-}
 
 -- | @since 0.1
+_MkSomeNetDir :: SingDirection d => Review (SomeNetDir s n) (NetBytes d s n)
+_MkSomeNetDir = unto (\b -> MkSomeNetDir (netToSDirection b) b)
+{-# INLINE _MkSomeNetDir #-}
+
+-- | @since 0.1
 deriving stock instance Show n => Show (SomeNetDir s n)
 
 -- | @since 0.1
@@ -610,6 +612,11 @@ type SomeNet :: Type -> Type
 data SomeNet (n :: Type) where
   -- | @since 0.1
   MkSomeNet :: SDirection d -> SSize s -> NetBytes d s n -> SomeNet n
+
+-- | @since 0.1
+_MkSomeNet :: (SingDirection d, SingSize s) => Review (SomeNet n) (NetBytes d s n)
+_MkSomeNet = unto (\b -> MkSomeNet (netToSDirection b) (netToSSize b) b)
+{-# INLINE _MkSomeNet #-}
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNet n)

@@ -31,9 +31,11 @@ module Data.Bytes.Network
 
     -- *** Unknown Direction
     SomeNetDir,
+    _MkSomeNetDir,
 
     -- *** Unknown Size and Direction
     SomeNet,
+    _MkSomeNet,
 
     -- * Transformations
 
@@ -77,6 +79,8 @@ import Data.Bytes.Network.Internal
     SomeNetDir,
     SomeNetSize,
     _MkNetBytes,
+    _MkSomeNet,
+    _MkSomeNetDir,
     _MkSomeNetSize,
   )
 import Data.Bytes.Size (Size (..), Sized (..))
