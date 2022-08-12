@@ -28,7 +28,6 @@ module Data.Bytes.Network
     -- *** Unknown Size
     SomeNetSize,
     _MkSomeNetSize,
-    hideNetSize,
 
     -- *** Unknown Direction
     SomeNetDir,
@@ -77,7 +76,6 @@ import Data.Bytes.Network.Direction (Directed (..), Direction (..))
 import Data.Bytes.Network.NetBytes
   ( NetBytes (..),
     SomeNetSize,
-    hideNetSize,
     _MkNetBytes,
     _MkSomeNetSize,
   )
@@ -159,8 +157,8 @@ import Numeric.Literal.Rational
 -- 'NetBytes' types. To handle this, the 'SomeNetSize' instance will convert
 -- both 'NetBytes' to a 'NetBytes' ''B' before adding/subtracting.
 --
--- >>> let some1 = hideNetSize (MkNetBytesP 1000 :: NetBytes 'Down 'G Double)
--- >>> let some2 = hideNetSize (MkNetBytesP 500_000 :: NetBytes 'Down 'M Double)
+-- >>> let some1 = hideSize (MkNetBytesP 1000 :: NetBytes 'Down 'G Double)
+-- >>> let some2 = hideSize (MkNetBytesP 500_000 :: NetBytes 'Down 'M Double)
 -- >>> some1 .+. some2
 -- MkSomeNetSize SB (MkNetBytes (MkBytes 1.5e12))
 -- >>> some1 .-. some2

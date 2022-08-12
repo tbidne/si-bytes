@@ -112,7 +112,8 @@ formatSized basefmt sizefmt x = formatBase basefmt (unwrap x) <> formatSize size
 -- ==== __Examples__
 --
 -- >>> import Data.Default (Default (..))
--- >>> import Data.Bytes.Network (Direction (..), NetBytes (..), Size (..), hideNetSize)
+-- >>> import Data.Bytes.Network (Direction (..), NetBytes (..), Size (..))
+-- >>> import Data.Bytes.Size (Sized (..))
 -- >>> let bf1 = MkIntegralFormatter
 -- >>> let b1 = MkNetBytesP @Up @M @Int 7
 -- >>> formatSizedDirected bf1 def def b1
@@ -122,7 +123,7 @@ formatSized basefmt sizefmt x = formatBase basefmt (unwrap x) <> formatSize size
 -- "7M U"
 --
 -- >>> let bf2 = MkFloatingFormatter (Just 2)
--- >>> let b2 = hideNetSize $ MkNetBytesP @Down @G @Float 20.248
+-- >>> let b2 = hideSize $ MkNetBytesP @Down @G @Float 20.248
 -- >>> formatSizedDirected bf2 sizedFormatterVerbose directedFormatterVerbose b2
 -- "20.25 gigabytes down"
 --

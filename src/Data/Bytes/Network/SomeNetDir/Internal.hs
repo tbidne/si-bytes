@@ -164,8 +164,12 @@ instance (Pretty n, SingSize s) => Pretty (SomeNetDir s n) where
 
 -- | @since 0.1
 instance SingSize s => Sized (SomeNetDir s n) where
+  type HideSize (SomeNetDir s n) = SomeNet n
   sizeOf = Size.ssizeToSize . someNetDirToSSize
   {-# INLINE sizeOf #-}
+
+  hideSize (MkSomeNetDir d b) = MkSomeNet d (singSize @s) b
+  {-# INLINE hideSize #-}
 
 -- | @since 0.1
 instance Directed (SomeNetDir s n) where
@@ -311,8 +315,12 @@ instance Pretty n => Pretty (SomeNet n) where
 
 -- | @since 0.1
 instance Sized (SomeNet n) where
+  type HideSize (SomeNet n) = SomeNet n
   sizeOf (MkSomeNet _ sz _) = Size.ssizeToSize sz
   {-# INLINE sizeOf #-}
+
+  hideSize = id
+  {-# INLINE hideSize #-}
 
 -- | @since 0.1
 instance Directed (SomeNet n) where

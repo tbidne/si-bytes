@@ -297,7 +297,17 @@ type family PrevSize (s :: Size) = (t :: Size) where
 --
 -- @since 0.1
 class Sized a where
+  -- | Type used to hide the size.
+  --
+  -- @since 0.1
+  type HideSize a
+
   -- | Retrieves the size.
   --
   -- @since 0.1
   sizeOf :: a -> Size
+
+  -- | Hides the size.
+  --
+  -- @since 0.1
+  hideSize :: a -> HideSize a

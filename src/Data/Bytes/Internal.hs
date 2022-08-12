@@ -15,7 +15,6 @@ module Data.Bytes.Internal
     -- * Unknown Size
     SomeSize (..),
     _MkSomeSize,
-    hideSize,
   )
 where
 
@@ -263,8 +262,13 @@ instance (Pretty n, SingSize s) => Pretty (Bytes s n) where
 
 -- | @since 0.1
 instance SingSize s => Sized (Bytes s n) where
+  type HideSize (Bytes s n) = SomeSize n
+
   sizeOf = Size.ssizeToSize . bytesToSSize
   {-# INLINE sizeOf #-}
+
+  hideSize b@(MkBytes _) = MkSomeSize (singSize @s) b
+  {-# INLINE hideSize #-}
 
 -- | @since 0.1
 instance Unwrapper (Bytes s n) where
@@ -312,13 +316,6 @@ type SomeSize :: Type -> Type
 data SomeSize (n :: Type) where
   -- | @since 0.1
   MkSomeSize :: SSize s -> Bytes s n -> SomeSize n
-
--- | Wraps a 'Bytes' in an existentially quantified 'SomeSize'.
---
--- @since 0.1
-hideSize :: forall s n. SingSize s => Bytes s n -> SomeSize n
-hideSize = MkSomeSize (singSize @s)
-{-# INLINEABLE hideSize #-}
 
 -- | 'Iso' between 'SomeSize' and underlying 'Bytes'. Performs any necessary
 -- conversions when going from @SomeSize n -> Bytes s n@.
@@ -420,8 +417,13 @@ instance Pretty n => Pretty (SomeSize n) where
 
 -- | @since 0.1
 instance Sized (SomeSize n) where
+  type HideSize (SomeSize n) = SomeSize n
+
   sizeOf (MkSomeSize sz _) = Size.ssizeToSize sz
   {-# INLINE sizeOf #-}
+
+  hideSize = id
+  {-# INLINE hideSize #-}
 
 -- | @since 0.1
 instance Unwrapper (SomeSize n) where

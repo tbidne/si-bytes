@@ -17,7 +17,8 @@ import Numeric.Data.NonZero (NonZero (..), reallyUnsafeNonZero)
 import Numeric.Literal.Integer (FromInteger (..))
 
 -- $setup
--- >>> import Data.Bytes.Internal (Bytes (..), hideSize)
+-- >>> import Data.Bytes.Internal (Bytes (..))
+-- >>> import Data.Bytes.Size (Sized (..))
 
 -- | This class allows one to transform a bytes type to any 'Size'. For types
 -- with existentially quantified 'Size' (e.g. 'Data.Bytes.SomeSize',

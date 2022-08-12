@@ -15,7 +15,6 @@ module Data.Bytes.Network.NetBytes.Internal
     -- * Unknown Size
     SomeNetSize (..),
     _MkSomeNetSize,
-    hideNetSize,
     someNetSizeToSDirection,
   )
 where
@@ -225,8 +224,13 @@ instance
 
 -- | @since 0.1
 instance SingSize s => Sized (NetBytes d s n) where
+  type HideSize (NetBytes d s n) = SomeNetSize d n
+
   sizeOf = Size.ssizeToSize . netToSSize
   {-# INLINE sizeOf #-}
+
+  hideSize b@(MkNetBytes _) = MkSomeNetSize (singSize @s) b
+  {-# INLINE hideSize #-}
 
 -- | @since 0.1
 instance SingDirection d => Directed (NetBytes d s n) where
@@ -253,8 +257,8 @@ instance Read n => Parser (NetBytes d s n) where
 --     -- getUpTrafficRaw :: IO (Float, String)
 --     (bytes, units) <- getUpTrafficRaw
 --     pure $ case units of
---       "B" -> hideNetSize $ MkNetBytesP @Up @B bytes
---       "K" -> hideNetSize $ MkNetBytesP @Up @K bytes
+--       "B" -> hideSize $ MkNetBytesP @Up @B bytes
+--       "K" -> hideSize $ MkNetBytesP @Up @K bytes
 --       _ -> error "todo"
 -- :}
 --
@@ -264,7 +268,7 @@ instance Read n => Parser (NetBytes d s n) where
 -- We define an equivalence relation on 'SomeNetSize' that takes units into
 -- account. For instance,
 --
--- >>> hideNetSize (MkNetBytesP @Up @K 1000) == hideNetSize (MkNetBytesP @Up @M 1)
+-- >>> hideSize (MkNetBytesP @Up @K 1000) == hideSize (MkNetBytesP @Up @M 1)
 -- True
 --
 -- Because we expose the underlying @NetBytes@ in several ways (e.g. 'Show',
@@ -281,22 +285,6 @@ data SomeNetSize (d :: Direction) (n :: Type) where
   -- | @since 0.1
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 
--- | Wraps a 'NetBytes' in an existentially quantified 'SomeNetSize'.
---
--- @since 0.1
-hideNetSize :: forall d s n. SingSize s => NetBytes d s n -> SomeNetSize d n
-hideNetSize bytes = case singSize @s of
-  SB -> MkSomeNetSize SB bytes
-  SK -> MkSomeNetSize SK bytes
-  SM -> MkSomeNetSize SM bytes
-  SG -> MkSomeNetSize SG bytes
-  ST -> MkSomeNetSize ST bytes
-  SP -> MkSomeNetSize SP bytes
-  SE -> MkSomeNetSize SE bytes
-  SZ -> MkSomeNetSize SZ bytes
-  SY -> MkSomeNetSize SY bytes
-{-# INLINEABLE hideNetSize #-}
-
 -- | @since 0.1
 instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetSize" k (SomeNetSize d m) (SomeNetSize d n) a b where
   labelOptic = lens unwrap (\(MkSomeNetSize sz _) x -> MkSomeNetSize sz (MkNetBytesP x))
@@ -307,7 +295,7 @@ instance (k ~ A_Lens, a ~ m, b ~ n) => LabelOptic "unSomeNetSize" k (SomeNetSize
 --
 -- @since 0.1
 _MkSomeNetSize :: (FromInteger n, MGroup n, SingSize s) => Iso' (SomeNetSize d n) (NetBytes d s n)
-_MkSomeNetSize = iso (convert Proxy) hideNetSize
+_MkSomeNetSize = iso (convert Proxy) hideSize
 {-# INLINE _MkSomeNetSize #-}
 
 -- | @since 0.1
@@ -397,8 +385,13 @@ instance (Pretty n, SingDirection d) => Pretty (SomeNetSize d n) where
 
 -- | @since 0.1
 instance Sized (SomeNetSize d n) where
+  type HideSize (SomeNetSize d n) = SomeNetSize d n
+
   sizeOf (MkSomeNetSize sz _) = Size.ssizeToSize sz
   {-# INLINE sizeOf #-}
+
+  hideSize = id
+  {-# INLINE hideSize #-}
 
 -- | @since 0.1
 instance SingDirection d => Directed (SomeNetSize d n) where

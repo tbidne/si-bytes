@@ -24,7 +24,6 @@ module Data.Bytes
     -- *** Unknown Size
     SomeSize,
     _MkSomeSize,
-    hideSize,
 
     -- * Transformations
 
@@ -64,7 +63,6 @@ import Data.Bytes.Formatting
 import Data.Bytes.Internal
   ( Bytes (..),
     SomeSize,
-    hideSize,
     _MkBytes,
     _MkSomeSize,
   )
