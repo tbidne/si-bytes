@@ -9,12 +9,17 @@ module Data.Bytes.Network.Direction
     Directed (..),
     withSingDirection,
     sdirectionToDirection,
+
+    -- * Optics
+    _Down,
+    _Up,
   )
 where
 
 import Data.Bytes.Class.Parser (Parser (..))
 import Data.Kind (Constraint, Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
+import Optics.Core (Prism', prism)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
 
@@ -134,3 +139,19 @@ class Directed a where
   --
   -- @since 0.1
   hideDirection :: a -> HideDirection a
+
+-- | @since 0.1
+_Down :: Prism' Direction ()
+_Down = prism (const Down) f
+  where
+    f Down = Right ()
+    f x = Left x
+{-# INLINE _Down #-}
+
+-- | @since 0.1
+_Up :: Prism' Direction ()
+_Up = prism (const Up) f
+  where
+    f Up = Right ()
+    f x = Left x
+{-# INLINE _Up #-}

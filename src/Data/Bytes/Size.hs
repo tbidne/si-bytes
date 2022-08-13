@@ -18,6 +18,17 @@ module Data.Bytes.Size
     -- * Type Families for Relating Tags
     NextSize,
     PrevSize,
+
+    -- * Optics
+    _B,
+    _K,
+    _M,
+    _G,
+    _T,
+    _P,
+    _E,
+    _Z,
+    _Y,
   )
 where
 
@@ -26,6 +37,7 @@ import Data.Bytes.Class.Parser (Parser (..))
 import Data.Kind (Constraint, Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
 import GHC.TypeLits (ErrorMessage (..), TypeError)
+import Optics.Core (Prism', prism)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
 
@@ -82,6 +94,78 @@ data Size
       -- | @since 0.1
       Show
     )
+
+-- | @since 0.1
+_B :: Prism' Size ()
+_B = prism (const B) f
+  where
+    f B = Right ()
+    f x = Left x
+{-# INLINE _B #-}
+
+-- | @since 0.1
+_K :: Prism' Size ()
+_K = prism (const K) f
+  where
+    f K = Right ()
+    f x = Left x
+{-# INLINE _K #-}
+
+-- | @since 0.1
+_M :: Prism' Size ()
+_M = prism (const M) f
+  where
+    f M = Right ()
+    f x = Left x
+{-# INLINE _M #-}
+
+-- | @since 0.1
+_G :: Prism' Size ()
+_G = prism (const G) f
+  where
+    f G = Right ()
+    f x = Left x
+{-# INLINE _G #-}
+
+-- | @since 0.1
+_T :: Prism' Size ()
+_T = prism (const T) f
+  where
+    f T = Right ()
+    f x = Left x
+{-# INLINE _T #-}
+
+-- | @since 0.1
+_P :: Prism' Size ()
+_P = prism (const P) f
+  where
+    f P = Right ()
+    f x = Left x
+{-# INLINE _P #-}
+
+-- | @since 0.1
+_E :: Prism' Size ()
+_E = prism (const E) f
+  where
+    f E = Right ()
+    f x = Left x
+{-# INLINE _E #-}
+
+-- | @since 0.1
+_Z :: Prism' Size ()
+_Z = prism (const Z) f
+  where
+    f Z = Right ()
+    f x = Left x
+{-# INLINE _Z #-}
+
+-- | @since 0.1
+_Y :: Prism' Size ()
+_Y = prism (const Y) f
+  where
+    f Y = Right ()
+    f x = Left x
+{-# INLINE _Y #-}
 
 -- | @since 0.1
 instance Parser Size where

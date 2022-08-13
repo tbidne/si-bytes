@@ -43,12 +43,6 @@ module Data.Bytes.Network
     Unwrapper (..),
     -- $elimination2
 
-    -- ** Optics
-    _MkNetBytes,
-    _MkSomeNetSize,
-    _MkSomeNetDir,
-    _MkSomeNet,
-
     -- * Transformations
 
     -- ** Converting Units
@@ -74,6 +68,29 @@ module Data.Bytes.Network
     -- $parsing
     parse,
 
+    -- * Optics
+
+    -- ** Core
+    _MkNetBytes,
+    _MkSomeNetSize,
+    _MkSomeNetDir,
+    _MkSomeNet,
+
+    -- ** Size
+    _B,
+    _K,
+    _M,
+    _G,
+    _T,
+    _P,
+    _E,
+    _Z,
+    _Y,
+
+    -- ** Direction
+    _Down,
+    _Up,
+
     -- * Reexports
     Default (def),
   )
@@ -84,7 +101,7 @@ import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Parser (parse)
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting
-import Data.Bytes.Network.Direction (Directed (..), Direction (..))
+import Data.Bytes.Network.Direction (Directed (..), Direction (..), _Down, _Up)
 import Data.Bytes.Network.Internal
   ( NetBytes (..),
     SomeNet,
@@ -95,7 +112,19 @@ import Data.Bytes.Network.Internal
     _MkSomeNetDir,
     _MkSomeNetSize,
   )
-import Data.Bytes.Size (Size (..), Sized (..))
+import Data.Bytes.Size
+  ( Size (..),
+    Sized (..),
+    _B,
+    _E,
+    _G,
+    _K,
+    _M,
+    _P,
+    _T,
+    _Y,
+    _Z,
+  )
 import Numeric.Algebra
 import Numeric.Data.NonZero
 import Numeric.Literal.Integer

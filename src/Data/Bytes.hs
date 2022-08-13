@@ -32,10 +32,6 @@ module Data.Bytes
     Unwrapper (..),
     -- $elimination2
 
-    -- ** Optics
-    _MkBytes,
-    _MkSomeSize,
-
     -- * Transformations
 
     -- ** Converting Units
@@ -61,6 +57,23 @@ module Data.Bytes
     -- $parsing
     parse,
 
+    -- * Optics
+
+    -- ** Core
+    _MkBytes,
+    _MkSomeSize,
+
+    -- ** Size
+    _B,
+    _K,
+    _M,
+    _G,
+    _T,
+    _P,
+    _E,
+    _Z,
+    _Y,
+
     -- * Reexports
     Default (def),
   )
@@ -77,7 +90,19 @@ import Data.Bytes.Internal
     _MkBytes,
     _MkSomeSize,
   )
-import Data.Bytes.Size (Size (..), Sized (..))
+import Data.Bytes.Size
+  ( Size (..),
+    Sized (..),
+    _B,
+    _E,
+    _G,
+    _K,
+    _M,
+    _P,
+    _T,
+    _Y,
+    _Z,
+  )
 import Numeric.Algebra
 import Numeric.Data.NonZero
 import Numeric.Literal.Integer
