@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -20,7 +21,9 @@ where
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Size (Size (..))
+#if MIN_VERSION_base(4, 16, 0)
 import Data.Kind (Constraint, Type)
+#endif
 import Data.Proxy (Proxy (..))
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
@@ -174,6 +177,7 @@ expectedY =
 nzafromInteger :: (AMonoid n, Eq n, FromInteger n) => Integer -> NonZero n
 nzafromInteger = Algebra.unsafeAMonoidNonZero . afromInteger
 
+#if MIN_VERSION_base(4, 16, 0)
 -- | This class exists so that we can tell testConvertToAll that
 -- @Unwrapped (Converted s a) ~ c@ for /all/ @s@. We would like to write
 -- it directly i.e. @forall s. Unwrapped (Converted s a) ~ c@, but this runs
@@ -199,6 +203,19 @@ class (Unwrapper (Converted s a), Unwrapped (Converted s a) ~ c) => ConvEquality
 
 instance (Unwrapper (Converted s a), Unwrapped (Converted s a) ~ c) => ConvEquality s a c
 
+-- NB. The cpp exists because this trick seems to only work on ghc 9.2+.
+-- On earlier versions we still get errors like "Could not deduce
+-- Unwrapper (Converted B a)" for every single size. Might be related to
+-- this issue: https://gitlab.haskell.org/ghc/ghc/-/issues/21037
+--
+-- Sadly this means we have to list all sizes in these cases.
+-- The -XQuantifiedConstraints logic is left in so we can use it
+-- unconditionally once we drop support for ghc < 9.2.
+#endif
+
+-- TODO: Ormolu does not like the cpp. Once it is gone, remove this comment.
+{- ORMOLU_DISABLE -}
+
 -- | For a bytes type with fixed size @s@, test that all @s -> t@ conversions
 -- are performed correctly.
 testConvertToAll ::
@@ -208,7 +225,28 @@ testConvertToAll ::
     Show (Unwrapped a),
     Unwrapper a,
     Unwrapped a ~ c,
+#if !MIN_VERSION_base(4, 16, 0)
+    Unwrapper (Converted B a),
+    Unwrapped (Converted B a) ~ c,
+    Unwrapper (Converted K a),
+    Unwrapped (Converted K a) ~ c,
+    Unwrapper (Converted M a),
+    Unwrapped (Converted M a) ~ c,
+    Unwrapper (Converted G a),
+    Unwrapped (Converted G a) ~ c,
+    Unwrapper (Converted T a),
+    Unwrapped (Converted T a) ~ c,
+    Unwrapper (Converted P a),
+    Unwrapped (Converted P a) ~ c,
+    Unwrapper (Converted E a),
+    Unwrapped (Converted E a) ~ c,
+    Unwrapper (Converted Z a),
+    Unwrapped (Converted Z a) ~ c,
+    Unwrapper (Converted Y a),
+    Unwrapped (Converted Y a) ~ c,
+#else
     forall s. ConvEquality s a c,
+#endif
     Conversion a
   ) =>
   -- | Generator for the type to test
@@ -229,6 +267,9 @@ testConvertToAll gen e desc = f <$> [minBound .. maxBound]
     f E = testConversion gen (convert @_ @E Proxy) (eExp e) (desc <> " -> E")
     f Z = testConversion gen (convert @_ @Z Proxy) (zExp e) (desc <> " -> Z")
     f Y = testConversion gen (convert @_ @Y Proxy) (yExp e) (desc <> " -> Y")
+
+-- TODO: Remove when cpp is gone.
+{- ORMOLU_ENABLE -}
 
 -- | Tests that a bytes conversion matches an expectation. More precisely,
 -- for a given bytes b with @unwrap b === x@, tests that
