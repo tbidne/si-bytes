@@ -10,19 +10,30 @@
 --
 -- @since 0.1
 module Data.Bytes
-  ( -- * Types
-
-    -- ** Units
-    Size (..),
-    Sized (..),
-
-    -- ** Bytes
+  ( -- * Introduction
+    -- $intro
     Bytes (..),
-    _MkBytes,
-    Unwrapper (..),
+    Size (..),
 
-    -- *** Unknown Size
+    -- * Basic Usage
+
+    -- ** Construction
+    -- $construction
+
+    -- ** Unknown Size
+    -- $size1
     SomeSize,
+    -- $size2
+    Sized (..),
+    -- $size3
+
+    -- ** Elimination
+    -- $elimination1
+    Unwrapper (..),
+    -- $elimination2
+
+    -- ** Optics
+    _MkBytes,
     _MkSomeSize,
 
     -- * Transformations
@@ -71,6 +82,70 @@ import Numeric.Algebra
 import Numeric.Data.NonZero
 import Numeric.Literal.Integer
 import Numeric.Literal.Rational
+
+-- $intro
+-- The main idea is to attach phantom labels to the numeric bytes, so we
+-- can track the size units. This allows us to safely manipulate byte values
+-- without mixing up units, performing incorrect conversions, etc.
+--
+-- The core types are a newtype wrapper 'Bytes' and the 'Size' units:
+
+-- $construction
+-- There are several ways to construct a 'Bytes' type.
+--
+-- 1. 'FromInteger'
+--
+--     >>> afromInteger 80 :: Bytes M Int
+--     MkBytes 80
+--
+-- 2. Directly
+--
+--     >>> MkBytes 80 :: Bytes M Int
+--     MkBytes 80
+--
+-- 3. Optics (@optics-core@)
+--
+--     >>> import Optics.Core (review)
+--     >>> (review _MkBytes 70) :: Bytes G Int
+--     MkBytes 70
+
+-- $size1
+-- We sometimes have to deal with unknown sizes at runtime, which presents
+-- a problem. We handle this with the @'SomeSize'@ type, which existentially
+-- quantifies the 'Size':
+
+-- $size2
+-- Fortunately, we do not have to directly use the constructor or singletons.
+-- We can instead use the 'Sized' class.
+
+-- $size3
+-- Once again, we can use optics for this.
+--
+-- >>> import Optics.Core (review)
+-- >>> review _MkSomeSize (MkBytes 70 :: Bytes G Int)
+-- MkSomeSize SG (MkBytes 70)
+
+-- $elimination1
+-- We provide the 'Unwrapper' class for conveniently unwrapping a type
+-- to the underlying numeric value.
+
+-- $elimination2
+-- Optics can also be used, though they only unwrap one level at a time,
+-- since we can freely compose them.
+--
+-- >>> import Optics.Core (view, (%))
+-- >>> let x = MkBytes 7 :: Bytes G Int
+-- >>> view _MkBytes x
+-- 7
+--
+-- >>> -- notice we have to convert the numeric value since the requested
+-- >>> -- return type ('M') differs from the original ('G')
+-- >>> let y = hideSize x :: SomeSize Int
+-- >>> (view _MkSomeSize y) :: Bytes M Int
+-- MkBytes 7000
+--
+-- >>> view (_MkSomeSize % (_MkBytes @M)) y
+-- 7000
 
 -- $pretty
 -- We provide several formatters for pretty-printing different byte types.

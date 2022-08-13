@@ -20,7 +20,7 @@ class Unwrapper a where
   -- | @since 0.1
   type Unwrapped a
 
-  -- | Retrieves the underlying type.
+  -- | Retrieves the underlying value.
   --
   -- @since 0.1
   unwrap :: a -> Unwrapped a

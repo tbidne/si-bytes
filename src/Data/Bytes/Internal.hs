@@ -121,19 +121,19 @@ bytesToSSize :: SingSize s => Bytes s n -> SSize s
 bytesToSSize _ = singSize
 {-# INLINE bytesToSSize #-}
 
--- | Iso between 'Bytes' and underlying value.
+-- | 'Iso'' between 'Bytes' and underlying value.
 --
 -- ==== __Examples__
 --
 -- >>> import Optics.Core (review, view)
--- >>> review @_ @_ @(Bytes K Int) _MkBytes 70
+-- >>> (review _MkBytes 70) :: Bytes K Int
 -- MkBytes 70
 --
 -- >>> view _MkBytes (MkBytes @K @Int 70)
 -- 70
 --
 -- @since 0.1
-_MkBytes :: Iso' (Bytes s n) n
+_MkBytes :: forall s n. Iso' (Bytes s n) n
 _MkBytes = iso unwrap MkBytes
 {-# INLINE _MkBytes #-}
 
@@ -305,9 +305,6 @@ instance Read n => Parser (Bytes s n) where
 --       _ -> error "todo"
 -- :}
 --
--- 'SomeSize' carries along an 'SSize' runtime witness for when we
--- need the size. Its 'Numeric.Algebra' functions are 'normalize'd.
---
 -- We define an equivalence relation on 'SomeSize' that takes units into
 -- account. For instance,
 --
@@ -328,7 +325,7 @@ data SomeSize (n :: Type) where
   -- | @since 0.1
   MkSomeSize :: SSize s -> Bytes s n -> SomeSize n
 
--- | 'Iso' between 'SomeSize' and underlying 'Bytes'. Performs any necessary
+-- | 'Iso'' between 'SomeSize' and underlying 'Bytes'. Performs any necessary
 -- conversions when going from @SomeSize n -> Bytes s n@.
 --
 -- ==== __Examples__
@@ -341,7 +338,7 @@ data SomeSize (n :: Type) where
 -- MkBytes 70000
 --
 -- @since 0.1
-_MkSomeSize :: (FromInteger n, MGroup n, SingSize s) => Iso' (SomeSize n) (Bytes s n)
+_MkSomeSize :: forall s n. (FromInteger n, MGroup n, SingSize s) => Iso' (SomeSize n) (Bytes s n)
 _MkSomeSize = iso (convert Proxy) hideSize
 {-# INLINE _MkSomeSize #-}
 

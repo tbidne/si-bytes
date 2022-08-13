@@ -12,29 +12,41 @@
 --
 -- @since 0.1
 module Data.Bytes.Network
-  ( -- * Types
-
-    -- ** Units
-    Size (..),
-    Sized (..),
-    Direction (..),
-    Directed (..),
-
-    -- ** Bytes
+  ( -- * Introduction
+    -- $intro
     NetBytes (..),
-    _MkNetBytes,
-    Unwrapper (..),
+    Size (..),
+    Direction (..),
 
-    -- *** Unknown Size
+    -- * Basic Usage
+
+    -- ** Construction
+    -- $construction
+
+    -- ** Unknown Size
+    -- $size1
     SomeNetSize,
-    _MkSomeNetSize,
+    -- $size2
+    Sized (..),
+    -- $size3
 
-    -- *** Unknown Direction
+    -- ** Unknown Direction
+    -- $direction1
     SomeNetDir,
-    _MkSomeNetDir,
-
-    -- *** Unknown Size and Direction
     SomeNet,
+    -- $direction2
+    Directed (..),
+    -- $direction3
+
+    -- ** Elimination
+    -- $elimination1
+    Unwrapper (..),
+    -- $elimination2
+
+    -- ** Optics
+    _MkNetBytes,
+    _MkSomeNetSize,
+    _MkSomeNetDir,
     _MkSomeNet,
 
     -- * Transformations
@@ -89,7 +101,100 @@ import Numeric.Data.NonZero
 import Numeric.Literal.Integer
 import Numeric.Literal.Rational
 
--- \$pretty
+-- $intro
+-- The main idea is to attach phantom labels to the numeric bytes, so we
+-- can track the size and direction units. This allows us to safely
+-- manipulate byte values without mixing up units, performing incorrect
+-- conversions, etc.
+--
+-- The core types are a newtype wrapper 'NetBytes', the 'Size' units, and the
+-- 'Direction' units:
+
+-- $construction
+-- There are several ways to construct a 'NetBytes' type.
+--
+-- 1. 'FromInteger'
+--
+--     >>> afromInteger 80 :: NetBytes Up M Int
+--     MkNetBytes (MkBytes 80)
+--
+-- 2. Directly
+--
+--     >>> import Data.Bytes (Bytes (MkBytes))
+--     >>> MkNetBytes (MkBytes 80) :: NetBytes Down M Int
+--     MkNetBytes (MkBytes 80)
+--
+--     >>> -- using the @MkNetBytesP :: n -> NetBytes d s n@ pattern synonym
+--     >>> MkNetBytesP 80 :: NetBytes Up K Int
+--     MkNetBytes (MkBytes 80)
+--
+-- 3. Optics (@optics-core@)
+--
+--     >>> import Optics.Core (review, (%))
+--     >>> import Data.Bytes (_MkBytes)
+--     >>> (review _MkNetBytes (MkBytes 80)) :: NetBytes Up G Int -- Bytes -> NetBytes
+--     MkNetBytes (MkBytes 80)
+--
+--     >>> (review (_MkNetBytes % _MkBytes) 70) :: NetBytes Up G Int -- n -> NetBytes
+--     MkNetBytes (MkBytes 70)
+
+-- $size1
+-- We sometimes have to deal with unknown sizes at runtime, which presents
+-- a problem. We handle this with the @'SomeNetSize'@ type, which existentially
+-- quantifies the 'Size':
+
+-- $size2
+-- Fortunately, we do not have to directly use the constructor or singletons.
+-- We can instead use the 'Sized' class.
+
+-- $size3
+-- Once again, we can use optics for this.
+--
+-- >>> import Optics.Core (review)
+-- >>> review _MkSomeNetSize (MkNetBytesP 70 :: NetBytes Down G Int)
+-- MkSomeNetSize SG (MkNetBytes (MkBytes 70))
+
+-- $direction1
+-- Like sizes, we can also handle unknown directions at runtime. The types
+-- involved here are 'SomeNetDir' (hiding direction only) and 'SomeNet'
+-- (hiding both direction and size).
+
+-- $direction2
+-- Analogous to the 'Sized' class, we have 'Directed'.
+
+-- $direction3
+-- Once again, we can use optics for this.
+--
+-- >>> import Optics.Core (review)
+-- >>> let x = MkNetBytesP 70 :: NetBytes Down G Int
+-- >>> review _MkSomeNetDir x
+-- MkSomeNetDir SDown (MkNetBytes (MkBytes 70))
+--
+-- >>> review _MkSomeNet x
+-- MkSomeNet SDown SG (MkNetBytes (MkBytes 70))
+
+-- $elimination1
+-- We provide the 'Unwrapper' class for conveniently unwrapping a type
+-- to the underlying numeric value.
+
+-- $elimination2
+-- Optics can also be used, though they only unwrap one level at a time,
+-- since we can freely compose them.
+--
+-- >>> import Optics.Core (view, (%))
+-- >>> import Data.Bytes (_MkBytes)
+-- >>> let x = MkNetBytesP 7 :: NetBytes Up G Int
+-- >>> view (_MkNetBytes % _MkBytes) x
+-- 7
+--
+-- >>> -- notice we have to convert the numeric value since the requested
+-- >>> -- return type ('M') differs from the original ('G')
+-- >>> let y = hideSize x :: SomeNetSize Up Int
+-- >>> (view _MkSomeNetSize y) :: NetBytes Up M Int
+-- MkNetBytes (MkBytes 7000)
+--
+-- >>> view (_MkSomeNetSize % (_MkNetBytes @M) % _MkBytes) y
+-- 7000
 
 -- $pretty
 -- We provide several formatters for pretty-printing different byte types.

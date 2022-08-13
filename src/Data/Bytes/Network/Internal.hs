@@ -141,7 +141,7 @@ netToSSize :: SingSize s => NetBytes d s n -> SSize s
 netToSSize _ = singSize
 {-# INLINE netToSSize #-}
 
--- | 'Iso' between 'NetBytes' and underlying 'Bytes'.
+-- | 'Iso'' between 'NetBytes' and underlying 'Bytes'.
 --
 -- ==== __Examples__
 --
@@ -153,7 +153,7 @@ netToSSize _ = singSize
 -- MkBytes 70
 --
 -- @since 0.1
-_MkNetBytes :: Iso' (NetBytes d s n) (Bytes s n)
+_MkNetBytes :: forall s d n. Iso' (NetBytes d s n) (Bytes s n)
 _MkNetBytes = iso (\(MkNetBytes x) -> x) MkNetBytes
 {-# INLINE _MkNetBytes #-}
 
@@ -292,9 +292,6 @@ instance Read n => Parser (NetBytes d s n) where
 --       _ -> error "todo"
 -- :}
 --
--- 'SomeNetSize' carries along an 'SSize' runtime witness for when we
--- need the size. Its 'Numeric.Algebra' functions are 'normalize'd.
---
 -- We define an equivalence relation on 'SomeNetSize' that takes units into
 -- account. For instance,
 --
@@ -315,7 +312,7 @@ data SomeNetSize (d :: Direction) (n :: Type) where
   -- | @since 0.1
   MkSomeNetSize :: SSize s -> NetBytes d s n -> SomeNetSize d n
 
--- | 'Iso' between 'SomeNetSize' and underlying 'NetBytes'. Performs any
+-- | 'Iso'' between 'SomeNetSize' and underlying 'NetBytes'. Performs any
 -- necessary conversions when going from @SomeNetSize d n -> NetBytes d s n@.
 --
 -- ==== __Examples__
@@ -328,7 +325,7 @@ data SomeNetSize (d :: Direction) (n :: Type) where
 -- MkNetBytes (MkBytes 70000)
 --
 -- @since 0.1
-_MkSomeNetSize :: (FromInteger n, MGroup n, SingSize s) => Iso' (SomeNetSize d n) (NetBytes d s n)
+_MkSomeNetSize :: forall s d n. (FromInteger n, MGroup n, SingSize s) => Iso' (SomeNetSize d n) (NetBytes d s n)
 _MkSomeNetSize = iso (convert Proxy) hideSize
 {-# INLINE _MkSomeNetSize #-}
 
@@ -483,10 +480,12 @@ unNetBytes (MkNetBytes x) = x
 -- Equality is determined by the usual equivalence class -- that takes units
 -- into account -- and by considering the direction.
 --
--- >>> hideDirection (MkNetBytesP @Up @K 1000) == hideDirection (MkNetBytesP @Up @K 1000)
+-- >>> let x = MkNetBytesP @Up @K 1000 :: NetBytes Up K Int
+-- >>> let y = MkNetBytesP @Down @K 1000 :: NetBytes Down K Int
+-- >>> hideDirection x == hideDirection x
 -- True
--- >>> hideDirection (MkNetBytesP @Up @K 1000) /= hideDirection (MkNetBytesP @Down @K 1000)
--- True
+-- >>> hideDirection x == hideDirection y
+-- False
 --
 -- Notice no 'Ord' instance is provided, as we provide no ordering for
 -- 'Data.Byte.Network.Direction'.
@@ -517,7 +516,7 @@ someNetDirToSSize _ = singSize
 -- MkSomeNetDir SUp (MkNetBytes (MkBytes 70))
 --
 -- @since 0.1
-_MkSomeNetDir :: SingDirection d => Review (SomeNetDir s n) (NetBytes d s n)
+_MkSomeNetDir :: forall s d n. SingDirection d => Review (SomeNetDir s n) (NetBytes d s n)
 _MkSomeNetDir = unto (\b -> MkSomeNetDir (netToSDirection b) b)
 {-# INLINE _MkSomeNetDir #-}
 
@@ -632,11 +631,14 @@ instance Read n => Parser (SomeNetDir s n) where
 -- w.r.t the size, and also includes an equality check on the direction.
 -- Thus we have, for instance,
 --
--- >>> hideDirection (hideSize (MkNetBytesP @Up @K 1_000)) == hideDirection (hideSize (MkNetBytesP @Up @M 1))
+-- >>> let x = MkNetBytesP 1_000 :: NetBytes Up K Int
+-- >>> let y = MkNetBytesP 1 :: NetBytes Up M Int
+-- >>> let z = MkNetBytesP 1_000 :: NetBytes Down K Int
+-- >>> hideDirection (hideSize x) == hideDirection (hideSize y)
 -- True
 --
--- >>> hideDirection (hideSize (MkNetBytesP @Up @K 1_000)) /= hideDirection (hideSize (MkNetBytesP @Down @M 1))
--- True
+-- >>> hideDirection (hideSize x) == hideDirection (hideSize z)
+-- False
 --
 -- @since 0.1
 type SomeNet :: Type -> Type
@@ -656,7 +658,7 @@ data SomeNet (n :: Type) where
 -- MkSomeNet SUp SK (MkNetBytes (MkBytes 70))
 --
 -- @since 0.1
-_MkSomeNet :: (SingDirection d, SingSize s) => Review (SomeNet n) (NetBytes d s n)
+_MkSomeNet :: forall s d n. (SingDirection d, SingSize s) => Review (SomeNet n) (NetBytes d s n)
 _MkSomeNet = unto (\b -> MkSomeNet (netToSDirection b) (netToSSize b) b)
 {-# INLINE _MkSomeNet #-}
 

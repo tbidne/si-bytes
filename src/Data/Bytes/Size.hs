@@ -288,12 +288,19 @@ type family PrevSize (s :: Size) = (t :: Size) where
 --
 -- ==== __Examples__
 --
--- >>> import Data.Bytes
+-- >>> import Data.Bytes (Bytes (..))
+-- >>> import Data.Bytes.Network (NetBytes (..), Direction (..))
 -- >>> sizeOf (MkBytes @G 7)
 -- G
 --
 -- >>> sizeOf (hideSize $ MkBytes @M 7)
 -- M
+--
+-- >>> sizeOf (hideSize $ MkNetBytesP @Up @M 7)
+-- M
+--
+-- >>> hideSize (MkBytes @G 7)
+-- MkSomeSize SG (MkBytes 7)
 --
 -- @since 0.1
 class Sized a where
