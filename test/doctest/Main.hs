@@ -20,6 +20,7 @@ files =
     "src/Data/Bytes.hs",
     "src/Data/Bytes/Class/Conversion.hs",
     "src/Data/Bytes/Class/Normalize.hs",
+    "src/Data/Bytes/Class/Parser.hs",
     "src/Data/Bytes/Class/Wrapper.hs",
     "src/Data/Bytes/Formatting.hs",
     "src/Data/Bytes/Formatting/Direction.hs",

@@ -47,20 +47,22 @@ where
 -- the middle would not cause any harm (other than, perhaps, impacting
 -- efficiency), but it would not guarantee the final result is normalized.
 --
--- ==== __Examples__
---
--- >>> let bytes = MkBytes 5000 :: Bytes 'M Int
--- >>> normalize bytes
--- MkSomeSize SG (MkBytes 5)
---
--- >>> let bytes = hideSize (MkBytes 0.01 :: Bytes 'T Float)
--- >>> normalize bytes
--- MkSomeSize SG (MkBytes 10.0)
---
 -- @since 0.1
 class Normalize a where
   -- | @since 0.1
   type Norm a
 
-  -- | @since 0.1
+  -- | Normalizes the value.
+  --
+  -- ==== __Examples__
+  --
+  -- >>> let bytes = MkBytes 5000 :: Bytes 'M Int
+  -- >>> normalize bytes
+  -- MkSomeSize SG (MkBytes 5)
+  --
+  -- >>> let bytes = hideSize (MkBytes 0.01 :: Bytes 'T Float)
+  -- >>> normalize bytes
+  -- MkSomeSize SG (MkBytes 10.0)
+  --
+  -- @since 0.1
   normalize :: a -> Norm a

@@ -24,28 +24,30 @@ import Numeric.Literal.Integer (FromInteger (..))
 -- with existentially quantified 'Size' (e.g. 'Data.Bytes.SomeSize',
 -- 'Data.Bytes.Network.NetBytes.SomeNetSize'), this will "undo" the existential quantification.
 --
--- ==== __Examples__
---
--- >>> let bytes = MkBytes 50_000 :: Bytes 'M Int
--- >>> let gBytes = convert @_ @G Proxy bytes
--- >>> :type gBytes
--- gBytes :: Bytes 'G Int
--- >>> gBytes
--- MkBytes 50
---
--- >>> let bytes = hideSize (MkBytes 0.2 :: Bytes 'T Float)
--- >>> let mBytes = convert @_ @M Proxy bytes
--- >>> :type mBytes
--- mBytes :: Bytes 'M Float
--- >>> mBytes
--- MkBytes 200000.0
---
 -- @since 0.1
 class Conversion a where
   -- | @since 0.1
   type Converted (t :: Size) a = r | r -> t
 
-  -- | @since 0.1
+  -- | @convert (Proxy :: Proxy t) x@ converts @x@ to size @t@.
+  --
+  -- ==== __Examples__
+  --
+  -- >>> let bytes = MkBytes 50_000 :: Bytes 'M Int
+  -- >>> let gBytes = convert @_ @G Proxy bytes
+  -- >>> :type gBytes
+  -- gBytes :: Bytes 'G Int
+  -- >>> gBytes
+  -- MkBytes 50
+  --
+  -- >>> let bytes = hideSize (MkBytes 0.2 :: Bytes 'T Float)
+  -- >>> let mBytes = convert @_ @M Proxy bytes
+  -- >>> :type mBytes
+  -- mBytes :: Bytes 'M Float
+  -- >>> mBytes
+  -- MkBytes 200000.0
+  --
+  -- @since 0.1
   convert :: SingSize t => Proxy t -> a -> Converted t a
 
 -- | Low level function for converting a numeric literal /from/ the inferred

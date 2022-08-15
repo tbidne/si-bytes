@@ -370,22 +370,6 @@ type family PrevSize (s :: Size) = (t :: Size) where
 
 -- | Types that have a size.
 --
--- ==== __Examples__
---
--- >>> import Data.Bytes (Bytes (..))
--- >>> import Data.Bytes.Network (NetBytes (..), Direction (..))
--- >>> sizeOf (MkBytes @G 7)
--- G
---
--- >>> sizeOf (hideSize $ MkBytes @M 7)
--- M
---
--- >>> sizeOf (hideSize $ MkNetBytesP @Up @M 7)
--- M
---
--- >>> hideSize (MkBytes @G 7)
--- MkSomeSize SG (MkBytes 7)
---
 -- @since 0.1
 class Sized a where
   -- | Type used to hide the size.
@@ -395,10 +379,32 @@ class Sized a where
 
   -- | Retrieves the size.
   --
+  -- ==== __Examples__
+  --
+  -- >>> import Data.Bytes (Bytes (..))
+  -- >>> sizeOf (MkBytes @G 7)
+  -- G
+  --
+  -- >>> sizeOf (hideSize $ MkBytes @M 7)
+  -- M
+  --
+  -- >>> import Data.Bytes.Network (NetBytes (..), Direction (..))
+  -- >>> sizeOf (hideSize $ MkNetBytesP @Up @M 7)
+  -- M
+  --
   -- @since 0.1
   sizeOf :: a -> Size
 
   -- | Hides the size.
+  --
+  -- ==== __Examples__
+  --
+  -- >>> import Data.Bytes (Bytes (..))
+  -- >>> hideSize (MkBytes @G 7)
+  -- MkSomeSize SG (MkBytes 7)
+
+  -- >>> import Data.Bytes.Network (NetBytes (..), Direction (..))
+  -- >>> hideSize (MkNetBytesP @Down @K 400)
   --
   -- @since 0.1
   hideSize :: a -> HideSize a

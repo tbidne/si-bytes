@@ -17,7 +17,8 @@ import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
 import Text.Read qualified as TR
 
--- | Represents a megaparsec parser.
+-- | Represents a megaparsec parser. Used for parsing byte types from
+-- 'Text'.
 --
 -- @since 0.1
 class Parser a where
@@ -39,7 +40,51 @@ parseDigits = do
     Just b' -> pure b'
 {-# INLINEABLE parseDigits #-}
 
--- | Runs a 'Parser'.
+-- | Parses various byte types from 'Text'. Parsing is
+-- lenient in general. We support:
+--
+-- * Case-insensitivity.
+-- * Optional leading\/internal\/trailing whitespace.
+-- * Flexible names.
+--
+-- ==== __Bytes Examples__
+--
+-- >>> import Data.Bytes (Bytes, Size (..), SomeSize)
+-- >>> parse @(Bytes M Int) "70"
+-- Right (MkBytes 70)
+--
+-- >>> parse @(SomeSize Float) "100.45 kilobytes"
+-- Right (MkSomeSize SK (MkBytes 100.45))
+--
+-- >>> parse @(SomeSize Word) "2300G"
+-- Right (MkSomeSize SG (MkBytes 2300))
+--
+-- >>> parse @(SomeSize Float) "5.5 tb"
+-- Right (MkSomeSize ST (MkBytes 5.5))
+--
+-- ==== __Network Examples__
+--
+-- >>> import Data.Bytes.Network (Direction (..), NetBytes, SomeNet, SomeNetDir, SomeNetSize)
+-- >>> parse @(NetBytes Up M Int) "70"
+-- Right (MkNetBytes (MkBytes 70))
+--
+-- >>> parse @(SomeNetSize Down Float) "100.45 kilobytes"
+-- Right (MkSomeNetSize SK (MkNetBytes (MkBytes 100.45)))
+--
+-- >>> parse @(SomeNetSize Up Word) "2300G"
+-- Right (MkSomeNetSize SG (MkNetBytes (MkBytes 2300)))
+--
+-- >>> parse @(SomeNetDir T Word) "2300 up"
+-- Right (MkSomeNetDir SUp (MkNetBytes (MkBytes 2300)))
+--
+-- >>> parse @(SomeNetDir M Word) "2300D"
+-- Right (MkSomeNetDir SDown (MkNetBytes (MkBytes 2300)))
+--
+-- >>> parse @(SomeNet Float) "5.5 tb Up"
+-- Right (MkSomeNet SUp ST (MkNetBytes (MkBytes 5.5)))
+--
+-- >>> parse @(SomeNet Float) "5.5 megabytes DOWN"
+-- Right (MkSomeNet SDown SM (MkNetBytes (MkBytes 5.5)))
 --
 -- @since 0.1
 parse :: Parser a => Text -> Either Text a

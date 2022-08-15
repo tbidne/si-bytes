@@ -54,7 +54,7 @@ module Data.Bytes
     module Data.Bytes.Formatting,
 
     -- ** Parsing
-    -- $parsing
+    Parser,
     parse,
 
     -- * Optics
@@ -81,7 +81,7 @@ where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.Parser (parse)
+import Data.Bytes.Class.Parser (Parser, parse)
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting
 import Data.Bytes.Internal
@@ -245,25 +245,3 @@ import Numeric.Literal.Rational
 -- MkSomeSize SB (MkBytes 5.0e11)
 --
 -- This respects 'SomeSize'\'s equivalence-class based 'Eq'.
-
--- $parsing
--- We provide tools for parsing byte types from 'Data.Text.Text'. Parsing is
--- lenient in general. We support:
---
--- * Case-insensitivity.
--- * Optional leading\/internal\/trailing whitespace.
--- * Flexible names.
---
--- __Examples__
---
--- >>> parse @(Bytes M Int) "70"
--- Right (MkBytes 70)
---
--- >>> parse @(SomeSize Float) "100.45 kilobytes"
--- Right (MkSomeSize SK (MkBytes 100.45))
---
--- >>> parse @(SomeSize Word) "2300G"
--- Right (MkSomeSize SG (MkBytes 2300))
---
--- >>> parse @(SomeSize Float) "5.5 tb"
--- Right (MkSomeSize ST (MkBytes 5.5))

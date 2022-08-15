@@ -111,18 +111,6 @@ withSingDirection s x = case s of
 
 -- | Types that have a direction.
 --
--- ==== __Examples__
---
--- >>> import Data.Bytes.Network
--- >>> directionOf (MkNetBytesP @Up @G 7)
--- Up
---
--- >>> directionOf (hideSize $ hideDirection $ MkNetBytesP @Down @M 100)
--- Down
---
--- >>> hideDirection (MkNetBytesP @Up @G 7)
--- MkSomeNetDir SUp (MkNetBytes (MkBytes 7))
---
 -- @since 0.1
 class Directed a where
   -- | Type used to hide the size.
@@ -132,10 +120,25 @@ class Directed a where
 
   -- | Retrieve the direction.
   --
+  -- ==== __Examples__
+  --
+  -- >>> import Data.Bytes.Network
+  -- >>> directionOf (MkNetBytesP @Up @G 7)
+  -- Up
+  --
+  -- >>> directionOf (hideSize $ hideDirection $ MkNetBytesP @Down @M 100)
+  -- Down
+  --
   -- @since 0.1
   directionOf :: a -> Direction
 
   -- | Hides the direction.
+  --
+  -- ==== __Examples__
+  --
+  -- >>> import Data.Bytes.Network (NetBytes (..), Size (..))
+  -- >>> hideDirection (MkNetBytesP @Up @G 7)
+  -- MkSomeNetDir SUp (MkNetBytes (MkBytes 7))
   --
   -- @since 0.1
   hideDirection :: a -> HideDirection a

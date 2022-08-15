@@ -66,6 +66,7 @@ module Data.Bytes.Network
 
     -- ** Parsing
     -- $parsing
+    Parser,
     parse,
 
     -- * Optics
@@ -98,7 +99,7 @@ where
 
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.Parser (parse)
+import Data.Bytes.Class.Parser (Parser, parse)
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting
 import Data.Bytes.Network.Direction (Directed (..), Direction (..), _Down, _Up)
@@ -301,35 +302,3 @@ import Numeric.Literal.Rational
 -- MkSomeNetSize SB (MkNetBytes (MkBytes 5.0e11))
 --
 -- This respects 'SomeNetSize'\'s equivalence-class base 'Eq'.
-
--- $parsing
--- We provide tools for parsing byte types from 'Data.Text.Text'. Parsing is
--- lenient in general. We support:
---
--- * Case-insensitivity.
--- * Optional leading\/internal\/trailing whitespace. Note the there must be
---   at least some whitespace between size and direction units.
--- * Flexible names.
---
--- __Examples__
---
--- >>> parse @(NetBytes Up M Int) "70"
--- Right (MkNetBytes (MkBytes 70))
---
--- >>> parse @(SomeNetSize Down Float) "100.45 kilobytes"
--- Right (MkSomeNetSize SK (MkNetBytes (MkBytes 100.45)))
---
--- >>> parse @(SomeNetSize Up Word) "2300G"
--- Right (MkSomeNetSize SG (MkNetBytes (MkBytes 2300)))
---
--- >>> parse @(SomeNetDir T Word) "2300 up"
--- Right (MkSomeNetDir SUp (MkNetBytes (MkBytes 2300)))
---
--- >>> parse @(SomeNetDir M Word) "2300D"
--- Right (MkSomeNetDir SDown (MkNetBytes (MkBytes 2300)))
---
--- >>> parse @(SomeNet Float) "5.5 tb Up"
--- Right (MkSomeNet SUp ST (MkNetBytes (MkBytes 5.5)))
---
--- >>> parse @(SomeNet Float) "5.5 megabytes DOWN"
--- Right (MkSomeNet SDown SM (MkNetBytes (MkBytes 5.5)))
