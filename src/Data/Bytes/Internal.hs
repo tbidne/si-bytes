@@ -217,44 +217,46 @@ instance
   type Norm (Bytes s n) = SomeSize n
 
   normalize bytes@(MkBytes x) =
-    case bytesToSSize bytes of
+    case sz of
       SB
-        | absBytes < afromInteger 1_000 -> MkSomeSize SB bytes
-        | otherwise -> normalize $ incSize bytes
+        | tooLarge -> normalize $ incSize bytes
+        | otherwise -> MkSomeSize sz bytes
       SY
-        | absBytes >= afromInteger 1 -> MkSomeSize SY bytes
-        | otherwise -> normalize $ decSize bytes
+        | tooSmall -> normalize $ decSize bytes
+        | otherwise -> MkSomeSize sz bytes
       SK
-        | absBytes < afromInteger 1 -> normalize $ decSize bytes
-        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
+        | tooSmall -> normalize $ decSize bytes
+        | tooLarge -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SM
-        | absBytes < afromInteger 1 -> normalize $ decSize bytes
-        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
+        | tooSmall -> normalize $ decSize bytes
+        | tooLarge -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SG
-        | absBytes < afromInteger 1 -> normalize $ decSize bytes
-        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
+        | tooSmall -> normalize $ decSize bytes
+        | tooLarge -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       ST
-        | absBytes < afromInteger 1 -> normalize $ decSize bytes
-        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
+        | tooSmall -> normalize $ decSize bytes
+        | tooLarge -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SP
-        | absBytes < afromInteger 1 -> normalize $ decSize bytes
-        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
+        | tooSmall -> normalize $ decSize bytes
+        | tooLarge -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SE
-        | absBytes < afromInteger 1 -> normalize $ decSize bytes
-        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
+        | tooSmall -> normalize $ decSize bytes
+        | tooLarge -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
       SZ
-        | absBytes < afromInteger 1 -> normalize $ decSize bytes
-        | absBytes >= afromInteger 1_000 -> normalize $ incSize bytes
+        | tooSmall -> normalize $ decSize bytes
+        | tooLarge -> normalize $ incSize bytes
         | otherwise -> MkSomeSize sz bytes
     where
-      sz = bytesToSSize bytes
       absBytes = norm x
+      tooSmall = absBytes < afromInteger 1
+      tooLarge = absBytes >= afromInteger 1_000
+      sz = bytesToSSize bytes
   {-# INLINEABLE normalize #-}
 
 -- | @since 0.1
