@@ -65,6 +65,7 @@ import Data.Bytes.Formatting.Size
 import Data.Bytes.Network.Direction (Directed)
 import Data.Bytes.Size (Sized)
 import Data.Default (Default (def))
+import Data.Text (Text)
 import Text.Printf (PrintfArg)
 
 -- | Formats a value with 'Data.Bytes.Size.Size' units. Can be used with all byte types
@@ -102,7 +103,7 @@ formatSized ::
   -- | Value to be formatted.
   a ->
   -- | Result.
-  String
+  Text
 formatSized basefmt sizefmt x = formatBase basefmt (unwrap x) <> formatSize sizefmt x
 
 -- | Formats a value with 'Data.Bytes.Size.Size' and
@@ -145,7 +146,7 @@ formatSizedDirected ::
   -- | Value to be formatted.
   a ->
   -- | Result.
-  String
+  Text
 formatSizedDirected basefmt sizefmt dirfmt x =
   mconcat
     [ formatBase basefmt (unwrap x),

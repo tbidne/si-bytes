@@ -44,7 +44,7 @@ newtype FloatingFormatter = MkFloatingFormatter (Maybe Word8)
 --
 -- @since 0.1
 class Formatter a where
-  formatStr :: a -> String
+  formatStr :: a -> Text
 
 -- | @since 0.1
 instance Formatter IntegralFormatter where
@@ -53,14 +53,14 @@ instance Formatter IntegralFormatter where
 -- | @since 0.1
 instance Formatter FloatingFormatter where
   formatStr (MkFloatingFormatter Nothing) = "%f"
-  formatStr (MkFloatingFormatter (Just r)) = "%." <> show r <> "f"
+  formatStr (MkFloatingFormatter (Just r)) = "%." <> T.pack (show r) <> "f"
 
 -- | Formats a value to a string. 'BaseFormatter' is used to enforce
 -- type-safety.
 --
 -- @since 0.1
-formatBase :: (BaseFormatter a ~ f, Formatter f, PrintfArg a) => f -> a -> String
-formatBase basefmt = printf (formatStr basefmt)
+formatBase :: (BaseFormatter a ~ f, Formatter f, PrintfArg a) => f -> a -> Text
+formatBase basefmt = T.pack . printf (T.unpack $ formatStr basefmt)
 
 -- | Relates a "base" value with its given formatter. This is used to enforce
 -- type-safe formatting e.g. floating types can only be used with

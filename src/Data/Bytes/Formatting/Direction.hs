@@ -18,6 +18,7 @@ import Data.Bytes.Formatting.Base (CaseFormat (..), Formatter (..), caseFormatTo
 import Data.Bytes.Network.Direction (Directed (..), Direction (..))
 import Data.Default (Default (..))
 import Data.Text (Text)
+import Data.Text qualified as T
 import Optics.Core
   ( A_Lens,
     LabelOptic (..),
@@ -137,8 +138,8 @@ formatDirection ::
   ) =>
   DirectedFormatter ->
   a ->
-  String
-formatDirection fmt x = printf (formatStr fmt) dir'
+  Text
+formatDirection fmt x = T.pack $ printf (T.unpack $ formatStr fmt) dir'
   where
     dir = formatDirection' (fmt ^. #directionFormat) (directionOf x)
     dir' = caseFormatToFn (fmt ^. #caseFormat) dir

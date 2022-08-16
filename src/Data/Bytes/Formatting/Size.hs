@@ -20,6 +20,7 @@ import Data.Bytes.Formatting.Base (CaseFormat (..), Formatter (..), caseFormatTo
 import Data.Bytes.Size (Size (..), Sized (..))
 import Data.Default (Default (..))
 import Data.Text (Text)
+import Data.Text qualified as T
 import Optics.Core
   ( A_Lens,
     LabelOptic (..),
@@ -167,8 +168,8 @@ sizedFormatterVerbose = MkSizedFormatter CaseFormatLower True SizeFormatLong
 -- | Formats size units.
 --
 -- @since 0.1
-formatSize :: Sized a => SizedFormatter -> a -> String
-formatSize fmt x = printf (formatStr fmt) size'
+formatSize :: Sized a => SizedFormatter -> a -> Text
+formatSize fmt x = T.pack $ printf (T.unpack $ formatStr fmt) size'
   where
     size = formatSize' (fmt ^. #sizeFormat) (sizeOf x)
     size' = caseFormatToFn (fmt ^. #caseFormat) size
