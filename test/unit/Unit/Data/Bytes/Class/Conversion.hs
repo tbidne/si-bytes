@@ -1,5 +1,5 @@
 -- | Property tests for 'Conversion'.
-module Unit.Data.Bytes.Class.Conversion (props) where
+module Unit.Data.Bytes.Class.Conversion (tests) where
 
 import Data.Bytes.Class.Conversion qualified as Conv
 import Data.Bytes.Size (Size (..))
@@ -10,11 +10,11 @@ import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Unit.Props.Generators.Size qualified as Gens
 import Unit.Props.MaxRuns (MaxRuns (..))
-import Unit.Props.Utils qualified as U
+import Unit.Utils qualified as U
 
--- | 'TestTree' of properties.
-props :: TestTree
-props = T.testGroup "Data.Bytes.Class.Conversion" [convertProps]
+-- | @since 0.1.
+tests :: TestTree
+tests = T.testGroup "Data.Bytes.Class.Conversion" [convertProps]
 
 convertProps :: TestTree
 convertProps = T.askOption $ \(MkMaxRuns limit) ->

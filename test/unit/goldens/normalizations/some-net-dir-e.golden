@@ -1,0 +1,3 @@
+MkSomeNet SDown SP (MkNetBytes (MkBytes 250.0))
+MkSomeNet SDown SE (MkNetBytes (MkBytes 750.0))
+MkSomeNet SDown SZ (MkNetBytes (MkBytes 1.5))

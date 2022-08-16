@@ -1,10 +1,9 @@
 -- | Property tests for Network.
-module Unit.Data.Bytes.Network (props) where
+module Unit.Data.Bytes.Network (tests) where
 
-import Control.Monad (join)
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
-import Data.Bytes.Network.Direction (Direction (..))
+import Data.Bytes.Network.Direction (Direction (..), SDirection (..))
 import Data.Bytes.Network.Internal
   ( NetBytes (..),
     SomeNet (..),
@@ -20,14 +19,14 @@ import Test.Tasty qualified as T
 import Unit.Props.Generators.Network qualified as NGens
 import Unit.Props.Generators.Size qualified as SGens
 import Unit.Props.MaxRuns (MaxRuns (..))
-import Unit.Props.Utils qualified as U
 import Unit.Props.Verify.Algebra qualified as VAlgebra
 import Unit.Props.Verify.Conversion qualified as VConv
 import Unit.Props.Verify.Normalize qualified as VNormalize
+import Unit.Utils qualified as U
 
--- | 'TestTree' of properties.
-props :: TestTree
-props =
+-- | @since 0.1.
+tests :: TestTree
+tests =
   T.testGroup
     "Bytes.Data.Network"
     [ netBytesProps,
@@ -42,8 +41,17 @@ netBytesProps =
     "NetBytes"
     [ unNetBytesProps,
       convertProps,
+      U.convGoldens "net-bytes" (MkNetBytesP @Up @B) (MkNetBytesP @Down @Y),
       normalizeProps,
-      netBytesEqProps,
+      normalizeGoldens,
+      algebraTests
+    ]
+
+algebraTests :: TestTree
+algebraTests =
+  T.testGroup
+    "Algebra"
+    [ netBytesEqProps,
       netBytesOrdProps,
       netBytesGroupProps,
       netBytesVectorSpaceProps
@@ -61,17 +69,16 @@ convertProps :: TestTree
 convertProps =
   T.testGroup
     "Conversions"
-    $ join
-      [ VConv.testConvertToAll (NGens.genNet @'Up @'B) VConv.expectedB "B",
-        VConv.testConvertToAll (NGens.genNet @'Up @'K) VConv.expectedK "K",
-        VConv.testConvertToAll (NGens.genNet @'Up @'M) VConv.expectedM "M",
-        VConv.testConvertToAll (NGens.genNet @'Up @'G) VConv.expectedG "G",
-        VConv.testConvertToAll (NGens.genNet @'Up @'T) VConv.expectedT "T",
-        VConv.testConvertToAll (NGens.genNet @'Up @'P) VConv.expectedP "P",
-        VConv.testConvertToAll (NGens.genNet @'Up @'E) VConv.expectedE "E",
-        VConv.testConvertToAll (NGens.genNet @'Up @'Z) VConv.expectedZ "Z",
-        VConv.testConvertToAll (NGens.genNet @'Up @'Y) VConv.expectedY "Y"
-      ]
+    [ VConv.testConvertToAll (NGens.genNet @'Up @'B) VConv.expectedB "B",
+      VConv.testConvertToAll (NGens.genNet @'Up @'K) VConv.expectedK "K",
+      VConv.testConvertToAll (NGens.genNet @'Up @'M) VConv.expectedM "M",
+      VConv.testConvertToAll (NGens.genNet @'Up @'G) VConv.expectedG "G",
+      VConv.testConvertToAll (NGens.genNet @'Up @'T) VConv.expectedT "T",
+      VConv.testConvertToAll (NGens.genNet @'Up @'P) VConv.expectedP "P",
+      VConv.testConvertToAll (NGens.genNet @'Up @'E) VConv.expectedE "E",
+      VConv.testConvertToAll (NGens.genNet @'Up @'Z) VConv.expectedZ "Z",
+      VConv.testConvertToAll (NGens.genNet @'Up @'Y) VConv.expectedY "Y"
+    ]
 
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -85,6 +92,21 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         H.footnote $ "original: " <> show bytes
         H.footnote $ "normalized: " <> show normalized
         VNormalize.isNormalized label x
+
+normalizeGoldens :: TestTree
+normalizeGoldens = T.testGroup "Normalize Goldens" tests'
+  where
+    tests' =
+      [ U.normGoldensForUnit "net-bytes" 'B' (MkNetBytesP @Up @B),
+        U.normGoldensForUnit "net-bytes" 'K' (MkNetBytesP @Up @K),
+        U.normGoldensForUnit "net-bytes" 'M' (MkNetBytesP @Up @M),
+        U.normGoldensForUnit "net-bytes" 'G' (MkNetBytesP @Up @G),
+        U.normGoldensForUnit "net-bytes" 'T' (MkNetBytesP @Up @T),
+        U.normGoldensForUnit "net-bytes" 'P' (MkNetBytesP @Down @P),
+        U.normGoldensForUnit "net-bytes" 'E' (MkNetBytesP @Down @E),
+        U.normGoldensForUnit "net-bytes" 'Z' (MkNetBytesP @Down @Z),
+        U.normGoldensForUnit "net-bytes" 'Y' (MkNetBytesP @Down @Y)
+      ]
 
 netBytesEqProps :: TestTree
 netBytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -131,29 +153,23 @@ someNetSizeProps :: TestTree
 someNetSizeProps =
   T.testGroup
     "SomeNetSize"
-    [ someConvertProps,
-      someNetSizeEqProps,
-      someNetSizeOrdProps,
-      someNetSizeGroupProps,
-      someNetSizeVectorSpaceProps,
-      someNetSizeNormalizeProps
+    [ U.convGoldens
+        "some-net-size"
+        (MkSomeNetSize @B @Up SB . MkNetBytesP)
+        (MkSomeNetSize @Y @Down SY . MkNetBytesP),
+      someNetSizeNormalizeGoldens,
+      someNetSizeAlgebraProps
     ]
 
-someConvertProps :: TestTree
-someConvertProps =
+someNetSizeAlgebraProps :: TestTree
+someNetSizeAlgebraProps =
   T.testGroup
-    "Conversions"
-    $ join
-      [ VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SB) VConv.expectedB "B",
-        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SK) VConv.expectedK "K",
-        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SM) VConv.expectedM "M",
-        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SG) VConv.expectedG "G",
-        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize ST) VConv.expectedT "T",
-        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SP) VConv.expectedP "P",
-        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SE) VConv.expectedE "E",
-        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SZ) VConv.expectedZ "Z",
-        VConv.testConvertToAll (NGens.genSomeNetSizeUpFromSSize SY) VConv.expectedY "Y"
-      ]
+    "Algebra"
+    [ someNetSizeEqProps,
+      someNetSizeOrdProps,
+      someNetSizeGroupProps,
+      someNetSizeVectorSpaceProps
+    ]
 
 someNetSizeEqProps :: TestTree
 someNetSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -196,19 +212,20 @@ someNetSizeVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
 
-someNetSizeNormalizeProps :: TestTree
-someNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "SomeNetSize normalization" "someNetSizeNormalizeProps" $
-    H.withTests limit $
-      H.property $ do
-        x@(MkSomeNetSize szx bytes) <- H.forAll NGens.genSomeNetSizeUp
-        y <- H.forAll NGens.genSomeNetSizeUp
-        k <- H.forAll SGens.genD
-        nz <- H.forAll SGens.genNonZero
-        -- matches underlying bytes
-        normalize x === Size.withSingSize szx (normalize bytes)
-        -- laws
-        VNormalize.normalizeLaws x y k nz
+someNetSizeNormalizeGoldens :: TestTree
+someNetSizeNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
+  where
+    tests' =
+      [ U.normGoldensForUnit "some-net-size" 'B' (MkSomeNetSize @_ @Up SB . MkNetBytesP),
+        U.normGoldensForUnit "some-net-size" 'K' (MkSomeNetSize @_ @Up SK . MkNetBytesP),
+        U.normGoldensForUnit "some-net-size" 'M' (MkSomeNetSize @_ @Up SM . MkNetBytesP),
+        U.normGoldensForUnit "some-net-size" 'G' (MkSomeNetSize @_ @Up SG . MkNetBytesP),
+        U.normGoldensForUnit "some-net-size" 'T' (MkSomeNetSize @_ @Up ST . MkNetBytesP),
+        U.normGoldensForUnit "some-net-size" 'P' (MkSomeNetSize @_ @Down SP . MkNetBytesP),
+        U.normGoldensForUnit "some-net-size" 'E' (MkSomeNetSize @_ @Down SE . MkNetBytesP),
+        U.normGoldensForUnit "some-net-size" 'Z' (MkSomeNetSize @_ @Down SZ . MkNetBytesP),
+        U.normGoldensForUnit "some-net-size" 'Y' (MkSomeNetSize @_ @Down SY . MkNetBytesP)
+      ]
 
 someSizeToLabel :: SomeNetSize d n -> Size
 someSizeToLabel (MkSomeNetSize sz _) = case sz of
@@ -226,39 +243,28 @@ someNetDirProps :: TestTree
 someNetDirProps =
   T.testGroup
     "SomeNetDir"
-    [ convertSomeNetDirProps,
-      normalizeSomeNetDirProps,
+    [ U.convGoldens
+        "some-net-dir"
+        (MkSomeNetDir @Up @B SUp . MkNetBytesP)
+        (MkSomeNetDir @Down @Y SDown . MkNetBytesP),
+      someNetDirNormalizeGoldens,
       someNetDirEqProps
     ]
 
-convertSomeNetDirProps :: TestTree
-convertSomeNetDirProps =
-  T.testGroup
-    "Conversions"
-    $ join
-      [ VConv.testConvertToAll (NGens.genSomeNetDirUp @B) VConv.expectedB "B",
-        VConv.testConvertToAll (NGens.genSomeNetDirUp @K) VConv.expectedK "K",
-        VConv.testConvertToAll (NGens.genSomeNetDirUp @M) VConv.expectedM "M",
-        VConv.testConvertToAll (NGens.genSomeNetDirUp @G) VConv.expectedG "G",
-        VConv.testConvertToAll (NGens.genSomeNetDirUp @T) VConv.expectedT "T",
-        VConv.testConvertToAll (NGens.genSomeNetDirUp @P) VConv.expectedP "P",
-        VConv.testConvertToAll (NGens.genSomeNetDirUp @E) VConv.expectedE "E",
-        VConv.testConvertToAll (NGens.genSomeNetDirUp @Z) VConv.expectedZ "Z",
-        VConv.testConvertToAll (NGens.genSomeNetDirUp @Y) VConv.expectedY "Y"
+someNetDirNormalizeGoldens :: TestTree
+someNetDirNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
+  where
+    tests' =
+      [ U.normGoldensForUnit "some-net-dir" 'B' (MkSomeNetDir @_ @B SUp . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'K' (MkSomeNetDir @_ @K SUp . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'M' (MkSomeNetDir @_ @M SUp . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'G' (MkSomeNetDir @_ @G SUp . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'T' (MkSomeNetDir @_ @T SUp . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'P' (MkSomeNetDir @_ @P SDown . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'E' (MkSomeNetDir @_ @E SDown . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'Z' (MkSomeNetDir @_ @Z SDown . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'Y' (MkSomeNetDir @_ @Y SDown . MkNetBytesP)
       ]
-
-normalizeSomeNetDirProps :: TestTree
-normalizeSomeNetDirProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "SomeNetDir normalizes matches NetBytes" "normalizeSomeNetDirProps" $
-    H.withTests limit $
-      H.property $ do
-        (MkSomeNet dir szx originalBytes) <- H.forAll NGens.genSomeNet
-        let someNetDir = MkSomeNetDir dir originalBytes
-            someNetDirNorm = case Size.withSingSize szx $ normalize someNetDir of
-              MkSomeNet _ _ netDirBytes -> unwrap netDirBytes
-            netNorm = case Size.withSingSize szx $ normalize originalBytes of
-              MkSomeNetSize _ netBytes -> unwrap netBytes
-        someNetDirNorm === netNorm
 
 someNetDirEqProps :: TestTree
 someNetDirEqProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -274,38 +280,28 @@ someNetProps :: TestTree
 someNetProps =
   T.testGroup
     "SomeNet"
-    [ convertSomeNetProps,
-      normalizeSomeNetProps,
+    [ U.convGoldens
+        "some-net"
+        (MkSomeNet SUp SK . MkNetBytesP)
+        (MkSomeNet SDown SY . MkNetBytesP),
+      someNetNormalizeGoldens,
       someNetEqProps
     ]
 
-convertSomeNetProps :: TestTree
-convertSomeNetProps =
-  T.testGroup
-    "Conversions"
-    $ join
-      [ VConv.testConvertToAll (NGens.genSomeNetFromSSize SB) VConv.expectedB "B",
-        VConv.testConvertToAll (NGens.genSomeNetFromSSize SK) VConv.expectedK "K",
-        VConv.testConvertToAll (NGens.genSomeNetFromSSize SM) VConv.expectedM "M",
-        VConv.testConvertToAll (NGens.genSomeNetFromSSize SG) VConv.expectedG "G",
-        VConv.testConvertToAll (NGens.genSomeNetFromSSize ST) VConv.expectedT "T",
-        VConv.testConvertToAll (NGens.genSomeNetFromSSize SP) VConv.expectedP "P",
-        VConv.testConvertToAll (NGens.genSomeNetFromSSize SE) VConv.expectedE "E",
-        VConv.testConvertToAll (NGens.genSomeNetFromSSize SZ) VConv.expectedZ "Z",
-        VConv.testConvertToAll (NGens.genSomeNetFromSSize SY) VConv.expectedY "Y"
+someNetNormalizeGoldens :: TestTree
+someNetNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
+  where
+    tests' =
+      [ U.normGoldensForUnit "some-net-dir" 'B' (MkSomeNet SUp SB . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'K' (MkSomeNet SUp SK . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'M' (MkSomeNet SUp SM . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'G' (MkSomeNet SUp SG . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'T' (MkSomeNet SUp ST . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'P' (MkSomeNet SDown SP . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'E' (MkSomeNet SDown SE . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'Z' (MkSomeNet SDown SZ . MkNetBytesP),
+        U.normGoldensForUnit "some-net-dir" 'Y' (MkSomeNet SDown SY . MkNetBytesP)
       ]
-
-normalizeSomeNetProps :: TestTree
-normalizeSomeNetProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "SomeNet normalizes matches NetBytes" "normalizeSomeNetProps" $
-    H.withTests limit $
-      H.property $ do
-        someNet@(MkSomeNet _ szx originalBytes) <- H.forAll NGens.genSomeNet
-        let someNetDirNorm = case Size.withSingSize szx $ normalize someNet of
-              MkSomeNet _ _ netDirBytes -> unwrap netDirBytes
-            netNorm = case Size.withSingSize szx $ normalize originalBytes of
-              MkSomeNetSize _ netBytes -> unwrap netBytes
-        someNetDirNorm === netNorm
 
 someNetEqProps :: TestTree
 someNetEqProps = T.askOption $ \(MkMaxRuns limit) ->

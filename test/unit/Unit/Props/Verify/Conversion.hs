@@ -34,7 +34,7 @@ import Numeric.Literal.Integer (FromInteger (..))
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Unit.Props.MaxRuns (MaxRuns (..))
-import Unit.Props.Utils qualified as U
+import Unit.Utils qualified as U
 
 data ExpectedConvs n = MkExpectedConvs
   { bExp :: n -> n,
@@ -219,10 +219,10 @@ instance (Unwrapper (Converted s a), Unwrapped (Converted s a) ~ c) => ConvEqual
 -- | For a bytes type with fixed size @s@, test that all @s -> t@ conversions
 -- are performed correctly.
 testConvertToAll ::
-  forall a c.
-  ( Eq (Unwrapped a),
+  ( Conversion a,
+    Eq c,
     Show a,
-    Show (Unwrapped a),
+    Show c,
     Unwrapper a,
     Unwrapped a ~ c,
 #if !MIN_VERSION_base(4, 16, 0)
@@ -243,60 +243,30 @@ testConvertToAll ::
     Unwrapper (Converted Z a),
     Unwrapped (Converted Z a) ~ c,
     Unwrapper (Converted Y a),
-    Unwrapped (Converted Y a) ~ c,
+    Unwrapped (Converted Y a) ~ c
 #else
-    forall s. ConvEquality s a c,
+    forall s. ConvEquality s a c
 #endif
-    Conversion a
-  ) =>
-  -- | Generator for the type to test
-  Gen a ->
-  -- | The expectations for each conversion
-  ExpectedConvs c ->
-  -- | Test description
-  T.TestName ->
-  [TestTree]
-testConvertToAll gen e desc = f <$> [minBound .. maxBound]
-  where
-    f B = testConversion gen (convert @_ @B Proxy) (bExp e) (desc <> " -> B")
-    f K = testConversion gen (convert @_ @K Proxy) (kExp e) (desc <> " -> K")
-    f M = testConversion gen (convert @_ @M Proxy) (mExp e) (desc <> " -> M")
-    f G = testConversion gen (convert @_ @G Proxy) (gExp e) (desc <> " -> G")
-    f T = testConversion gen (convert @_ @T Proxy) (tExp e) (desc <> " -> T")
-    f P = testConversion gen (convert @_ @P Proxy) (pExp e) (desc <> " -> P")
-    f E = testConversion gen (convert @_ @E Proxy) (eExp e) (desc <> " -> E")
-    f Z = testConversion gen (convert @_ @Z Proxy) (zExp e) (desc <> " -> Z")
-    f Y = testConversion gen (convert @_ @Y Proxy) (yExp e) (desc <> " -> Y")
-
--- TODO: Remove when cpp is gone.
-{- ORMOLU_ENABLE -}
-
--- | Tests that a bytes conversion matches an expectation. More precisely,
--- for a given bytes b with @unwrap b === x@, tests that
--- @unwrap (conv x) === expect x@.
-testConversion ::
-  ( Eq c,
-    Show a,
-    Show c,
-    Unwrapper a,
-    Unwrapped a ~ c,
-    Unwrapper b,
-    Unwrapped b ~ c
   ) =>
   -- | Generator for the type we want to test
   Gen a ->
-  -- | Conversion function to apply
-  (a -> b) ->
-  -- | Expectation function
-  (c -> c) ->
+  -- | Expectations
+  ExpectedConvs c ->
   -- | Test description
   String ->
   TestTree
-testConversion gen convFn expectedFn desc = T.askOption $ \(MkMaxRuns limit) ->
+testConvertToAll gen expects desc = T.askOption $ \(MkMaxRuns limit) ->
   U.testPropertyCompat desc "testConversion" $
     H.withTests limit $
       H.property $ do
         x <- H.forAll gen
         let x' = unwrap x
-            result = unwrap $ convFn x
-        expectedFn x' === result
+        (bExp expects) x' === (unwrap $ convert @_ @B Proxy x)
+        (kExp expects) x' === (unwrap $ convert @_ @K Proxy x)
+        (mExp expects) x' === (unwrap $ convert @_ @M Proxy x)
+        (gExp expects) x' === (unwrap $ convert @_ @G Proxy x)
+        (tExp expects) x' === (unwrap $ convert @_ @T Proxy x)
+        (pExp expects) x' === (unwrap $ convert @_ @P Proxy x)
+        (eExp expects) x' === (unwrap $ convert @_ @E Proxy x)
+        (zExp expects) x' === (unwrap $ convert @_ @Z Proxy x)
+        (yExp expects) x' === (unwrap $ convert @_ @Y Proxy x)

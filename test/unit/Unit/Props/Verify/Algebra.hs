@@ -29,7 +29,7 @@ import Numeric.Algebra
   )
 import Numeric.Algebra qualified as Algebra
 import Numeric.Data.NonZero (NonZero (..))
-import Unit.Props.Utils ((<=>), (==>))
+import Unit.Utils ((<=>), (==>))
 
 -- | Verifies 'Eq' laws for 'BytesEq'.
 eqLaws :: (Eq a, Show a) => a -> a -> a -> PropertyT IO ()

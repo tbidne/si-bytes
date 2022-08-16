@@ -1,7 +1,6 @@
 -- | Property tests for 'Bytes'.
-module Unit.Data.Bytes (props) where
+module Unit.Data.Bytes (tests) where
 
-import Control.Monad (join)
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
@@ -14,43 +13,59 @@ import Test.Tasty qualified as T
 import Unit.Props.Generators.Bytes qualified as Gens
 import Unit.Props.Generators.Size qualified as SGens
 import Unit.Props.MaxRuns (MaxRuns (..))
-import Unit.Props.Utils qualified as U
 import Unit.Props.Verify.Algebra qualified as VAlgebra
 import Unit.Props.Verify.Conversion qualified as VConv
 import Unit.Props.Verify.Normalize qualified as VNormalize
+import Unit.Utils qualified as U
 
--- | 'TestTree' of properties.
-props :: TestTree
-props =
+-- | @since 0.1.
+tests :: TestTree
+tests =
   T.testGroup
     "Data.Bytes"
-    [ bytesProps,
-      someSizeProps
+    [ bytesTests,
+      someSizeTests
     ]
 
-bytesProps :: TestTree
-bytesProps =
+bytesTests :: TestTree
+bytesTests =
   T.testGroup
     "Bytes"
     [ unBytesProps,
       convertProps,
+      U.convGoldens "bytes" (MkBytes @B) (MkBytes @Y),
       normalizeProps,
-      bytesEqProps,
+      normalizeGoldens,
+      algebraTests
+    ]
+
+algebraTests :: TestTree
+algebraTests =
+  T.testGroup
+    "Algebra"
+    [ bytesEqProps,
       bytesOrdProps,
       bytesGroupProps,
       bytesVectorSpaceProps
     ]
 
-someSizeProps :: TestTree
-someSizeProps =
+someSizeTests :: TestTree
+someSizeTests =
   T.testGroup
     "SomeSize"
-    [ someConvertProps,
-      someSizeEqProps,
+    [ U.convGoldens "some-size" (MkBytes @B) (MkBytes @Y),
+      someNormalizeGoldens,
+      someAlgebraTests
+    ]
+
+someAlgebraTests :: TestTree
+someAlgebraTests =
+  T.testGroup
+    "Algebra"
+    [ someSizeEqProps,
       someSizeOrdProps,
       someSizeGroupProps,
-      someVectorSpaceProps,
-      someNormalizeProps
+      someVectorSpaceProps
     ]
 
 unBytesProps :: TestTree
@@ -64,18 +79,17 @@ unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
 convertProps :: TestTree
 convertProps =
   T.testGroup
-    "Conversions"
-    $ join
-      [ VConv.testConvertToAll (Gens.genBytes @B) VConv.expectedB "B",
-        VConv.testConvertToAll (Gens.genBytes @K) VConv.expectedK "K",
-        VConv.testConvertToAll (Gens.genBytes @M) VConv.expectedM "M",
-        VConv.testConvertToAll (Gens.genBytes @G) VConv.expectedG "G",
-        VConv.testConvertToAll (Gens.genBytes @T) VConv.expectedT "T",
-        VConv.testConvertToAll (Gens.genBytes @P) VConv.expectedP "P",
-        VConv.testConvertToAll (Gens.genBytes @E) VConv.expectedE "E",
-        VConv.testConvertToAll (Gens.genBytes @Z) VConv.expectedZ "Z",
-        VConv.testConvertToAll (Gens.genBytes @Y) VConv.expectedY "Y"
-      ]
+    "Conversion Properties"
+    [ VConv.testConvertToAll (Gens.genBytes @B) VConv.expectedB "B",
+      VConv.testConvertToAll (Gens.genBytes @K) VConv.expectedK "K",
+      VConv.testConvertToAll (Gens.genBytes @M) VConv.expectedM "M",
+      VConv.testConvertToAll (Gens.genBytes @G) VConv.expectedG "G",
+      VConv.testConvertToAll (Gens.genBytes @T) VConv.expectedT "T",
+      VConv.testConvertToAll (Gens.genBytes @P) VConv.expectedP "P",
+      VConv.testConvertToAll (Gens.genBytes @E) VConv.expectedE "E",
+      VConv.testConvertToAll (Gens.genBytes @Z) VConv.expectedZ "Z",
+      VConv.testConvertToAll (Gens.genBytes @Y) VConv.expectedY "Y"
+    ]
 
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -88,6 +102,21 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         H.footnote $ "original: " <> show bytes
         H.footnote $ "normalized: " <> show normalized
         VNormalize.isNormalized label x
+
+normalizeGoldens :: TestTree
+normalizeGoldens = T.testGroup "Normalize Goldens" tests'
+  where
+    tests' =
+      [ U.normGoldensForUnit "bytes" 'B' (MkBytes @B),
+        U.normGoldensForUnit "bytes" 'K' (MkBytes @K),
+        U.normGoldensForUnit "bytes" 'M' (MkBytes @M),
+        U.normGoldensForUnit "bytes" 'G' (MkBytes @G),
+        U.normGoldensForUnit "bytes" 'T' (MkBytes @T),
+        U.normGoldensForUnit "bytes" 'P' (MkBytes @P),
+        U.normGoldensForUnit "bytes" 'E' (MkBytes @E),
+        U.normGoldensForUnit "bytes" 'Z' (MkBytes @Z),
+        U.normGoldensForUnit "bytes" 'Y' (MkBytes @Y)
+      ]
 
 bytesEqProps :: TestTree
 bytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
@@ -130,20 +159,19 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
 
-someConvertProps :: TestTree
-someConvertProps =
-  T.testGroup
-    "Conversions"
-    $ join
-      [ VConv.testConvertToAll (Gens.genSomeSizeFromSSize SB) VConv.expectedB "B",
-        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SK) VConv.expectedK "K",
-        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SM) VConv.expectedM "M",
-        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SG) VConv.expectedG "G",
-        VConv.testConvertToAll (Gens.genSomeSizeFromSSize ST) VConv.expectedT "T",
-        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SP) VConv.expectedP "P",
-        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SE) VConv.expectedE "E",
-        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SZ) VConv.expectedZ "Z",
-        VConv.testConvertToAll (Gens.genSomeSizeFromSSize SY) VConv.expectedY "Y"
+someNormalizeGoldens :: TestTree
+someNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
+  where
+    tests' =
+      [ U.normGoldensForUnit "some-size" 'B' (MkSomeSize SB . MkBytes),
+        U.normGoldensForUnit "some-size" 'K' (MkSomeSize SK . MkBytes),
+        U.normGoldensForUnit "some-size" 'M' (MkSomeSize SM . MkBytes),
+        U.normGoldensForUnit "some-size" 'G' (MkSomeSize SG . MkBytes),
+        U.normGoldensForUnit "some-size" 'T' (MkSomeSize ST . MkBytes),
+        U.normGoldensForUnit "some-size" 'P' (MkSomeSize SP . MkBytes),
+        U.normGoldensForUnit "some-size" 'E' (MkSomeSize SE . MkBytes),
+        U.normGoldensForUnit "some-size" 'Z' (MkSomeSize SZ . MkBytes),
+        U.normGoldensForUnit "some-size" 'Y' (MkSomeSize SY . MkBytes)
       ]
 
 someSizeToLabel :: SomeSize n -> Size
@@ -198,17 +226,3 @@ someVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         k <- H.forAll SGens.genNonZero
         l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
-
-someNormalizeProps :: TestTree
-someNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "SomeSize normalization" "someNormalizeProps" $
-    H.withTests limit $
-      H.property $ do
-        x@(MkSomeSize szx bytes) <- H.forAll Gens.genSomeBytes
-        y <- H.forAll Gens.genSomeBytes
-        k <- H.forAll SGens.genD
-        nz <- H.forAll SGens.genNonZero
-        -- matches underlying bytes
-        normalize x === Size.withSingSize szx (normalize bytes)
-        -- laws
-        VNormalize.normalizeLaws x y k nz

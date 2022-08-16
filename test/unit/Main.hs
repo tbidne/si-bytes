@@ -9,15 +9,15 @@ import Unit.Data.Bytes.Class.Conversion qualified as PConv
 import Unit.Data.Bytes.Network qualified as PNetwork
 import Unit.Props.MaxRuns (MaxRuns)
 
--- | Runs all property tests
+-- | Runs all unit tests
 main :: IO ()
 main = do
   let options = T.includingOptions [Option @MaxRuns Proxy]
       ingredients = options : T.defaultIngredients
   T.defaultMainWithIngredients ingredients $
     T.testGroup
-      "Property tests"
-      [ PConv.props,
-        PBytes.props,
-        PNetwork.props
+      "Unit tests"
+      [ PConv.tests,
+        PBytes.tests,
+        PNetwork.tests
       ]

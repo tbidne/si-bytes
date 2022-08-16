@@ -1,0 +1,3 @@
+MkSomeSize SB (MkBytes 0.25)
+MkSomeSize SB (MkBytes 750.0)
+MkSomeSize SK (MkBytes 1.5)

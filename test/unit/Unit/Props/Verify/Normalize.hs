@@ -18,7 +18,7 @@ import Numeric.Algebra
     VectorSpace,
   )
 import Numeric.Data.NonZero (NonZero (..))
-import Unit.Props.Utils ((<=>))
+import Unit.Utils ((<=>))
 
 -- | Verifies that the parameter numberic value is normalized, taking care
 -- to account for special 'B' and 'P' rules.
