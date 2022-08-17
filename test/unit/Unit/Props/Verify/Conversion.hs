@@ -261,12 +261,12 @@ testConvertToAll gen expects desc = T.askOption $ \(MkMaxRuns limit) ->
       H.property $ do
         x <- H.forAll gen
         let x' = unwrap x
-        (bExp expects) x' === (unwrap $ convert @_ @B Proxy x)
-        (kExp expects) x' === (unwrap $ convert @_ @K Proxy x)
-        (mExp expects) x' === (unwrap $ convert @_ @M Proxy x)
-        (gExp expects) x' === (unwrap $ convert @_ @G Proxy x)
-        (tExp expects) x' === (unwrap $ convert @_ @T Proxy x)
-        (pExp expects) x' === (unwrap $ convert @_ @P Proxy x)
-        (eExp expects) x' === (unwrap $ convert @_ @E Proxy x)
-        (zExp expects) x' === (unwrap $ convert @_ @Z Proxy x)
-        (yExp expects) x' === (unwrap $ convert @_ @Y Proxy x)
+        bExp expects x' === unwrap (convert @_ @B Proxy x)
+        kExp expects x' === unwrap (convert @_ @K Proxy x)
+        mExp expects x' === unwrap (convert @_ @M Proxy x)
+        gExp expects x' === unwrap (convert @_ @G Proxy x)
+        tExp expects x' === unwrap (convert @_ @T Proxy x)
+        pExp expects x' === unwrap (convert @_ @P Proxy x)
+        eExp expects x' === unwrap (convert @_ @E Proxy x)
+        zExp expects x' === unwrap (convert @_ @Z Proxy x)
+        yExp expects x' === unwrap (convert @_ @Y Proxy x)

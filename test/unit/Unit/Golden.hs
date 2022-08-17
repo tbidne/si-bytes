@@ -16,7 +16,6 @@ module Unit.Golden
   )
 where
 
-import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as Char8
 import Data.ByteString.Lazy qualified as BSL
 import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
@@ -36,7 +35,9 @@ import Data.Bytes.Formatting.Size (SizeFormat (SizeFormatLong))
 import Data.Bytes.Network.Direction (Directed)
 import Data.Bytes.Size (Size (..), Sized)
 import Data.Char qualified as Ch
+#if MIN_VERSION_base(4, 16, 0)
 import Data.Kind (Constraint, Type)
+#endif
 import Data.Proxy (Proxy (Proxy))
 import Data.Text (Text)
 import Data.Text qualified as T
@@ -62,7 +63,7 @@ normGoldensForUnit ::
   (Float -> a) ->
   TestTree
 normGoldensForUnit typeName desc cons =
-  goldenVsString (desc : []) fp $
+  goldenVsString [desc] fp $
     pure $
       listToBs results
   where
@@ -70,7 +71,7 @@ normGoldensForUnit typeName desc cons =
       mconcat
         [ "test/unit/goldens/normalizations/",
           typeName,
-          ('-' : Ch.toLower desc : []),
+          ['-', Ch.toLower desc],
           ".golden"
         ]
     results =
@@ -186,10 +187,10 @@ formatGoldens typeName x formatters = do
           typeName,
           ".golden"
         ]
-    results = (T.unpack . ($ x)) <$> formatters
+    results = T.unpack . ($ x) <$> formatters
 
 listToBs :: Show a => [a] -> BSL.ByteString
-listToBs = BS.fromStrict . Char8.pack . unlines . fmap show
+listToBs = BSL.fromStrict . Char8.pack . unlines . fmap show
 
 intSizedFormatters ::
   ( BaseFormatter (Unwrapped a) ~ b,
