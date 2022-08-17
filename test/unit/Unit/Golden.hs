@@ -55,29 +55,20 @@ normGoldensForUnit ::
   ( Normalize a,
     Show (Norm a)
   ) =>
-  -- | Type name, used in the file name.
+  -- | File name.
   String ->
   -- | Unit, used in file name.
   Char ->
   -- | Constructor.
   (Float -> a) ->
   TestTree
-normGoldensForUnit typeName desc cons =
-  goldenVsString [desc] fp $
-    pure $
-      listToBs results
+normGoldensForUnit fileName desc cons =
+  goldensFromText [desc] "normalizations/" (fileName <> ['-', Ch.toLower desc]) results
   where
-    fp =
-      mconcat
-        [ "test/unit/goldens/normalizations/",
-          typeName,
-          ['-', Ch.toLower desc],
-          ".golden"
-        ]
     results =
-      [ normalize (cons 0.250),
-        normalize (cons 750),
-        normalize (cons 1_500)
+      [ show $ normalize (cons 0.250),
+        show $ normalize (cons 750),
+        show $ normalize (cons 1_500)
       ]
 
 #if MIN_VERSION_base(4, 16, 0)
@@ -121,24 +112,16 @@ convGoldens ::
     forall s. ConvShow s b
 #endif
   ) =>
-  -- | Type name, used in the file name.
+  -- | File name.
   String ->
   -- | Constructor for minimum size.
   (Integer -> a) ->
   -- | Constructor for maximum size.
   (Integer -> b) ->
   TestTree
-convGoldens typeName minSizeCons maxSizeCons =
-  goldenVsString "Conversion Goldens" fp $
-    pure $
-      listToBs results
+convGoldens fileName minSizeCons maxSizeCons =
+  goldensFromText "Conversion Goldens" "conversions/" fileName results
   where
-    fp =
-      mconcat
-        [ "test/unit/goldens/conversions/",
-          typeName,
-          ".golden"
-        ]
     results =
       [ show $ convert (Proxy @B) (minSizeCons 1_000_000_000_000_000_000_000_000),
         show $ convert (Proxy @K) (minSizeCons 1_000_000_000_000_000_000_000_000),
@@ -169,28 +152,46 @@ convGoldens typeName minSizeCons maxSizeCons =
 --
 -- @since 0.1
 formatGoldens ::
-  -- | Type name.
+  -- | File name.
   FilePath ->
   -- | The bytes term.
   a ->
   -- | List of formatters to apply.
   [a -> Text] ->
   TestTree
-formatGoldens typeName x formatters = do
-  goldenVsString "Conversion Goldens" fp $
+formatGoldens fileName x formatters =
+  goldensFromText "Formatting Goldens" "formatting/" fileName results
+  where
+    results = T.unpack . ($ x) <$> formatters
+
+-- | Creates a golden tests for a term along with its text transformations.
+--
+-- @since 0.1
+goldensFromText ::
+  -- | The test name.
+  String ->
+  -- | The golden subdirectory.
+  FilePath ->
+  -- | File name.
+  FilePath ->
+  -- | List of result text to compare against golden expectations.
+  [String] ->
+  TestTree
+goldensFromText testName baseFp typeName results = do
+  goldenVsString testName fp $
     pure $
       listToBs results
   where
     fp =
       mconcat
-        [ "test/unit/goldens/formatting/",
+        [ "test/unit/goldens/",
+          baseFp,
           typeName,
           ".golden"
         ]
-    results = T.unpack . ($ x) <$> formatters
 
-listToBs :: Show a => [a] -> BSL.ByteString
-listToBs = BSL.fromStrict . Char8.pack . unlines . fmap show
+listToBs :: [String] -> BSL.ByteString
+listToBs = BSL.fromStrict . Char8.pack . unlines
 
 intSizedFormatters ::
   ( BaseFormatter (Unwrapped a) ~ b,
