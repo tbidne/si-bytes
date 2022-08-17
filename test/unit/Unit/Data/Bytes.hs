@@ -62,39 +62,6 @@ formattingGoldens =
       Golden.formatGoldens "bytes-float" (MkBytes @K @Float 120.3648) Golden.floatSizedFormatters
     ]
 
-someSizeTests :: TestTree
-someSizeTests =
-  T.testGroup
-    "SomeSize"
-    [ Golden.convGoldens "some-size" (MkBytes @B) (MkBytes @Y),
-      someNormalizeGoldens,
-      someParsingTests,
-      someAlgebraTests,
-      someFormattingGoldens
-    ]
-
-someParsingTests :: TestTree
-someParsingTests =
-  T.testGroup
-    "Parsing"
-    [ VParsing.parsingRoundTrip genBytes genFmt mkFmt
-    ]
-  where
-    mkFmt = Formatting.formatSized baseFmt
-    baseFmt = Formatting.MkFloatingFormatter (Just 2)
-    genBytes = Gens.genSomeBytesFloating @Double
-    genFmt = FGens.genSizedFormatter
-
-someAlgebraTests :: TestTree
-someAlgebraTests =
-  T.testGroup
-    "Algebra"
-    [ someSizeEqProps,
-      someSizeOrdProps,
-      someSizeGroupProps,
-      someVectorSpaceProps
-    ]
-
 unBytesProps :: TestTree
 unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
   U.testPropertyCompat "Bytes unwrapping + wrap is a no-op" "unBytesProps" $
@@ -185,6 +152,39 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         k <- H.forAll SGens.genNonZero
         l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
+
+someSizeTests :: TestTree
+someSizeTests =
+  T.testGroup
+    "SomeSize"
+    [ Golden.convGoldens "some-size" (MkSomeSize SB . MkBytes @B) (MkSomeSize SY . MkBytes @Y),
+      someNormalizeGoldens,
+      someParsingTests,
+      someAlgebraTests,
+      someFormattingGoldens
+    ]
+
+someParsingTests :: TestTree
+someParsingTests =
+  T.testGroup
+    "Parsing"
+    [ VParsing.parsingRoundTrip genBytes genFmt mkFmt
+    ]
+  where
+    mkFmt = Formatting.formatSized baseFmt
+    baseFmt = Formatting.MkFloatingFormatter (Just 2)
+    genBytes = Gens.genSomeBytesFloating @Double
+    genFmt = FGens.genSizedFormatter
+
+someAlgebraTests :: TestTree
+someAlgebraTests =
+  T.testGroup
+    "Algebra"
+    [ someSizeEqProps,
+      someSizeOrdProps,
+      someSizeGroupProps,
+      someVectorSpaceProps
+    ]
 
 someNormalizeGoldens :: TestTree
 someNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
