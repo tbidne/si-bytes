@@ -11,6 +11,7 @@ import Hedgehog ((===))
 import Hedgehog qualified as H
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
+import Unit.Golden qualified as Golden
 import Unit.Props.Generators.Bytes qualified as Gens
 import Unit.Props.Generators.Formatting qualified as FGens
 import Unit.Props.Generators.Size qualified as SGens
@@ -36,7 +37,7 @@ bytesTests =
     "Bytes"
     [ unBytesProps,
       convertProps,
-      U.convGoldens "bytes" (MkBytes @B) (MkBytes @Y),
+      Golden.convGoldens "bytes" (MkBytes @B) (MkBytes @Y),
       normalizeProps,
       normalizeGoldens,
       algebraTests
@@ -56,7 +57,7 @@ someSizeTests :: TestTree
 someSizeTests =
   T.testGroup
     "SomeSize"
-    [ U.convGoldens "some-size" (MkBytes @B) (MkBytes @Y),
+    [ Golden.convGoldens "some-size" (MkBytes @B) (MkBytes @Y),
       someNormalizeGoldens,
       someParsingTests,
       someAlgebraTests
@@ -123,15 +124,15 @@ normalizeGoldens :: TestTree
 normalizeGoldens = T.testGroup "Normalize Goldens" tests'
   where
     tests' =
-      [ U.normGoldensForUnit "bytes" 'B' (MkBytes @B),
-        U.normGoldensForUnit "bytes" 'K' (MkBytes @K),
-        U.normGoldensForUnit "bytes" 'M' (MkBytes @M),
-        U.normGoldensForUnit "bytes" 'G' (MkBytes @G),
-        U.normGoldensForUnit "bytes" 'T' (MkBytes @T),
-        U.normGoldensForUnit "bytes" 'P' (MkBytes @P),
-        U.normGoldensForUnit "bytes" 'E' (MkBytes @E),
-        U.normGoldensForUnit "bytes" 'Z' (MkBytes @Z),
-        U.normGoldensForUnit "bytes" 'Y' (MkBytes @Y)
+      [ Golden.normGoldensForUnit "bytes" 'B' (MkBytes @B),
+        Golden.normGoldensForUnit "bytes" 'K' (MkBytes @K),
+        Golden.normGoldensForUnit "bytes" 'M' (MkBytes @M),
+        Golden.normGoldensForUnit "bytes" 'G' (MkBytes @G),
+        Golden.normGoldensForUnit "bytes" 'T' (MkBytes @T),
+        Golden.normGoldensForUnit "bytes" 'P' (MkBytes @P),
+        Golden.normGoldensForUnit "bytes" 'E' (MkBytes @E),
+        Golden.normGoldensForUnit "bytes" 'Z' (MkBytes @Z),
+        Golden.normGoldensForUnit "bytes" 'Y' (MkBytes @Y)
       ]
 
 bytesEqProps :: TestTree
@@ -179,15 +180,15 @@ someNormalizeGoldens :: TestTree
 someNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
   where
     tests' =
-      [ U.normGoldensForUnit "some-size" 'B' (MkSomeSize SB . MkBytes),
-        U.normGoldensForUnit "some-size" 'K' (MkSomeSize SK . MkBytes),
-        U.normGoldensForUnit "some-size" 'M' (MkSomeSize SM . MkBytes),
-        U.normGoldensForUnit "some-size" 'G' (MkSomeSize SG . MkBytes),
-        U.normGoldensForUnit "some-size" 'T' (MkSomeSize ST . MkBytes),
-        U.normGoldensForUnit "some-size" 'P' (MkSomeSize SP . MkBytes),
-        U.normGoldensForUnit "some-size" 'E' (MkSomeSize SE . MkBytes),
-        U.normGoldensForUnit "some-size" 'Z' (MkSomeSize SZ . MkBytes),
-        U.normGoldensForUnit "some-size" 'Y' (MkSomeSize SY . MkBytes)
+      [ Golden.normGoldensForUnit "some-size" 'B' (MkSomeSize SB . MkBytes),
+        Golden.normGoldensForUnit "some-size" 'K' (MkSomeSize SK . MkBytes),
+        Golden.normGoldensForUnit "some-size" 'M' (MkSomeSize SM . MkBytes),
+        Golden.normGoldensForUnit "some-size" 'G' (MkSomeSize SG . MkBytes),
+        Golden.normGoldensForUnit "some-size" 'T' (MkSomeSize ST . MkBytes),
+        Golden.normGoldensForUnit "some-size" 'P' (MkSomeSize SP . MkBytes),
+        Golden.normGoldensForUnit "some-size" 'E' (MkSomeSize SE . MkBytes),
+        Golden.normGoldensForUnit "some-size" 'Z' (MkSomeSize SZ . MkBytes),
+        Golden.normGoldensForUnit "some-size" 'Y' (MkSomeSize SY . MkBytes)
       ]
 
 someSizeToLabel :: SomeSize n -> Size

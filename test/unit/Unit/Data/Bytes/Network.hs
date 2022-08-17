@@ -17,6 +17,7 @@ import Hedgehog ((===))
 import Hedgehog qualified as H
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
+import Unit.Golden qualified as Golden
 import Unit.Props.Generators.Formatting qualified as FGens
 import Unit.Props.Generators.Network qualified as NGens
 import Unit.Props.Generators.Size qualified as SGens
@@ -44,7 +45,7 @@ netBytesProps =
     "NetBytes"
     [ unNetBytesProps,
       convertProps,
-      U.convGoldens "net-bytes" (MkNetBytesP @Up @B) (MkNetBytesP @Down @Y),
+      Golden.convGoldens "net-bytes" (MkNetBytesP @Up @B) (MkNetBytesP @Down @Y),
       normalizeProps,
       normalizeGoldens,
       algebraTests
@@ -100,15 +101,15 @@ normalizeGoldens :: TestTree
 normalizeGoldens = T.testGroup "Normalize Goldens" tests'
   where
     tests' =
-      [ U.normGoldensForUnit "net-bytes" 'B' (MkNetBytesP @Up @B),
-        U.normGoldensForUnit "net-bytes" 'K' (MkNetBytesP @Up @K),
-        U.normGoldensForUnit "net-bytes" 'M' (MkNetBytesP @Up @M),
-        U.normGoldensForUnit "net-bytes" 'G' (MkNetBytesP @Up @G),
-        U.normGoldensForUnit "net-bytes" 'T' (MkNetBytesP @Up @T),
-        U.normGoldensForUnit "net-bytes" 'P' (MkNetBytesP @Down @P),
-        U.normGoldensForUnit "net-bytes" 'E' (MkNetBytesP @Down @E),
-        U.normGoldensForUnit "net-bytes" 'Z' (MkNetBytesP @Down @Z),
-        U.normGoldensForUnit "net-bytes" 'Y' (MkNetBytesP @Down @Y)
+      [ Golden.normGoldensForUnit "net-bytes" 'B' (MkNetBytesP @Up @B),
+        Golden.normGoldensForUnit "net-bytes" 'K' (MkNetBytesP @Up @K),
+        Golden.normGoldensForUnit "net-bytes" 'M' (MkNetBytesP @Up @M),
+        Golden.normGoldensForUnit "net-bytes" 'G' (MkNetBytesP @Up @G),
+        Golden.normGoldensForUnit "net-bytes" 'T' (MkNetBytesP @Up @T),
+        Golden.normGoldensForUnit "net-bytes" 'P' (MkNetBytesP @Down @P),
+        Golden.normGoldensForUnit "net-bytes" 'E' (MkNetBytesP @Down @E),
+        Golden.normGoldensForUnit "net-bytes" 'Z' (MkNetBytesP @Down @Z),
+        Golden.normGoldensForUnit "net-bytes" 'Y' (MkNetBytesP @Down @Y)
       ]
 
 netBytesEqProps :: TestTree
@@ -156,7 +157,7 @@ someNetSizeProps :: TestTree
 someNetSizeProps =
   T.testGroup
     "SomeNetSize"
-    [ U.convGoldens
+    [ Golden.convGoldens
         "some-net-size"
         (MkSomeNetSize @B @Up SB . MkNetBytesP)
         (MkSomeNetSize @Y @Down SY . MkNetBytesP),
@@ -219,15 +220,15 @@ someNetSizeNormalizeGoldens :: TestTree
 someNetSizeNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
   where
     tests' =
-      [ U.normGoldensForUnit "some-net-size" 'B' (MkSomeNetSize @_ @Up SB . MkNetBytesP),
-        U.normGoldensForUnit "some-net-size" 'K' (MkSomeNetSize @_ @Up SK . MkNetBytesP),
-        U.normGoldensForUnit "some-net-size" 'M' (MkSomeNetSize @_ @Up SM . MkNetBytesP),
-        U.normGoldensForUnit "some-net-size" 'G' (MkSomeNetSize @_ @Up SG . MkNetBytesP),
-        U.normGoldensForUnit "some-net-size" 'T' (MkSomeNetSize @_ @Up ST . MkNetBytesP),
-        U.normGoldensForUnit "some-net-size" 'P' (MkSomeNetSize @_ @Down SP . MkNetBytesP),
-        U.normGoldensForUnit "some-net-size" 'E' (MkSomeNetSize @_ @Down SE . MkNetBytesP),
-        U.normGoldensForUnit "some-net-size" 'Z' (MkSomeNetSize @_ @Down SZ . MkNetBytesP),
-        U.normGoldensForUnit "some-net-size" 'Y' (MkSomeNetSize @_ @Down SY . MkNetBytesP)
+      [ Golden.normGoldensForUnit "some-net-size" 'B' (MkSomeNetSize @_ @Up SB . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-size" 'K' (MkSomeNetSize @_ @Up SK . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-size" 'M' (MkSomeNetSize @_ @Up SM . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-size" 'G' (MkSomeNetSize @_ @Up SG . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-size" 'T' (MkSomeNetSize @_ @Up ST . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-size" 'P' (MkSomeNetSize @_ @Down SP . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-size" 'E' (MkSomeNetSize @_ @Down SE . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-size" 'Z' (MkSomeNetSize @_ @Down SZ . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-size" 'Y' (MkSomeNetSize @_ @Down SY . MkNetBytesP)
       ]
 
 someSizeToLabel :: SomeNetSize d n -> Size
@@ -246,7 +247,7 @@ someNetDirProps :: TestTree
 someNetDirProps =
   T.testGroup
     "SomeNetDir"
-    [ U.convGoldens
+    [ Golden.convGoldens
         "some-net-dir"
         (MkSomeNetDir @Up @B SUp . MkNetBytesP)
         (MkSomeNetDir @Down @Y SDown . MkNetBytesP),
@@ -258,15 +259,15 @@ someNetDirNormalizeGoldens :: TestTree
 someNetDirNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
   where
     tests' =
-      [ U.normGoldensForUnit "some-net-dir" 'B' (MkSomeNetDir @_ @B SUp . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'K' (MkSomeNetDir @_ @K SUp . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'M' (MkSomeNetDir @_ @M SUp . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'G' (MkSomeNetDir @_ @G SUp . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'T' (MkSomeNetDir @_ @T SUp . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'P' (MkSomeNetDir @_ @P SDown . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'E' (MkSomeNetDir @_ @E SDown . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'Z' (MkSomeNetDir @_ @Z SDown . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'Y' (MkSomeNetDir @_ @Y SDown . MkNetBytesP)
+      [ Golden.normGoldensForUnit "some-net-dir" 'B' (MkSomeNetDir @_ @B SUp . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'K' (MkSomeNetDir @_ @K SUp . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'M' (MkSomeNetDir @_ @M SUp . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'G' (MkSomeNetDir @_ @G SUp . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'T' (MkSomeNetDir @_ @T SUp . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'P' (MkSomeNetDir @_ @P SDown . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'E' (MkSomeNetDir @_ @E SDown . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'Z' (MkSomeNetDir @_ @Z SDown . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'Y' (MkSomeNetDir @_ @Y SDown . MkNetBytesP)
       ]
 
 someNetDirEqProps :: TestTree
@@ -283,7 +284,7 @@ someNetProps :: TestTree
 someNetProps =
   T.testGroup
     "SomeNet"
-    [ U.convGoldens
+    [ Golden.convGoldens
         "some-net"
         (MkSomeNet SUp SK . MkNetBytesP)
         (MkSomeNet SDown SY . MkNetBytesP),
@@ -308,15 +309,15 @@ someNetNormalizeGoldens :: TestTree
 someNetNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
   where
     tests' =
-      [ U.normGoldensForUnit "some-net-dir" 'B' (MkSomeNet SUp SB . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'K' (MkSomeNet SUp SK . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'M' (MkSomeNet SUp SM . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'G' (MkSomeNet SUp SG . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'T' (MkSomeNet SUp ST . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'P' (MkSomeNet SDown SP . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'E' (MkSomeNet SDown SE . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'Z' (MkSomeNet SDown SZ . MkNetBytesP),
-        U.normGoldensForUnit "some-net-dir" 'Y' (MkSomeNet SDown SY . MkNetBytesP)
+      [ Golden.normGoldensForUnit "some-net-dir" 'B' (MkSomeNet SUp SB . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'K' (MkSomeNet SUp SK . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'M' (MkSomeNet SUp SM . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'G' (MkSomeNet SUp SG . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'T' (MkSomeNet SUp ST . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'P' (MkSomeNet SDown SP . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'E' (MkSomeNet SDown SE . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'Z' (MkSomeNet SDown SZ . MkNetBytesP),
+        Golden.normGoldensForUnit "some-net-dir" 'Y' (MkSomeNet SDown SY . MkNetBytesP)
       ]
 
 someNetEqProps :: TestTree
