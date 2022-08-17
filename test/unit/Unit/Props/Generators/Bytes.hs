@@ -1,8 +1,10 @@
 -- | Exports generators for 'Bytes'.
 module Unit.Props.Generators.Bytes
   ( genBytes,
+    genBytesFloating,
     genNormalizedBytes,
     genSomeBytes,
+    genSomeBytesFloating,
     genSomeSizeFromSSize,
   )
 where
@@ -19,6 +21,10 @@ import Unit.Props.Generators.Size qualified as Gens
 genBytes :: Gen (Bytes s Rational)
 genBytes = MkBytes <$> Gens.genBNum
 
+-- | Generates 'Bytes' over 'Gens.genBNum'.
+genBytesFloating :: Floating a => Gen (Bytes s a)
+genBytesFloating = (fmap . fmap) fromRational genBytes
+
 -- | Chooses one from [B, K, M, ...]
 genSomeBytes :: Gen (SomeSize Rational)
 genSomeBytes = do
@@ -33,6 +39,10 @@ genSomeBytes = do
       MkSomeSize SZ <$> genBytes,
       MkSomeSize SY <$> genBytes
     ]
+
+-- | Generates 'Bytes' over 'Gens.genBNum'.
+genSomeBytesFloating :: Floating a => Gen (SomeSize a)
+genSomeBytesFloating = (fmap . fmap) fromRational genSomeBytes
 
 -- | Generates 'SomeSize' from the given 'SSize'.
 genSomeSizeFromSSize :: SSize s -> Gen (SomeSize Rational)

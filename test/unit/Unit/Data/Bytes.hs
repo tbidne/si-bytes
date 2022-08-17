@@ -3,6 +3,7 @@ module Unit.Data.Bytes (tests) where
 
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Formatting qualified as Formatting
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
 import Data.Bytes.Size (SSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
@@ -11,11 +12,13 @@ import Hedgehog qualified as H
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Unit.Props.Generators.Bytes qualified as Gens
+import Unit.Props.Generators.Formatting qualified as FGens
 import Unit.Props.Generators.Size qualified as SGens
 import Unit.Props.MaxRuns (MaxRuns (..))
 import Unit.Props.Verify.Algebra qualified as VAlgebra
 import Unit.Props.Verify.Conversion qualified as VConv
 import Unit.Props.Verify.Normalize qualified as VNormalize
+import Unit.Props.Verify.Parsing qualified as VParsing
 import Unit.Utils qualified as U
 
 -- | @since 0.1.
@@ -55,8 +58,21 @@ someSizeTests =
     "SomeSize"
     [ U.convGoldens "some-size" (MkBytes @B) (MkBytes @Y),
       someNormalizeGoldens,
+      someParsingTests,
       someAlgebraTests
     ]
+
+someParsingTests :: TestTree
+someParsingTests =
+  T.testGroup
+    "Parsing"
+    [ VParsing.parsingRoundTrip genBytes genFmt mkFmt
+    ]
+  where
+    mkFmt = Formatting.formatSized baseFmt
+    baseFmt = Formatting.MkFloatingFormatter (Just 2)
+    genBytes = Gens.genSomeBytesFloating @Double
+    genFmt = FGens.genSizedFormatter
 
 someAlgebraTests :: TestTree
 someAlgebraTests =

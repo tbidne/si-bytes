@@ -4,10 +4,12 @@ module Unit.Props.Generators.Network
     genNormalizedNetBytes,
     genSomeNetSizeUpFromSSize,
     genSomeNetSizeDown,
+    genFloatingSomeNetSizeDown,
     genSomeNetSizeUp,
     genSomeNetDirUp,
     genSomeNetDirDown,
     genSomeNet,
+    genFloatingSomeNet,
     genSomeNetFromSSize,
   )
 where
@@ -45,6 +47,10 @@ genSomeNetSizeDown =
       MkSomeNetSize SZ <$> genNet,
       MkSomeNetSize SY <$> genNet
     ]
+
+-- | Generates 'SomeNetSize' 'Down' over 'BGens.genNet'.
+genFloatingSomeNetSizeDown :: Floating a => Gen (SomeNetSize Down a)
+genFloatingSomeNetSizeDown = (fmap . fmap) fromRational genSomeNetSizeDown
 
 -- | Generates 'SomeNetSize' from 'SSize'.
 genSomeNetSizeUpFromSSize :: SSize s -> Gen (SomeNetSize 'Up Rational)
@@ -130,3 +136,7 @@ genSomeNet = do
     Y -> case dir of
       Down -> MkSomeNet SDown SY <$> genNet
       Up -> MkSomeNet SUp SY <$> genNet
+
+-- | Generates 'SomeNet'.
+genFloatingSomeNet :: Floating a => Gen (SomeNet a)
+genFloatingSomeNet = (fmap . fmap) fromRational genSomeNet

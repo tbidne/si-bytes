@@ -3,6 +3,7 @@ module Unit.Data.Bytes.Network (tests) where
 
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Formatting qualified as Formatting
 import Data.Bytes.Network.Direction (Direction (..), SDirection (..))
 import Data.Bytes.Network.Internal
   ( NetBytes (..),
@@ -16,12 +17,14 @@ import Hedgehog ((===))
 import Hedgehog qualified as H
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
+import Unit.Props.Generators.Formatting qualified as FGens
 import Unit.Props.Generators.Network qualified as NGens
 import Unit.Props.Generators.Size qualified as SGens
 import Unit.Props.MaxRuns (MaxRuns (..))
 import Unit.Props.Verify.Algebra qualified as VAlgebra
 import Unit.Props.Verify.Conversion qualified as VConv
 import Unit.Props.Verify.Normalize qualified as VNormalize
+import Unit.Props.Verify.Parsing qualified as VParsing
 import Unit.Utils qualified as U
 
 -- | @since 0.1.
@@ -285,8 +288,21 @@ someNetProps =
         (MkSomeNet SUp SK . MkNetBytesP)
         (MkSomeNet SDown SY . MkNetBytesP),
       someNetNormalizeGoldens,
+      someNetParsingTests,
       someNetEqProps
     ]
+
+someNetParsingTests :: TestTree
+someNetParsingTests =
+  T.testGroup
+    "Parsing"
+    [ VParsing.parsingRoundTrip genBytes genFmt mkFmt
+    ]
+  where
+    mkFmt (sfmt, dfmt) = Formatting.formatSizedDirected baseFmt sfmt dfmt
+    baseFmt = Formatting.MkFloatingFormatter (Just 2)
+    genBytes = NGens.genFloatingSomeNet @Double
+    genFmt = (,) <$> FGens.genSizedFormatter <*> FGens.genDirectedFormatter
 
 someNetNormalizeGoldens :: TestTree
 someNetNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
