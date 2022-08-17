@@ -40,7 +40,8 @@ bytesTests =
       Golden.convGoldens "bytes" (MkBytes @B) (MkBytes @Y),
       normalizeProps,
       normalizeGoldens,
-      algebraTests
+      algebraTests,
+      formattingGoldens
     ]
 
 algebraTests :: TestTree
@@ -53,6 +54,14 @@ algebraTests =
       bytesVectorSpaceProps
     ]
 
+formattingGoldens :: TestTree
+formattingGoldens =
+  T.testGroup
+    "Formatting"
+    [ Golden.formatGoldens "bytes-int" (MkBytes @B @Int 50) Golden.intSizedFormatters,
+      Golden.formatGoldens "bytes-float" (MkBytes @K @Float 120.3648) Golden.floatSizedFormatters
+    ]
+
 someSizeTests :: TestTree
 someSizeTests =
   T.testGroup
@@ -60,7 +69,8 @@ someSizeTests =
     [ Golden.convGoldens "some-size" (MkBytes @B) (MkBytes @Y),
       someNormalizeGoldens,
       someParsingTests,
-      someAlgebraTests
+      someAlgebraTests,
+      someFormattingGoldens
     ]
 
 someParsingTests :: TestTree
@@ -243,3 +253,11 @@ someVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         k <- H.forAll SGens.genNonZero
         l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
+
+someFormattingGoldens :: TestTree
+someFormattingGoldens =
+  T.testGroup
+    "Formatting"
+    [ Golden.formatGoldens "some-size-int" (MkSomeSize @_ @Int SM $ MkBytes 50) Golden.intSizedFormatters,
+      Golden.formatGoldens "some-size-float" (MkSomeSize @_ @Float SG $ MkBytes 120.3648) Golden.floatSizedFormatters
+    ]

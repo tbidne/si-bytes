@@ -6,19 +6,45 @@
 module Unit.Golden
   ( normGoldensForUnit,
     convGoldens,
+    formatGoldens,
+
+    -- * Formatters
+    intSizedFormatters,
+    floatSizedFormatters,
+    intSizeDirFormatters,
+    floatSizeDirFormatters,
   )
 where
 
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as Char8
+import Data.ByteString.Lazy qualified as BSL
 import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
-import Data.Bytes.Class.Normalize (Normalize (Norm, normalize))
-import Data.Bytes.Size (Size (..))
+import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Formatting
+  ( Default (def),
+    DirectedFormatter,
+    DirectionFormat (DirectionFormatShort),
+    FloatingFormatter (MkFloatingFormatter),
+    IntegralFormatter (MkIntegralFormatter),
+    SizedFormatter,
+  )
+import Data.Bytes.Formatting qualified as Formatting
+import Data.Bytes.Formatting.Base (BaseFormatter, CaseFormat (CaseFormatTitle), Formatter)
+import Data.Bytes.Formatting.Size (SizeFormat (SizeFormatLong))
+import Data.Bytes.Network.Direction (Directed)
+import Data.Bytes.Size (Size (..), Sized)
 import Data.Char qualified as Ch
 import Data.Kind (Constraint, Type)
 import Data.Proxy (Proxy (Proxy))
+import Data.Text (Text)
+import Data.Text qualified as T
+import Data.Word (Word8)
+import Optics.Core (A_Lens, LabelOptic, set')
 import Test.Tasty (TestTree)
 import Test.Tasty.Golden (goldenVsString)
+import Text.Printf (PrintfArg)
 
 -- | Golden tests for normalization.
 --
@@ -38,7 +64,7 @@ normGoldensForUnit ::
 normGoldensForUnit typeName desc cons =
   goldenVsString (desc : []) fp $
     pure $
-      toStr results
+      listToBs results
   where
     fp =
       mconcat
@@ -47,7 +73,6 @@ normGoldensForUnit typeName desc cons =
           ('-' : Ch.toLower desc : []),
           ".golden"
         ]
-    toStr = BS.fromStrict . Char8.pack . unlines . fmap show
     results =
       [ normalize (cons 0.250),
         normalize (cons 750),
@@ -105,7 +130,7 @@ convGoldens ::
 convGoldens typeName minSizeCons maxSizeCons =
   goldenVsString "Conversion Goldens" fp $
     pure $
-      toStr results
+      listToBs results
   where
     fp =
       mconcat
@@ -113,7 +138,6 @@ convGoldens typeName minSizeCons maxSizeCons =
           typeName,
           ".golden"
         ]
-    toStr = BS.fromStrict . Char8.pack . unlines . fmap show
     results =
       [ show $ convert (Proxy @B) (minSizeCons 1_000_000_000_000_000_000_000_000),
         show $ convert (Proxy @K) (minSizeCons 1_000_000_000_000_000_000_000_000),
@@ -137,3 +161,116 @@ convGoldens typeName minSizeCons maxSizeCons =
         show $ convert (Proxy @K) (maxSizeCons 1),
         show $ convert (Proxy @B) (maxSizeCons 1)
       ]
+
+{- ORMOLU_ENABLE -}
+
+-- | Golden tests for formatting.
+--
+-- @since 0.1
+formatGoldens ::
+  -- | Type name.
+  FilePath ->
+  -- | The bytes term.
+  a ->
+  -- | List of formatters to apply.
+  [a -> Text] ->
+  TestTree
+formatGoldens typeName x formatters = do
+  goldenVsString "Conversion Goldens" fp $
+    pure $
+      listToBs results
+  where
+    fp =
+      mconcat
+        [ "test/unit/goldens/formatting/",
+          typeName,
+          ".golden"
+        ]
+    results = (T.unpack . ($ x)) <$> formatters
+
+listToBs :: Show a => [a] -> BSL.ByteString
+listToBs = BS.fromStrict . Char8.pack . unlines . fmap show
+
+intSizedFormatters ::
+  ( BaseFormatter (Unwrapped a) ~ b,
+    b ~ IntegralFormatter,
+    Formatter b,
+    PrintfArg (Unwrapped a),
+    Sized a,
+    Unwrapper a
+  ) =>
+  [a -> Text]
+intSizedFormatters =
+  [ Formatting.formatSized MkIntegralFormatter Formatting.sizedFormatterUnix,
+    Formatting.formatSized MkIntegralFormatter Formatting.sizedFormatterNatural,
+    Formatting.formatSized MkIntegralFormatter Formatting.sizedFormatterVerbose,
+    Formatting.formatSized MkIntegralFormatter def,
+    Formatting.formatSized MkIntegralFormatter (titleCase . sizeLong $ def)
+  ]
+
+floatSizedFormatters ::
+  ( BaseFormatter (Unwrapped a) ~ b,
+    b ~ FloatingFormatter,
+    Formatter b,
+    PrintfArg (Unwrapped a),
+    Sized a,
+    Unwrapper a
+  ) =>
+  [a -> Text]
+floatSizedFormatters =
+  [ Formatting.formatSized (floatFormatter 2) Formatting.sizedFormatterUnix,
+    Formatting.formatSized (floatFormatter 3) Formatting.sizedFormatterNatural,
+    Formatting.formatSized (floatFormatter 4) Formatting.sizedFormatterVerbose,
+    Formatting.formatSized (floatFormatter 5) def,
+    Formatting.formatSized (MkFloatingFormatter Nothing) (titleCase . sizeLong $ def)
+  ]
+
+intSizeDirFormatters ::
+  ( BaseFormatter (Unwrapped a) ~ b,
+    Directed a,
+    IntegralFormatter ~ b,
+    Formatter b,
+    PrintfArg (Unwrapped a),
+    Sized a,
+    Unwrapper a
+  ) =>
+  [a -> Text]
+intSizeDirFormatters =
+  [ Formatting.formatSized MkIntegralFormatter Formatting.sizedFormatterUnix,
+    Formatting.formatSizedDirected MkIntegralFormatter Formatting.sizedFormatterUnix Formatting.directedFormatterUnix,
+    Formatting.formatSizedDirected MkIntegralFormatter Formatting.sizedFormatterNatural Formatting.directedFormatterUnix,
+    Formatting.formatSizedDirected MkIntegralFormatter Formatting.sizedFormatterVerbose Formatting.directedFormatterVerbose,
+    Formatting.formatSizedDirected MkIntegralFormatter def def,
+    Formatting.formatSizedDirected MkIntegralFormatter (titleCase . sizeLong $ def) (titleCase . dirShort $ def)
+  ]
+
+floatSizeDirFormatters ::
+  ( BaseFormatter (Unwrapped a) ~ b,
+    Directed a,
+    FloatingFormatter ~ b,
+    Formatter b,
+    PrintfArg (Unwrapped a),
+    Sized a,
+    Unwrapper a
+  ) =>
+  [a -> Text]
+floatSizeDirFormatters =
+  [ Formatting.formatSized (floatFormatter 2) Formatting.sizedFormatterUnix,
+    Formatting.formatSizedDirected (floatFormatter 3) Formatting.sizedFormatterUnix Formatting.directedFormatterUnix,
+    Formatting.formatSizedDirected (floatFormatter 4) Formatting.sizedFormatterNatural Formatting.directedFormatterUnix,
+    Formatting.formatSizedDirected (floatFormatter 5) Formatting.sizedFormatterVerbose Formatting.directedFormatterVerbose,
+    Formatting.formatSizedDirected (MkFloatingFormatter Nothing) def def,
+    Formatting.formatSizedDirected (floatFormatter 2) (titleCase . sizeLong $ def) (titleCase . dirShort $ def)
+  ]
+
+floatFormatter :: Word8 -> FloatingFormatter
+floatFormatter = MkFloatingFormatter . Just
+
+titleCase :: LabelOptic "caseFormat" A_Lens n n CaseFormat CaseFormat => n -> n
+titleCase = set' #caseFormat CaseFormatTitle
+
+sizeLong :: SizedFormatter -> SizedFormatter
+sizeLong = set' #sizeFormat SizeFormatLong
+
+dirShort :: DirectedFormatter -> DirectedFormatter
+dirShort = set' #directionFormat DirectionFormatShort

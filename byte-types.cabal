@@ -141,6 +141,7 @@ test-suite unit
     , byte-types
     , bytestring      >=0.10.10.0 && <0.12
     , hedgehog        >=1.0.2     && <1.2
+    , optics-core
     , tagged          ^>=0.8.6
     , tasty           >=1.1.0.3   && <1.5
     , tasty-golden    ^>=2.3.1
