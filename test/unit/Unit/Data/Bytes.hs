@@ -5,6 +5,7 @@ import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting qualified as Formatting
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
+import Data.Bytes.Network (Conversion (convert))
 import Data.Bytes.Size (SSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
 import Data.Proxy (Proxy (Proxy))
@@ -116,7 +117,7 @@ normalizeTests =
 
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "Properties" "normalizeProps" $
+  U.testPropertyCompat "Value is normalized" "normalizeProps" $
     H.withTests limit $
       H.property $ do
         (MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
@@ -201,7 +202,8 @@ someConvertTests :: TestTree
 someConvertTests =
   T.testGroup
     "Conversions"
-    [ Golden.convGoldens "some-size" (MkSomeSize SB . MkBytes @B) (MkSomeSize SY . MkBytes @Y)
+    [ someConvertProps,
+      Golden.convGoldens "some-size" (MkSomeSize SB . MkBytes @B) (MkSomeSize SY . MkBytes @Y)
     ]
 
 someParsingTests :: TestTree
@@ -232,7 +234,8 @@ someNormalizeTests :: TestTree
 someNormalizeTests =
   T.testGroup
     "Normalize"
-    [ someNormalizeGoldens
+    [ someNormalizeProps,
+      someNormalizeGoldens
     ]
 
 someNormalizeGoldens :: TestTree
@@ -249,6 +252,37 @@ someNormalizeGoldens = T.testGroup "Goldens" tests'
         Golden.normGoldensForUnit "some-size" 'Z' (MkSomeSize SZ . MkBytes),
         Golden.normGoldensForUnit "some-size" 'Y' (MkSomeSize SY . MkBytes)
       ]
+
+someNormalizeProps :: TestTree
+someNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+  U.testPropertyCompat "SomeSize matches underlying Bytes" "someNormalizeProps" $
+    H.withTests limit $
+      H.property $ do
+        x@(MkSomeSize szx bytes) <- H.forAll Gens.genSomeBytes
+        y <- H.forAll Gens.genSomeBytes
+        k <- H.forAll SGens.genD
+        nz <- H.forAll SGens.genNonZero
+        -- matches underlying bytes
+        normalize x === Size.withSingSize szx (normalize bytes)
+        -- laws
+        VNormalize.normalizeLaws x y k nz
+
+someConvertProps :: TestTree
+someConvertProps = T.askOption $ \(MkMaxRuns limit) ->
+  U.testPropertyCompat "SomeSize matches underlying Bytes" "someConvertProps" $
+    H.withTests limit $
+      H.property $ do
+        someSize@(MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
+
+        U.annEquals (convert (Proxy @B) someSize) (Size.withSingSize sz (convert (Proxy @B) bytes))
+        U.annEquals (convert (Proxy @K) someSize) (Size.withSingSize sz (convert (Proxy @K) bytes))
+        U.annEquals (convert (Proxy @M) someSize) (Size.withSingSize sz (convert (Proxy @M) bytes))
+        U.annEquals (convert (Proxy @G) someSize) (Size.withSingSize sz (convert (Proxy @G) bytes))
+        U.annEquals (convert (Proxy @T) someSize) (Size.withSingSize sz (convert (Proxy @T) bytes))
+        U.annEquals (convert (Proxy @P) someSize) (Size.withSingSize sz (convert (Proxy @P) bytes))
+        U.annEquals (convert (Proxy @E) someSize) (Size.withSingSize sz (convert (Proxy @E) bytes))
+        U.annEquals (convert (Proxy @Z) someSize) (Size.withSingSize sz (convert (Proxy @Z) bytes))
+        U.annEquals (convert (Proxy @Y) someSize) (Size.withSingSize sz (convert (Proxy @Y) bytes))
 
 someSizeToLabel :: SomeSize n -> Size
 someSizeToLabel (MkSomeSize sz _) = case sz of

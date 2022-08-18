@@ -8,12 +8,15 @@ module Unit.Utils
     (==>),
     (<=>),
 
+    -- * Hedgehog
+    annEquals,
+
     -- * Tasty
     testPropertyCompat,
   )
 where
 
-import Hedgehog (Property, PropertyName)
+import Hedgehog (MonadTest, Property, PropertyName, annotateShow, (===))
 import Test.Tasty (TestName, TestTree)
 import Test.Tasty.Hedgehog qualified as TastyH
 
@@ -31,6 +34,13 @@ False <=> False = True
 _ <=> _ = False
 
 infixr 1 <=>
+
+-- | Annotates the arguments and compares for equality.
+annEquals :: (MonadTest m, Show a, Eq a) => a -> a -> m ()
+annEquals x y = do
+  annotateShow x
+  annotateShow y
+  x === y
 
 testPropertyCompat :: TestName -> PropertyName -> Property -> TestTree
 #if MIN_VERSION_tasty_hedgehog(1, 2, 0)
