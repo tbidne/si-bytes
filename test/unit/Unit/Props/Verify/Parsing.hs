@@ -3,10 +3,12 @@
 -- @since 0.1
 module Unit.Props.Verify.Parsing
   ( parsingRoundTrip,
+    parsesText,
   )
 where
 
 import Data.Bytes.Class.Parser (Parser, parse)
+import Data.Proxy (Proxy)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Hedgehog (Gen, (===))
@@ -46,5 +48,25 @@ parsingRoundTrip genX genFmt fmt = T.askOption $ \(MkMaxRuns limit) ->
             H.annotate (T.unpack err)
             H.failure
           Right x' -> do
-            H.annotateShow x
+            H.annotateShow x'
             x === x'
+
+-- | Verifies that the 'Text' is successfully parsed into the expected type.
+parsesText ::
+  forall a.
+  Parser a =>
+  -- | Text generator.
+  Gen Text ->
+  -- | The expected type.
+  Proxy a ->
+  TestTree
+parsesText gen _ = T.askOption $ \(MkMaxRuns limit) ->
+  U.testPropertyCompat "Text successfully parsed" "parsesText" $
+    H.withTests limit $
+      H.property $ do
+        txt <- H.forAll gen
+        case parse @a txt of
+          Left err -> do
+            H.annotate (T.unpack err)
+            H.failure
+          Right _ -> pure ()

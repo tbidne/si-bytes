@@ -7,6 +7,7 @@ import Data.Bytes.Formatting qualified as Formatting
 import Data.Bytes.Internal (Bytes (..), SomeSize (..))
 import Data.Bytes.Size (SSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
+import Data.Proxy (Proxy (Proxy))
 import Hedgehog ((===))
 import Hedgehog qualified as H
 import Test.Tasty (TestTree)
@@ -14,6 +15,7 @@ import Test.Tasty qualified as T
 import Unit.Golden qualified as Golden
 import Unit.Props.Generators.Bytes qualified as Gens
 import Unit.Props.Generators.Formatting qualified as FGens
+import Unit.Props.Generators.Parsing qualified as PGens
 import Unit.Props.Generators.Size qualified as SGens
 import Unit.Props.MaxRuns (MaxRuns (..))
 import Unit.Props.Verify.Algebra qualified as VAlgebra
@@ -41,7 +43,9 @@ bytesTests =
       normalizeProps,
       normalizeGoldens,
       algebraTests,
-      formattingGoldens
+      formattingGoldens,
+      VParsing.parsesText PGens.genIntBytesText (Proxy @(Bytes B Integer)),
+      VParsing.parsesText PGens.genFloatBytesText (Proxy @(Bytes B Double))
     ]
 
 algebraTests :: TestTree
@@ -168,7 +172,9 @@ someParsingTests :: TestTree
 someParsingTests =
   T.testGroup
     "Parsing"
-    [ VParsing.parsingRoundTrip genBytes genFmt mkFmt
+    [ VParsing.parsingRoundTrip genBytes genFmt mkFmt,
+      VParsing.parsesText PGens.genIntSizedBytesText (Proxy @(SomeSize Integer)),
+      VParsing.parsesText PGens.genFloatSizedBytesText (Proxy @(SomeSize Double))
     ]
   where
     mkFmt = Formatting.formatSized baseFmt

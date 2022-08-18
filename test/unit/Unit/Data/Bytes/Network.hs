@@ -13,6 +13,7 @@ import Data.Bytes.Network.Internal
   )
 import Data.Bytes.Size (SSize (..), Size (..))
 import Data.Bytes.Size qualified as Size
+import Data.Proxy (Proxy (Proxy))
 import Hedgehog ((===))
 import Hedgehog qualified as H
 import Test.Tasty (TestTree)
@@ -20,6 +21,7 @@ import Test.Tasty qualified as T
 import Unit.Golden qualified as Golden
 import Unit.Props.Generators.Formatting qualified as FGens
 import Unit.Props.Generators.Network qualified as NGens
+import Unit.Props.Generators.Parsing qualified as PGens
 import Unit.Props.Generators.Size qualified as SGens
 import Unit.Props.MaxRuns (MaxRuns (..))
 import Unit.Props.Verify.Algebra qualified as VAlgebra
@@ -49,7 +51,9 @@ netBytesProps =
       normalizeProps,
       normalizeGoldens,
       algebraTests,
-      formattingGoldens
+      formattingGoldens,
+      VParsing.parsesText PGens.genIntBytesText (Proxy @(NetBytes Up M Integer)),
+      VParsing.parsesText PGens.genFloatBytesText (Proxy @(NetBytes Up M Double))
     ]
 
 formattingGoldens :: TestTree
@@ -172,7 +176,9 @@ someNetSizeProps =
         (MkSomeNetSize @Y @Down SY . MkNetBytesP),
       someNetSizeNormalizeGoldens,
       someNetSizeAlgebraProps,
-      someNetSizeFormattingGoldens
+      someNetSizeFormattingGoldens,
+      VParsing.parsesText PGens.genIntSizedBytesText (Proxy @(SomeNetSize Up Integer)),
+      VParsing.parsesText PGens.genFloatSizedBytesText (Proxy @(SomeNetSize Up Double))
     ]
 
 someNetSizeAlgebraProps :: TestTree
@@ -271,7 +277,9 @@ someNetDirProps =
         (MkSomeNetDir @Down @Y SDown . MkNetBytesP),
       someNetDirNormalizeGoldens,
       someNetDirEqProps,
-      someNetDirFormattingGoldens
+      someNetDirFormattingGoldens,
+      VParsing.parsesText PGens.genIntDirectedBytesText (Proxy @(SomeNetDir T Integer)),
+      VParsing.parsesText PGens.genFloatDirectedBytesText (Proxy @(SomeNetDir T Double))
     ]
 
 someNetDirFormattingGoldens :: TestTree
@@ -325,7 +333,9 @@ someNetParsingTests :: TestTree
 someNetParsingTests =
   T.testGroup
     "Parsing"
-    [ VParsing.parsingRoundTrip genBytes genFmt mkFmt
+    [ VParsing.parsingRoundTrip genBytes genFmt mkFmt,
+      VParsing.parsesText PGens.genIntSizedDirectedBytesText (Proxy @(SomeNet Integer)),
+      VParsing.parsesText PGens.genFloatSizedDirectedBytesText (Proxy @(SomeNet Double))
     ]
   where
     mkFmt (sfmt, dfmt) = Formatting.formatSizedDirected baseFmt sfmt dfmt

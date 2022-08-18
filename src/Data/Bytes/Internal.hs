@@ -291,7 +291,7 @@ instance Unwrapper (Bytes s n) where
 
 -- | @since 0.1
 instance Read n => Parser (Bytes s n) where
-  parser = MkBytes <$> (Parser.parseDigits <* MP.eof)
+  parser = MkBytes <$> (Parser.parseDigits <* (MPC.space *> MP.eof))
 
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
 -- when a function does not know a priori what size it should return e.g.

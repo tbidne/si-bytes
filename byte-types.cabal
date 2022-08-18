@@ -127,6 +127,7 @@ test-suite unit
     Unit.Props.Generators.Direction
     Unit.Props.Generators.Formatting
     Unit.Props.Generators.Network
+    Unit.Props.Generators.Parsing
     Unit.Props.Generators.Size
     Unit.Props.MaxRuns
     Unit.Props.Verify.Algebra

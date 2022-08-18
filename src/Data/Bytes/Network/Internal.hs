@@ -602,6 +602,7 @@ instance Read n => Parser (SomeNetDir s n) where
     bytes <- Parser.parseDigits
     MPC.space
     dir <- parser
+    MPC.space
     MP.eof
     pure $ case dir of
       Down -> MkSomeNetDir SDown $ MkNetBytesP bytes
@@ -750,6 +751,7 @@ instance Read n => Parser (SomeNet n) where
     size <- parser
     MPC.space1
     dir <- parser
+    MPC.space
     MP.eof
     pure $ case dir of
       Down -> case size of
