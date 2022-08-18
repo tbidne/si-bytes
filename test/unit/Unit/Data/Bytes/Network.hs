@@ -41,27 +41,52 @@ tests =
       someNetProps
     ]
 
+--------------------------------------------------------------------------------
+---------------------------------- NET BYTES -----------------------------------
+--------------------------------------------------------------------------------
+
 netBytesProps :: TestTree
 netBytesProps =
   T.testGroup
     "NetBytes"
     [ unNetBytesProps,
-      convertProps,
-      Golden.convGoldens "net-bytes" (MkNetBytesP @Up @B) (MkNetBytesP @Down @Y),
-      normalizeProps,
-      normalizeGoldens,
+      convertTests,
+      normalizeTests,
       algebraTests,
-      formattingGoldens,
-      VParsing.parsesText PGens.genIntBytesText (Proxy @(NetBytes Up M Integer)),
-      VParsing.parsesText PGens.genFloatBytesText (Proxy @(NetBytes Up M Double))
+      formattingTests,
+      parsingTests
     ]
 
-formattingGoldens :: TestTree
-formattingGoldens =
+convertTests :: TestTree
+convertTests =
+  T.testGroup
+    "Conversions"
+    [ convertProps,
+      Golden.convGoldens "net-bytes" (MkNetBytesP @Up @B) (MkNetBytesP @Down @Y)
+    ]
+
+normalizeTests :: TestTree
+normalizeTests =
+  T.testGroup
+    "Normalize"
+    [ normalizeProps,
+      normalizeGoldens
+    ]
+
+formattingTests :: TestTree
+formattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "net-bytes-int" (MkNetBytesP @Up @T @Int 50) Golden.intSizeDirFormatters,
-      Golden.formatGoldens "net-bytes-float" (MkNetBytesP @Down @P @Float 120.3648) Golden.floatSizeDirFormatters
+    [ Golden.formatGoldens "Integrals" "net-bytes-int" (MkNetBytesP @Up @T @Int 50) Golden.intSizeDirFormatters,
+      Golden.formatGoldens "Floats" "net-bytes-float" (MkNetBytesP @Down @P @Float 120.3648) Golden.floatSizeDirFormatters
+    ]
+
+parsingTests :: TestTree
+parsingTests =
+  T.testGroup
+    "Parsing"
+    [ VParsing.parsesText "Integrals" PGens.genIntBytesText (Proxy @(NetBytes Up M Integer)),
+      VParsing.parsesText "Floats" PGens.genFloatBytesText (Proxy @(NetBytes Up M Double))
     ]
 
 algebraTests :: TestTree
@@ -111,7 +136,7 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         VNormalize.isNormalized label x
 
 normalizeGoldens :: TestTree
-normalizeGoldens = T.testGroup "Normalize Goldens" tests'
+normalizeGoldens = T.testGroup "Goldens" tests'
   where
     tests' =
       [ Golden.normGoldensForUnit "net-bytes" 'B' (MkNetBytesP @Up @B),
@@ -166,19 +191,36 @@ netBytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
 
+--------------------------------------------------------------------------------
+-------------------------------- SOME NET SIZE ---------------------------------
+--------------------------------------------------------------------------------
+
 someNetSizeProps :: TestTree
 someNetSizeProps =
   T.testGroup
     "SomeNetSize"
+    [ someNetSizeConvertTests,
+      someNetSizeNormalizeTests,
+      someNetSizeAlgebraProps,
+      someNetSizeFormattingTests,
+      someNetSizeParsingTests
+    ]
+
+someNetSizeConvertTests :: TestTree
+someNetSizeConvertTests =
+  T.testGroup
+    "Conversions"
     [ Golden.convGoldens
         "some-net-size"
         (MkSomeNetSize @B @Up SB . MkNetBytesP)
-        (MkSomeNetSize @Y @Down SY . MkNetBytesP),
-      someNetSizeNormalizeGoldens,
-      someNetSizeAlgebraProps,
-      someNetSizeFormattingGoldens,
-      VParsing.parsesText PGens.genIntSizedBytesText (Proxy @(SomeNetSize Up Integer)),
-      VParsing.parsesText PGens.genFloatSizedBytesText (Proxy @(SomeNetSize Up Double))
+        (MkSomeNetSize @Y @Down SY . MkNetBytesP)
+    ]
+
+someNetSizeNormalizeTests :: TestTree
+someNetSizeNormalizeTests =
+  T.testGroup
+    "Normalize"
+    [ someNetSizeNormalizeGoldens
     ]
 
 someNetSizeAlgebraProps :: TestTree
@@ -191,12 +233,20 @@ someNetSizeAlgebraProps =
       someNetSizeVectorSpaceProps
     ]
 
-someNetSizeFormattingGoldens :: TestTree
-someNetSizeFormattingGoldens =
+someNetSizeParsingTests :: TestTree
+someNetSizeParsingTests =
+  T.testGroup
+    "Parsing"
+    [ VParsing.parsesText "Integrals" PGens.genIntSizedBytesText (Proxy @(SomeNetSize Up Integer)),
+      VParsing.parsesText "Floats" PGens.genFloatSizedBytesText (Proxy @(SomeNetSize Up Double))
+    ]
+
+someNetSizeFormattingTests :: TestTree
+someNetSizeFormattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "some-net-size-int" (MkSomeNetSize SE $ MkNetBytesP @Up @_ @Int 50) Golden.intSizeDirFormatters,
-      Golden.formatGoldens "some-net-size-float" (MkSomeNetSize SZ $ MkNetBytesP @Down @_ @Float 120.3648) Golden.floatSizeDirFormatters
+    [ Golden.formatGoldens "Integrals" "some-net-size-int" (MkSomeNetSize SE $ MkNetBytesP @Up @_ @Int 50) Golden.intSizeDirFormatters,
+      Golden.formatGoldens "Floats" "some-net-size-float" (MkSomeNetSize SZ $ MkNetBytesP @Down @_ @Float 120.3648) Golden.floatSizeDirFormatters
     ]
 
 someNetSizeEqProps :: TestTree
@@ -241,7 +291,7 @@ someNetSizeVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         VAlgebra.vectorSpaceLaws x y k l
 
 someNetSizeNormalizeGoldens :: TestTree
-someNetSizeNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
+someNetSizeNormalizeGoldens = T.testGroup "Goldens" tests'
   where
     tests' =
       [ Golden.normGoldensForUnit "some-net-size" 'B' (MkSomeNetSize @_ @Up SB . MkNetBytesP),
@@ -267,31 +317,63 @@ someSizeToLabel (MkSomeNetSize sz _) = case sz of
   SZ -> Z
   SY -> Y
 
+--------------------------------------------------------------------------------
+-------------------------------- SOME NET DIR ----------------------------------
+--------------------------------------------------------------------------------
+
 someNetDirProps :: TestTree
 someNetDirProps =
   T.testGroup
     "SomeNetDir"
+    [ someNetDirConvertTests,
+      someNetDirNormalizeTests,
+      someNetDirAlgebraProps,
+      someNetDirFormattingTests,
+      someNetDirParsingTests
+    ]
+
+someNetDirConvertTests :: TestTree
+someNetDirConvertTests =
+  T.testGroup
+    "Conversions"
     [ Golden.convGoldens
         "some-net-dir"
         (MkSomeNetDir @Up @B SUp . MkNetBytesP)
-        (MkSomeNetDir @Down @Y SDown . MkNetBytesP),
-      someNetDirNormalizeGoldens,
-      someNetDirEqProps,
-      someNetDirFormattingGoldens,
-      VParsing.parsesText PGens.genIntDirectedBytesText (Proxy @(SomeNetDir T Integer)),
-      VParsing.parsesText PGens.genFloatDirectedBytesText (Proxy @(SomeNetDir T Double))
+        (MkSomeNetDir @Down @Y SDown . MkNetBytesP)
     ]
 
-someNetDirFormattingGoldens :: TestTree
-someNetDirFormattingGoldens =
+someNetDirNormalizeTests :: TestTree
+someNetDirNormalizeTests =
+  T.testGroup
+    "Normalize"
+    [ someNetDirNormalizeGoldens
+    ]
+
+someNetDirAlgebraProps :: TestTree
+someNetDirAlgebraProps =
+  T.testGroup
+    "Algebra"
+    [ someNetDirEqProps
+    ]
+
+someNetDirFormattingTests :: TestTree
+someNetDirFormattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "some-net-dir-int" (MkSomeNetDir SUp $ MkNetBytesP @_ @Y @Int 50) Golden.intSizeDirFormatters,
-      Golden.formatGoldens "some-net-dir-float" (MkSomeNetDir SDown $ MkNetBytesP @_ @K @Float 120.3648) Golden.floatSizeDirFormatters
+    [ Golden.formatGoldens "Integrals" "some-net-dir-int" (MkSomeNetDir SUp $ MkNetBytesP @_ @Y @Int 50) Golden.intSizeDirFormatters,
+      Golden.formatGoldens "Floats" "some-net-dir-float" (MkSomeNetDir SDown $ MkNetBytesP @_ @K @Float 120.3648) Golden.floatSizeDirFormatters
+    ]
+
+someNetDirParsingTests :: TestTree
+someNetDirParsingTests =
+  T.testGroup
+    "Parsing"
+    [ VParsing.parsesText "Integrals" PGens.genIntDirectedBytesText (Proxy @(SomeNetDir T Integer)),
+      VParsing.parsesText "Floats" PGens.genFloatDirectedBytesText (Proxy @(SomeNetDir T Double))
     ]
 
 someNetDirNormalizeGoldens :: TestTree
-someNetDirNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
+someNetDirNormalizeGoldens = T.testGroup "Goldens" tests'
   where
     tests' =
       [ Golden.normGoldensForUnit "some-net-dir" 'B' (MkSomeNetDir @_ @B SUp . MkNetBytesP),
@@ -315,18 +397,43 @@ someNetDirEqProps = T.askOption $ \(MkMaxRuns limit) ->
         z <- H.forAll $ NGens.genSomeNetDirDown @'P
         VAlgebra.eqLaws x y z
 
+--------------------------------------------------------------------------------
+----------------------------------- SOME NET -----------------------------------
+--------------------------------------------------------------------------------
+
 someNetProps :: TestTree
 someNetProps =
   T.testGroup
     "SomeNet"
+    [ someNetConvertTests,
+      someNetNormalizeTests,
+      someNetAlgebraProps,
+      someNetFormattingTests,
+      someNetParsingTests
+    ]
+
+someNetConvertTests :: TestTree
+someNetConvertTests =
+  T.testGroup
+    "Conversions"
     [ Golden.convGoldens
         "some-net"
         (MkSomeNet SUp SK . MkNetBytesP)
-        (MkSomeNet SDown SY . MkNetBytesP),
-      someNetNormalizeGoldens,
-      someNetParsingTests,
-      someNetEqProps,
-      someNetFormattingGoldens
+        (MkSomeNet SDown SY . MkNetBytesP)
+    ]
+
+someNetNormalizeTests :: TestTree
+someNetNormalizeTests =
+  T.testGroup
+    "Normalize"
+    [ someNetNormalizeGoldens
+    ]
+
+someNetAlgebraProps :: TestTree
+someNetAlgebraProps =
+  T.testGroup
+    "Algebra"
+    [ someNetEqProps
     ]
 
 someNetParsingTests :: TestTree
@@ -334,8 +441,8 @@ someNetParsingTests =
   T.testGroup
     "Parsing"
     [ VParsing.parsingRoundTrip genBytes genFmt mkFmt,
-      VParsing.parsesText PGens.genIntSizedDirectedBytesText (Proxy @(SomeNet Integer)),
-      VParsing.parsesText PGens.genFloatSizedDirectedBytesText (Proxy @(SomeNet Double))
+      VParsing.parsesText "Integrals" PGens.genIntSizedDirectedBytesText (Proxy @(SomeNet Integer)),
+      VParsing.parsesText "Floats" PGens.genFloatSizedDirectedBytesText (Proxy @(SomeNet Double))
     ]
   where
     mkFmt (sfmt, dfmt) = Formatting.formatSizedDirected baseFmt sfmt dfmt
@@ -344,7 +451,7 @@ someNetParsingTests =
     genFmt = (,) <$> FGens.genSizedFormatter <*> FGens.genDirectedFormatter
 
 someNetNormalizeGoldens :: TestTree
-someNetNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
+someNetNormalizeGoldens = T.testGroup "Goldens" tests'
   where
     tests' =
       [ Golden.normGoldensForUnit "some-net-dir" 'B' (MkSomeNet SUp SB . MkNetBytesP),
@@ -368,10 +475,10 @@ someNetEqProps = T.askOption $ \(MkMaxRuns limit) ->
         z <- H.forAll NGens.genSomeNet
         VAlgebra.eqLaws x y z
 
-someNetFormattingGoldens :: TestTree
-someNetFormattingGoldens =
+someNetFormattingTests :: TestTree
+someNetFormattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "some-net-int" (MkSomeNet SUp SK $ MkNetBytesP @_ @_ @Int 50) Golden.intSizeDirFormatters,
-      Golden.formatGoldens "some-net-float" (MkSomeNet SDown SY $ MkNetBytesP @_ @_ @Float 120.3648) Golden.floatSizeDirFormatters
+    [ Golden.formatGoldens "Integrals" "some-net-int" (MkSomeNet SUp SK $ MkNetBytesP @_ @_ @Int 50) Golden.intSizeDirFormatters,
+      Golden.formatGoldens "Floats" "some-net-float" (MkSomeNet SDown SY $ MkNetBytesP @_ @_ @Float 120.3648) Golden.floatSizeDirFormatters
     ]

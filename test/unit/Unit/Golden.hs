@@ -120,7 +120,7 @@ convGoldens ::
   (Integer -> b) ->
   TestTree
 convGoldens fileName minSizeCons maxSizeCons =
-  goldensFromText "Conversion Goldens" "conversions/" fileName results
+  goldensFromText "Goldens" "conversions/" fileName results
   where
     results =
       [ show $ convert (Proxy @B) (minSizeCons 1_000_000_000_000_000_000_000_000),
@@ -152,6 +152,8 @@ convGoldens fileName minSizeCons maxSizeCons =
 --
 -- @since 0.1
 formatGoldens ::
+  -- | Test description.
+  String ->
   -- | File name.
   FilePath ->
   -- | The bytes term.
@@ -159,8 +161,8 @@ formatGoldens ::
   -- | List of formatters to apply.
   [a -> Text] ->
   TestTree
-formatGoldens fileName x formatters =
-  goldensFromText "Formatting Goldens" "formatting/" fileName results
+formatGoldens desc fileName x formatters =
+  goldensFromText desc "formatting/" fileName results
   where
     results = T.unpack . ($ x) <$> formatters
 

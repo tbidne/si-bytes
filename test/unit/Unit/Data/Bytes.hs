@@ -33,19 +33,20 @@ tests =
       someSizeTests
     ]
 
+--------------------------------------------------------------------------------
+------------------------------------ BYTES -------------------------------------
+--------------------------------------------------------------------------------
+
 bytesTests :: TestTree
 bytesTests =
   T.testGroup
     "Bytes"
     [ unBytesProps,
-      convertProps,
-      Golden.convGoldens "bytes" (MkBytes @B) (MkBytes @Y),
-      normalizeProps,
-      normalizeGoldens,
+      convertTests,
+      normalizeTests,
       algebraTests,
-      formattingGoldens,
-      VParsing.parsesText PGens.genIntBytesText (Proxy @(Bytes B Integer)),
-      VParsing.parsesText PGens.genFloatBytesText (Proxy @(Bytes B Double))
+      formattingTests,
+      parsingTests
     ]
 
 algebraTests :: TestTree
@@ -58,12 +59,20 @@ algebraTests =
       bytesVectorSpaceProps
     ]
 
-formattingGoldens :: TestTree
-formattingGoldens =
+formattingTests :: TestTree
+formattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "bytes-int" (MkBytes @B @Int 50) Golden.intSizedFormatters,
-      Golden.formatGoldens "bytes-float" (MkBytes @K @Float 120.3648) Golden.floatSizedFormatters
+    [ Golden.formatGoldens "Integrals" "bytes-int" (MkBytes @B @Int 50) Golden.intSizedFormatters,
+      Golden.formatGoldens "Floats" "bytes-float" (MkBytes @K @Float 120.3648) Golden.floatSizedFormatters
+    ]
+
+parsingTests :: TestTree
+parsingTests =
+  T.testGroup
+    "Parsing"
+    [ VParsing.parsesText "Integrals" PGens.genIntBytesText (Proxy @(Bytes B Integer)),
+      VParsing.parsesText "Floats" PGens.genFloatBytesText (Proxy @(Bytes B Double))
     ]
 
 unBytesProps :: TestTree
@@ -74,10 +83,18 @@ unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
         (MkSomeSize _ bytes) <- H.forAll Gens.genSomeBytes
         bytes === MkBytes (unwrap bytes)
 
+convertTests :: TestTree
+convertTests =
+  T.testGroup
+    "Conversions"
+    [ convertProps,
+      Golden.convGoldens "bytes" (MkBytes @B) (MkBytes @Y)
+    ]
+
 convertProps :: TestTree
 convertProps =
   T.testGroup
-    "Conversion Properties"
+    "Properties"
     [ VConv.testConvertToAll (Gens.genBytes @B) VConv.expectedB "B",
       VConv.testConvertToAll (Gens.genBytes @K) VConv.expectedK "K",
       VConv.testConvertToAll (Gens.genBytes @M) VConv.expectedM "M",
@@ -89,9 +106,17 @@ convertProps =
       VConv.testConvertToAll (Gens.genBytes @Y) VConv.expectedY "Y"
     ]
 
+normalizeTests :: TestTree
+normalizeTests =
+  T.testGroup
+    "Normalizations"
+    [ normalizeProps,
+      normalizeGoldens
+    ]
+
 normalizeProps :: TestTree
 normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "Bytes normalizes" "normalizeProps" $
+  U.testPropertyCompat "Properties" "normalizeProps" $
     H.withTests limit $
       H.property $ do
         (MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
@@ -102,7 +127,7 @@ normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
         VNormalize.isNormalized label x
 
 normalizeGoldens :: TestTree
-normalizeGoldens = T.testGroup "Normalize Goldens" tests'
+normalizeGoldens = T.testGroup "Goldens" tests'
   where
     tests' =
       [ Golden.normGoldensForUnit "bytes" 'B' (MkBytes @B),
@@ -157,15 +182,26 @@ bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
 
+--------------------------------------------------------------------------------
+---------------------------------- SOME SIZE -----------------------------------
+--------------------------------------------------------------------------------
+
 someSizeTests :: TestTree
 someSizeTests =
   T.testGroup
     "SomeSize"
-    [ Golden.convGoldens "some-size" (MkSomeSize SB . MkBytes @B) (MkSomeSize SY . MkBytes @Y),
-      someNormalizeGoldens,
-      someParsingTests,
+    [ someConvertTests,
+      someNormalizeTests,
       someAlgebraTests,
-      someFormattingGoldens
+      someFormattingTests,
+      someParsingTests
+    ]
+
+someConvertTests :: TestTree
+someConvertTests =
+  T.testGroup
+    "Conversions"
+    [ Golden.convGoldens "some-size" (MkSomeSize SB . MkBytes @B) (MkSomeSize SY . MkBytes @Y)
     ]
 
 someParsingTests :: TestTree
@@ -173,8 +209,8 @@ someParsingTests =
   T.testGroup
     "Parsing"
     [ VParsing.parsingRoundTrip genBytes genFmt mkFmt,
-      VParsing.parsesText PGens.genIntSizedBytesText (Proxy @(SomeSize Integer)),
-      VParsing.parsesText PGens.genFloatSizedBytesText (Proxy @(SomeSize Double))
+      VParsing.parsesText "Integrals" PGens.genIntSizedBytesText (Proxy @(SomeSize Integer)),
+      VParsing.parsesText "Floats" PGens.genFloatSizedBytesText (Proxy @(SomeSize Double))
     ]
   where
     mkFmt = Formatting.formatSized baseFmt
@@ -192,8 +228,15 @@ someAlgebraTests =
       someVectorSpaceProps
     ]
 
+someNormalizeTests :: TestTree
+someNormalizeTests =
+  T.testGroup
+    "Normalize"
+    [ someNormalizeGoldens
+    ]
+
 someNormalizeGoldens :: TestTree
-someNormalizeGoldens = T.testGroup "Normalize Goldens" tests'
+someNormalizeGoldens = T.testGroup "Goldens" tests'
   where
     tests' =
       [ Golden.normGoldensForUnit "some-size" 'B' (MkSomeSize SB . MkBytes),
@@ -260,10 +303,10 @@ someVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
         l <- H.forAll SGens.genNonZero
         VAlgebra.vectorSpaceLaws x y k l
 
-someFormattingGoldens :: TestTree
-someFormattingGoldens =
+someFormattingTests :: TestTree
+someFormattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "some-size-int" (MkSomeSize @_ @Int SM $ MkBytes 50) Golden.intSizedFormatters,
-      Golden.formatGoldens "some-size-float" (MkSomeSize @_ @Float SG $ MkBytes 120.3648) Golden.floatSizedFormatters
+    [ Golden.formatGoldens "Integrals" "some-size-int" (MkSomeSize @_ @Int SM $ MkBytes 50) Golden.intSizedFormatters,
+      Golden.formatGoldens "Floats" "some-size-float" (MkSomeSize @_ @Float SG $ MkBytes 120.3648) Golden.floatSizedFormatters
     ]

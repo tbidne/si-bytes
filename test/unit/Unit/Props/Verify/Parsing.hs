@@ -55,13 +55,15 @@ parsingRoundTrip genX genFmt fmt = T.askOption $ \(MkMaxRuns limit) ->
 parsesText ::
   forall a.
   Parser a =>
+  -- | Test description.
+  String ->
   -- | Text generator.
   Gen Text ->
   -- | The expected type.
   Proxy a ->
   TestTree
-parsesText gen _ = T.askOption $ \(MkMaxRuns limit) ->
-  U.testPropertyCompat "Text successfully parsed" "parsesText" $
+parsesText desc gen _ = T.askOption $ \(MkMaxRuns limit) ->
+  U.testPropertyCompat desc "parsesText" $
     H.withTests limit $
       H.property $ do
         txt <- H.forAll gen
