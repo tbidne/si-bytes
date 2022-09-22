@@ -16,9 +16,11 @@ module Data.Bytes.Network.Direction
   )
 where
 
+import Control.DeepSeq (NFData (rnf))
 import Data.Bytes.Class.Parser (Parser (..))
 import Data.Kind (Constraint, Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
+import GHC.Generics (Generic)
 import Optics.Core (Prism', prism)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
@@ -36,7 +38,13 @@ data Direction
     ( -- | @since 0.1
       Eq,
       -- | @since 0.1
+      Generic,
+      -- | @since 0.1
       Show
+    )
+  deriving anyclass
+    ( -- | @since 0.1
+      NFData
     )
 
 -- | @since 0.1
@@ -65,6 +73,11 @@ data SDirection (d :: Direction) where
 
 -- | @since 0.1
 deriving stock instance Show (SDirection d)
+
+-- | @since 0.1
+instance NFData (SDirection d) where
+  rnf SDown = ()
+  rnf SUp = ()
 
 -- | @since 0.1
 sdirectionToDirection :: SDirection d -> Direction

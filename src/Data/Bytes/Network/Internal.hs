@@ -29,7 +29,7 @@ module Data.Bytes.Network.Internal
 where
 
 import Control.Applicative (liftA2)
-import Control.DeepSeq (NFData)
+import Control.DeepSeq (NFData (rnf), deepseq)
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Parser (Parser (..))
@@ -333,6 +333,10 @@ _MkSomeNetSize = iso (convert Proxy) hideSize
 deriving stock instance Show n => Show (SomeNetSize d n)
 
 -- | @since 0.1
+instance NFData n => NFData (SomeNetSize d n) where
+  rnf (MkSomeNetSize sz x) = sz `deepseq` x `deepseq` ()
+
+-- | @since 0.1
 deriving stock instance Functor (SomeNetSize d)
 
 -- | @since 0.1
@@ -524,6 +528,10 @@ _MkSomeNetDir = unto (\b -> MkSomeNetDir (netToSDirection b) b)
 deriving stock instance Show n => Show (SomeNetDir s n)
 
 -- | @since 0.1
+instance NFData n => NFData (SomeNetDir s n) where
+  rnf (MkSomeNetDir d x) = d `deepseq` x `deepseq` ()
+
+-- | @since 0.1
 deriving stock instance Functor (SomeNetDir s)
 
 -- | @since 0.1
@@ -665,6 +673,10 @@ _MkSomeNet = unto (\b -> MkSomeNet (netToSDirection b) (netToSSize b) b)
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNet n)
+
+-- | @since 0.1
+instance NFData n => NFData (SomeNet n) where
+  rnf (MkSomeNet d s x) = d `deepseq` s `deepseq` x `deepseq` ()
 
 -- | @since 0.1
 deriving stock instance Functor SomeNet

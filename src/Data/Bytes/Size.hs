@@ -33,9 +33,11 @@ module Data.Bytes.Size
 where
 
 import Control.Applicative ((<|>))
+import Control.DeepSeq (NFData (rnf))
 import Data.Bytes.Class.Parser (Parser (..))
 import Data.Kind (Constraint, Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
+import GHC.Generics (Generic)
 import GHC.TypeLits (ErrorMessage (..), TypeError)
 import Optics.Core (Prism', prism)
 import Text.Megaparsec qualified as MP
@@ -90,9 +92,15 @@ data Size
       -- | @since 0.1
       Eq,
       -- | @since 0.1
+      Generic,
+      -- | @since 0.1
       Ord,
       -- | @since 0.1
       Show
+    )
+  deriving anyclass
+    ( -- | @since 0.1
+      NFData
     )
 
 -- | @since 0.1
@@ -215,6 +223,18 @@ data SSize (s :: Size) where
   SZ :: SSize Z
   -- | @since 0.1
   SY :: SSize Y
+
+-- | @since 0.1
+instance NFData (SSize s) where
+  rnf SB = ()
+  rnf SK = ()
+  rnf SM = ()
+  rnf SG = ()
+  rnf ST = ()
+  rnf SP = ()
+  rnf SE = ()
+  rnf SZ = ()
+  rnf SY = ()
 
 -- | @since 0.1
 ssizeToSize :: SSize s -> Size

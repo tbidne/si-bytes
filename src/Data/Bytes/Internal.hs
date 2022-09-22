@@ -19,7 +19,7 @@ module Data.Bytes.Internal
 where
 
 import Control.Applicative (liftA2)
-import Control.DeepSeq (NFData)
+import Control.DeepSeq (NFData (rnf), deepseq)
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Conversion qualified as Conv
 import Data.Bytes.Class.Normalize (Normalize (..))
@@ -349,6 +349,10 @@ deriving stock instance Show n => Show (SomeSize n)
 
 -- | @since 0.1
 deriving stock instance Functor SomeSize
+
+-- | @since 0.1
+instance NFData n => NFData (SomeSize n) where
+  rnf (MkSomeSize sz x) = sz `deepseq` x `deepseq` ()
 
 -- | @since 0.1
 instance (Eq n, FromInteger n, MGroup n) => Eq (SomeSize n) where
