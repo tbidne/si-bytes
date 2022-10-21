@@ -20,6 +20,12 @@ where
 
 import Control.Applicative (liftA2)
 import Control.DeepSeq (NFData (rnf), deepseq)
+import Data.Bounds
+  ( LowerBounded,
+    LowerBoundless,
+    UpperBounded,
+    UpperBoundless,
+  )
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Conversion qualified as Conv
 import Data.Bytes.Class.Normalize (Normalize (..))
@@ -89,6 +95,8 @@ type Bytes :: Size -> Type -> Type
 newtype Bytes (s :: Size) (n :: Type) = MkBytes n
   deriving stock
     ( -- | @since 0.1
+      Bounded,
+      -- | @since 0.1
       Eq,
       -- | @since 0.1
       Functor,
@@ -103,6 +111,17 @@ newtype Bytes (s :: Size) (n :: Type) = MkBytes n
     ( -- | @since 0.1
       NFData
     )
+  deriving
+    ( -- | @since 0.1
+      LowerBounded,
+      -- | @since 0.1
+      LowerBoundless,
+      -- | @since 0.1
+      UpperBounded,
+      -- | @since 0.1
+      UpperBoundless
+    )
+    via n
 
 -- | Changes the 'Size' tag.
 --

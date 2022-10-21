@@ -30,6 +30,12 @@ where
 
 import Control.Applicative (liftA2)
 import Control.DeepSeq (NFData (rnf), deepseq)
+import Data.Bounds
+  ( LowerBounded,
+    LowerBoundless,
+    UpperBounded,
+    UpperBoundless,
+  )
 import Data.Bytes.Class.Conversion (Conversion (..))
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Parser (Parser (..))
@@ -108,6 +114,17 @@ newtype NetBytes (d :: Direction) (s :: Size) (n :: Type) = MkNetBytes (Bytes s 
     ( -- | @since 0.1
       NFData
     )
+  deriving
+    ( -- | @since 0.1
+      LowerBounded,
+      -- | @since 0.1
+      LowerBoundless,
+      -- | @since 0.1
+      UpperBounded,
+      -- | @since 0.1
+      UpperBoundless
+    )
+    via n
 
 -- | Pattern for de/constructing 'NetBytes'.
 --
