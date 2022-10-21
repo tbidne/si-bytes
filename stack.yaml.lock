@@ -5,26 +5,26 @@
 
 packages:
 - completed:
+    hackage: env-guard-0.2@sha256:59410eed9b9ddbd115760a59c7170927320d8612e414701d323a0c8985c97523,1251
     pantry-tree:
       sha256: c8135d95be0df0ce63d0ee398af20e38f505153032b32c4ab0e8f0f615501d46
       size: 419
-    hackage: env-guard-0.2@sha256:59410eed9b9ddbd115760a59c7170927320d8612e414701d323a0c8985c97523,1251
   original:
     hackage: env-guard-0.2@sha256:59410eed9b9ddbd115760a59c7170927320d8612e414701d323a0c8985c97523,1251
 - completed:
+    commit: 62a744d82255d7acb6b84cd3bb5e324a9ad36486
+    git: https://github.com/tbidne/algebra-simple.git
     name: algebra-simple
     pantry-tree:
       sha256: 133cbdf5e8ce6f1b2c1b7b6658ec76044a4916dc0c15e7b58e36d3414ea6da58
       size: 4196
-    commit: 29cd5641d7e133d599276c4e1ea7e8abb84a34f2
-    git: https://github.com/tbidne/algebra-simple.git
     version: '0.1'
   original:
-    commit: 29cd5641d7e133d599276c4e1ea7e8abb84a34f2
+    commit: 62a744d82255d7acb6b84cd3bb5e324a9ad36486
     git: https://github.com/tbidne/algebra-simple.git
 snapshots:
 - completed:
-    sha256: 4c31d4ef975b0211078862566aedf3b82b6cea569fc2cde4c72a51e5a8d236ce
-    size: 618951
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/14.yaml
-  original: lts-19.14
+    sha256: 7f4393ad659c579944d12202cffb12d8e4b8114566b015f77bbc303a24cff934
+    size: 619405
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/28.yaml
+  original: lts-19.28
