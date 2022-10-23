@@ -13,11 +13,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1666392795,
-        "narHash": "sha256-2hkwVmQ2tQVbqF42bPFn/2dBoH/pm04tKbK+1Tr8Ibw=",
+        "lastModified": 1666488762,
+        "narHash": "sha256-H8yOEZ8qDowm2z7mKa9hmG4QgI/rBhQmQTSHdOssmAU=",
         "owner": "tbidne",
         "repo": "algebra-simple",
-        "rev": "62a744d82255d7acb6b84cd3bb5e324a9ad36486",
+        "rev": "c8aaa4495964ecea9bb898c4fcb8b1c718ecc813",
         "type": "github"
       },
       "original": {
