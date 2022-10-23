@@ -77,6 +77,7 @@ import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
 
 -- $setup
+-- >>> import Data.Bytes.Size (Size (..), Sized (..))
 -- >>> getRawFileSize _ = pure (40, "K")
 
 -- | This is the core type for handling type-safe byte operations. It is
@@ -497,11 +498,11 @@ instance Read n => Parser (SomeSize n) where
 --
 -- ==== __Examples__
 --
--- >>> incSize $ MkBytes @M @Float 2_500
+-- >> incSize $ MkBytes @M @Float 2_500
 -- MkBytes 2.5
 --
--- >>> -- type error: "The byte unit Y does not have a 'next size'."
--- >>> --incSize $ MkBytes @Y @Float 2_500
+-- >> -- type error: "The byte unit Y does not have a 'next size'."
+-- >> --incSize $ MkBytes @Y @Float 2_500
 --
 -- @since 0.1
 incSize :: forall s n. (FromInteger n, MGroup n) => Bytes s n -> Bytes (NextSize s) n
@@ -514,11 +515,11 @@ incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
 --
 -- ==== __Examples__
 --
--- >>> decSize $ MkBytes @M @Float 2.5
+-- >> decSize $ MkBytes @M @Float 2.5
 -- MkBytes 2500.0
 --
--- >>> -- type error: "The byte unit B does not have a 'previous size'."
--- >>> --decSize $ MkBytes @B @Float 2.5
+-- >> -- type error: "The byte unit B does not have a 'previous size'."
+-- >> --decSize $ MkBytes @B @Float 2.5
 --
 -- @since 0.1
 decSize :: forall s n. (FromInteger n, MSemigroup n) => Bytes s n -> Bytes (PrevSize s) n

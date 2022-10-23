@@ -18,7 +18,8 @@ import Numeric.Literal.Integer (FromInteger (..))
 
 -- $setup
 -- >>> import Data.Bytes.Internal (Bytes (..))
--- >>> import Data.Bytes.Size (Sized (..))
+-- >>> import Data.Bytes.Size (Size (..), Sized (..))
+-- >>> import Data.Proxy (Proxy (Proxy))
 
 -- | This class allows one to transform a bytes type to any 'Size'. For types
 -- with existentially quantified 'Size' (e.g. 'Data.Bytes.SomeSize',

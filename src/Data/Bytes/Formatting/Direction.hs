@@ -29,6 +29,10 @@ import Optics.Core
   )
 import Text.Printf (printf)
 
+-- $setup
+-- >>> import Data.Bytes.Size (Size (..))
+-- >>> import Data.Default (Default (def))
+
 -- | Determines how to format the direction units.
 --
 -- ==== __Examples__

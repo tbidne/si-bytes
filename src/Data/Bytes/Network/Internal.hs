@@ -85,6 +85,9 @@ import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
 
 -- $setup
+-- >>> import Data.Bytes.Network.Direction (Direction (..), Directed (..))
+-- >>> import Data.Bytes.Size (Size (..), Sized (..))
+-- >>> import Data.Bytes.Internal (Bytes (..))
 -- >>> getUpTrafficRaw = pure (40, "K")
 -- >>> getMaxTrafficKRaw = pure (40, "Up")
 -- >>> getMaxTrafficNetRaw = pure (40, "Up", "K")

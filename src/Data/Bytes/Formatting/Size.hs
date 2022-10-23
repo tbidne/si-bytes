@@ -31,6 +31,9 @@ import Optics.Core
   )
 import Text.Printf (printf)
 
+-- $setup
+-- >>> import Data.Default (Default (def))
+
 -- | Determines how to format the size units.
 --
 -- ==== __Examples__
