@@ -51,6 +51,7 @@ import Data.Bytes.Network.Direction
 import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..), Sized (..))
 import Data.Bytes.Size qualified as Size
+import Data.Hashable (Hashable (hashWithSalt))
 import Data.Kind (Type)
 import Data.Proxy (Proxy (..))
 #if !MIN_VERSION_prettyprinter(1, 7, 1)
@@ -118,7 +119,9 @@ newtype NetBytes (d :: Direction) (s :: Size) (n :: Type) = MkNetBytes (Bytes s 
       NFData
     )
   deriving
-    ( -- | @since 0.1
+    ( -- | @since 0.1,
+      Hashable,
+      -- | @since 0.1
       LowerBounded,
       -- | @since 0.1
       LowerBoundless,
@@ -353,6 +356,11 @@ _MkSomeNetSize = iso (convert Proxy) hideSize
 deriving stock instance Show n => Show (SomeNetSize d n)
 
 -- | @since 0.1
+instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNetSize d n) where
+  hashWithSalt i (MkSomeNetSize sz x) =
+    i `hashWithSalt` Size.ssizeToSize sz `hashWithSalt` x
+
+-- | @since 0.1
 instance NFData n => NFData (SomeNetSize d n) where
   rnf (MkSomeNetSize sz x) = sz `deepseq` x `deepseq` ()
 
@@ -548,6 +556,14 @@ _MkSomeNetDir = unto (\b -> MkSomeNetDir (netToSDirection b) b)
 deriving stock instance Show n => Show (SomeNetDir s n)
 
 -- | @since 0.1
+instance
+  (FromInteger n, Hashable n, MGroup n, SingSize s) =>
+  Hashable (SomeNetDir s n)
+  where
+  hashWithSalt i (MkSomeNetDir d x) =
+    i `hashWithSalt` Direction.sdirectionToDirection d `hashWithSalt` x
+
+-- | @since 0.1
 instance NFData n => NFData (SomeNetDir s n) where
   rnf (MkSomeNetDir d x) = d `deepseq` x `deepseq` ()
 
@@ -693,6 +709,14 @@ _MkSomeNet = unto (\b -> MkSomeNet (netToSDirection b) (netToSSize b) b)
 
 -- | @since 0.1
 deriving stock instance Show n => Show (SomeNet n)
+
+-- | @since 0.1
+instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNet n) where
+  hashWithSalt i (MkSomeNet d s x) =
+    i
+      `hashWithSalt` Direction.sdirectionToDirection d
+      `hashWithSalt` Size.ssizeToSize s
+      `hashWithSalt` x
 
 -- | @since 0.1
 instance NFData n => NFData (SomeNet n) where

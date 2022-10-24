@@ -35,6 +35,7 @@ where
 import Control.Applicative ((<|>))
 import Control.DeepSeq (NFData (rnf))
 import Data.Bytes.Class.Parser (Parser (..))
+import Data.Hashable (Hashable)
 import Data.Kind (Constraint, Type)
 import Data.Type.Equality (TestEquality (..), (:~:) (..))
 import GHC.Generics (Generic)
@@ -100,6 +101,8 @@ data Size
     )
   deriving anyclass
     ( -- | @since 0.1
+      Hashable,
+      -- | @since 0.1
       NFData
     )
 

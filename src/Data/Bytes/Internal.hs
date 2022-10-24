@@ -40,6 +40,7 @@ import Data.Bytes.Size
     Sized (..),
   )
 import Data.Bytes.Size qualified as Size
+import Data.Hashable as X (Hashable (hashWithSalt))
 import Data.Kind (Type)
 import Data.Proxy (Proxy (..))
 import Data.Text (Text)
@@ -114,6 +115,8 @@ newtype Bytes (s :: Size) (n :: Type) = MkBytes n
     )
   deriving
     ( -- | @since 0.1
+      Hashable,
+      -- | @since 0.1
       LowerBounded,
       -- | @since 0.1
       LowerBoundless,
@@ -369,6 +372,11 @@ deriving stock instance Show n => Show (SomeSize n)
 
 -- | @since 0.1
 deriving stock instance Functor SomeSize
+
+-- | @since 0.1
+instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeSize n) where
+  hashWithSalt i (MkSomeSize sz x) =
+    i `hashWithSalt` Size.ssizeToSize sz `hashWithSalt` x
 
 -- | @since 0.1
 instance NFData n => NFData (SomeSize n) where
