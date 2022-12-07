@@ -18,7 +18,6 @@ import Unit.Props.Generators.Bytes qualified as Gens
 import Unit.Props.Generators.Formatting qualified as FGens
 import Unit.Props.Generators.Parsing qualified as PGens
 import Unit.Props.Generators.Size qualified as SGens
-import Unit.Props.MaxRuns (MaxRuns (..))
 import Unit.Props.Verify.Algebra qualified as VAlgebra
 import Unit.Props.Verify.Conversion qualified as VConv
 import Unit.Props.Verify.Normalize qualified as VNormalize
@@ -77,12 +76,11 @@ parsingTests =
     ]
 
 unBytesProps :: TestTree
-unBytesProps = T.askOption $ \(MkMaxRuns limit) ->
+unBytesProps =
   U.testPropertyCompat "Bytes unwrapping + wrap is a no-op" "unBytesProps" $
-    H.withTests limit $
-      H.property $ do
-        (MkSomeSize _ bytes) <- H.forAll Gens.genSomeBytes
-        bytes === MkBytes (unwrap bytes)
+    H.property $ do
+      (MkSomeSize _ bytes) <- H.forAll Gens.genSomeBytes
+      bytes === MkBytes (unwrap bytes)
 
 convertTests :: TestTree
 convertTests =
@@ -116,16 +114,15 @@ normalizeTests =
     ]
 
 normalizeProps :: TestTree
-normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+normalizeProps =
   U.testPropertyCompat "Value is normalized" "normalizeProps" $
-    H.withTests limit $
-      H.property $ do
-        (MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
-        let normalized@(MkSomeSize _ (MkBytes x)) = Size.withSingSize sz $ normalize bytes
-            label = someSizeToLabel normalized
-        H.footnote $ "original: " <> show bytes
-        H.footnote $ "normalized: " <> show normalized
-        VNormalize.isNormalized label x
+    H.property $ do
+      (MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
+      let normalized@(MkSomeSize _ (MkBytes x)) = Size.withSingSize sz $ normalize bytes
+          label = someSizeToLabel normalized
+      H.footnote $ "original: " <> show bytes
+      H.footnote $ "normalized: " <> show normalized
+      VNormalize.isNormalized label x
 
 normalizeGoldens :: TestTree
 normalizeGoldens = T.testGroup "Goldens" tests'
@@ -143,45 +140,41 @@ normalizeGoldens = T.testGroup "Goldens" tests'
       ]
 
 bytesEqProps :: TestTree
-bytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
+bytesEqProps =
   U.testPropertyCompat "Bytes Eq laws" "bytesEqProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll (Gens.genBytes @'P)
-        y <- H.forAll (Gens.genBytes @'P)
-        z <- H.forAll (Gens.genBytes @'P)
-        VAlgebra.eqLaws x y z
+    H.property $ do
+      x <- H.forAll (Gens.genBytes @'P)
+      y <- H.forAll (Gens.genBytes @'P)
+      z <- H.forAll (Gens.genBytes @'P)
+      VAlgebra.eqLaws x y z
 
 bytesOrdProps :: TestTree
-bytesOrdProps = T.askOption $ \(MkMaxRuns limit) ->
+bytesOrdProps =
   U.testPropertyCompat "Bytes Ord laws" "bytesOrdProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll (Gens.genBytes @'P)
-        y <- H.forAll (Gens.genBytes @'P)
-        z <- H.forAll (Gens.genBytes @'P)
-        VAlgebra.ordLaws x y z
+    H.property $ do
+      x <- H.forAll (Gens.genBytes @'P)
+      y <- H.forAll (Gens.genBytes @'P)
+      z <- H.forAll (Gens.genBytes @'P)
+      VAlgebra.ordLaws x y z
 
 bytesGroupProps :: TestTree
-bytesGroupProps = T.askOption $ \(MkMaxRuns limit) ->
+bytesGroupProps =
   U.testPropertyCompat "Bytes Group laws" "bytesGroupProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll (Gens.genBytes @'P)
-        y <- H.forAll (Gens.genBytes @'P)
-        z <- H.forAll (Gens.genBytes @'P)
-        VAlgebra.groupLaws x y z
+    H.property $ do
+      x <- H.forAll (Gens.genBytes @'P)
+      y <- H.forAll (Gens.genBytes @'P)
+      z <- H.forAll (Gens.genBytes @'P)
+      VAlgebra.groupLaws x y z
 
 bytesVectorSpaceProps :: TestTree
-bytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
+bytesVectorSpaceProps =
   U.testPropertyCompat "Bytes Vector Space laws" "bytesVectorSpaceProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll (Gens.genBytes @'P)
-        y <- H.forAll (Gens.genBytes @'P)
-        k <- H.forAll SGens.genNonZero
-        l <- H.forAll SGens.genNonZero
-        VAlgebra.vectorSpaceLaws x y k l
+    H.property $ do
+      x <- H.forAll (Gens.genBytes @'P)
+      y <- H.forAll (Gens.genBytes @'P)
+      k <- H.forAll SGens.genNonZero
+      l <- H.forAll SGens.genNonZero
+      VAlgebra.vectorSpaceLaws x y k l
 
 --------------------------------------------------------------------------------
 ---------------------------------- SOME SIZE -----------------------------------
@@ -254,35 +247,33 @@ someNormalizeGoldens = T.testGroup "Goldens" tests'
       ]
 
 someNormalizeProps :: TestTree
-someNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+someNormalizeProps =
   U.testPropertyCompat "SomeSize matches underlying Bytes" "someNormalizeProps" $
-    H.withTests limit $
-      H.property $ do
-        x@(MkSomeSize szx bytes) <- H.forAll Gens.genSomeBytes
-        y <- H.forAll Gens.genSomeBytes
-        k <- H.forAll SGens.genD
-        nz <- H.forAll SGens.genNonZero
-        -- matches underlying bytes
-        normalize x === Size.withSingSize szx (normalize bytes)
-        -- laws
-        VNormalize.normalizeLaws x y k nz
+    H.property $ do
+      x@(MkSomeSize szx bytes) <- H.forAll Gens.genSomeBytes
+      y <- H.forAll Gens.genSomeBytes
+      k <- H.forAll SGens.genD
+      nz <- H.forAll SGens.genNonZero
+      -- matches underlying bytes
+      normalize x === Size.withSingSize szx (normalize bytes)
+      -- laws
+      VNormalize.normalizeLaws x y k nz
 
 someConvertProps :: TestTree
-someConvertProps = T.askOption $ \(MkMaxRuns limit) ->
+someConvertProps =
   U.testPropertyCompat "SomeSize matches underlying Bytes" "someConvertProps" $
-    H.withTests limit $
-      H.property $ do
-        someSize@(MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
+    H.property $ do
+      someSize@(MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
 
-        U.annEquals (convert (Proxy @B) someSize) (Size.withSingSize sz (convert (Proxy @B) bytes))
-        U.annEquals (convert (Proxy @K) someSize) (Size.withSingSize sz (convert (Proxy @K) bytes))
-        U.annEquals (convert (Proxy @M) someSize) (Size.withSingSize sz (convert (Proxy @M) bytes))
-        U.annEquals (convert (Proxy @G) someSize) (Size.withSingSize sz (convert (Proxy @G) bytes))
-        U.annEquals (convert (Proxy @T) someSize) (Size.withSingSize sz (convert (Proxy @T) bytes))
-        U.annEquals (convert (Proxy @P) someSize) (Size.withSingSize sz (convert (Proxy @P) bytes))
-        U.annEquals (convert (Proxy @E) someSize) (Size.withSingSize sz (convert (Proxy @E) bytes))
-        U.annEquals (convert (Proxy @Z) someSize) (Size.withSingSize sz (convert (Proxy @Z) bytes))
-        U.annEquals (convert (Proxy @Y) someSize) (Size.withSingSize sz (convert (Proxy @Y) bytes))
+      U.annEquals (convert (Proxy @B) someSize) (Size.withSingSize sz (convert (Proxy @B) bytes))
+      U.annEquals (convert (Proxy @K) someSize) (Size.withSingSize sz (convert (Proxy @K) bytes))
+      U.annEquals (convert (Proxy @M) someSize) (Size.withSingSize sz (convert (Proxy @M) bytes))
+      U.annEquals (convert (Proxy @G) someSize) (Size.withSingSize sz (convert (Proxy @G) bytes))
+      U.annEquals (convert (Proxy @T) someSize) (Size.withSingSize sz (convert (Proxy @T) bytes))
+      U.annEquals (convert (Proxy @P) someSize) (Size.withSingSize sz (convert (Proxy @P) bytes))
+      U.annEquals (convert (Proxy @E) someSize) (Size.withSingSize sz (convert (Proxy @E) bytes))
+      U.annEquals (convert (Proxy @Z) someSize) (Size.withSingSize sz (convert (Proxy @Z) bytes))
+      U.annEquals (convert (Proxy @Y) someSize) (Size.withSingSize sz (convert (Proxy @Y) bytes))
 
 someSizeToLabel :: SomeSize n -> Size
 someSizeToLabel (MkSomeSize sz _) = case sz of
@@ -297,45 +288,41 @@ someSizeToLabel (MkSomeSize sz _) = case sz of
   SY -> Y
 
 someSizeEqProps :: TestTree
-someSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
+someSizeEqProps =
   U.testPropertyCompat "SomeSize Eq laws" "someSizeEqProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll Gens.genSomeBytes
-        y <- H.forAll Gens.genSomeBytes
-        z <- H.forAll Gens.genSomeBytes
-        VAlgebra.eqLaws x y z
+    H.property $ do
+      x <- H.forAll Gens.genSomeBytes
+      y <- H.forAll Gens.genSomeBytes
+      z <- H.forAll Gens.genSomeBytes
+      VAlgebra.eqLaws x y z
 
 someSizeOrdProps :: TestTree
-someSizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
+someSizeOrdProps =
   U.testPropertyCompat "SomeSize Ord laws" "someSizeOrdProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll Gens.genSomeBytes
-        y <- H.forAll Gens.genSomeBytes
-        z <- H.forAll Gens.genSomeBytes
-        VAlgebra.ordLaws x y z
+    H.property $ do
+      x <- H.forAll Gens.genSomeBytes
+      y <- H.forAll Gens.genSomeBytes
+      z <- H.forAll Gens.genSomeBytes
+      VAlgebra.ordLaws x y z
 
 someSizeGroupProps :: TestTree
-someSizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
+someSizeGroupProps =
   U.testPropertyCompat "SomeSize Group laws" "someSizeGroupProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll Gens.genSomeBytes
-        y <- H.forAll Gens.genSomeBytes
-        z <- H.forAll Gens.genSomeBytes
-        VAlgebra.groupLaws x y z
+    H.property $ do
+      x <- H.forAll Gens.genSomeBytes
+      y <- H.forAll Gens.genSomeBytes
+      z <- H.forAll Gens.genSomeBytes
+      VAlgebra.groupLaws x y z
 
 someVectorSpaceProps :: TestTree
-someVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
+someVectorSpaceProps =
   U.testPropertyCompat "SomeSize Vector Space laws" "someVectorSpaceProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll Gens.genSomeBytes
-        y <- H.forAll Gens.genSomeBytes
-        k <- H.forAll SGens.genNonZero
-        l <- H.forAll SGens.genNonZero
-        VAlgebra.vectorSpaceLaws x y k l
+    H.property $ do
+      x <- H.forAll Gens.genSomeBytes
+      y <- H.forAll Gens.genSomeBytes
+      k <- H.forAll SGens.genNonZero
+      l <- H.forAll SGens.genNonZero
+      VAlgebra.vectorSpaceLaws x y k l
 
 someFormattingTests :: TestTree
 someFormattingTests =

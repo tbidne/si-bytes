@@ -19,6 +19,7 @@ jobs:
       matrix:
         stack_yaml:
           - stack_lts-18.yaml
+          - stack_lts-19.yaml
           - stack.yaml
           - stack_nightly.yaml
     steps:
@@ -36,4 +37,4 @@ jobs:
       - name: Unit Tests
         env:
           STACK_YAML: ${{ matrix.stack_yaml }}
-        run: stack test byte-types:unit --test-arguments "--max-runs 100000"
+        run: stack test byte-types:unit --test-arguments "--hedgehog-tests 100000"

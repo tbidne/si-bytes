@@ -25,7 +25,6 @@ import Unit.Props.Generators.Formatting qualified as FGens
 import Unit.Props.Generators.Network qualified as NGens
 import Unit.Props.Generators.Parsing qualified as PGens
 import Unit.Props.Generators.Size qualified as SGens
-import Unit.Props.MaxRuns (MaxRuns (..))
 import Unit.Props.Verify.Algebra qualified as VAlgebra
 import Unit.Props.Verify.Conversion qualified as VConv
 import Unit.Props.Verify.Normalize qualified as VNormalize
@@ -102,12 +101,11 @@ algebraTests =
     ]
 
 unNetBytesProps :: TestTree
-unNetBytesProps = T.askOption $ \(MkMaxRuns limit) ->
+unNetBytesProps =
   U.testPropertyCompat "NetBytes unwrapping + wrap is a no-op" "unNetBytesProps" $
-    H.withTests limit $
-      H.property $ do
-        (MkSomeNetSize _ bytes) <- H.forAll NGens.genSomeNetSizeUp
-        bytes === MkNetBytesP (unwrap bytes)
+    H.property $ do
+      (MkSomeNetSize _ bytes) <- H.forAll NGens.genSomeNetSizeUp
+      bytes === MkNetBytesP (unwrap bytes)
 
 convertProps :: TestTree
 convertProps =
@@ -125,17 +123,16 @@ convertProps =
     ]
 
 normalizeProps :: TestTree
-normalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+normalizeProps =
   U.testPropertyCompat "NetBytes normalizes" "normalizeProps" $
-    H.withTests limit $
-      H.property $ do
-        (MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
-        let normalized@(MkSomeNetSize _ (MkNetBytesP x)) =
-              Size.withSingSize sz $ normalize bytes
-            label = someSizeToLabel normalized
-        H.footnote $ "original: " <> show bytes
-        H.footnote $ "normalized: " <> show normalized
-        VNormalize.isNormalized label x
+    H.property $ do
+      (MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
+      let normalized@(MkSomeNetSize _ (MkNetBytesP x)) =
+            Size.withSingSize sz $ normalize bytes
+          label = someSizeToLabel normalized
+      H.footnote $ "original: " <> show bytes
+      H.footnote $ "normalized: " <> show normalized
+      VNormalize.isNormalized label x
 
 normalizeGoldens :: TestTree
 normalizeGoldens = T.testGroup "Goldens" tests'
@@ -153,45 +150,41 @@ normalizeGoldens = T.testGroup "Goldens" tests'
       ]
 
 netBytesEqProps :: TestTree
-netBytesEqProps = T.askOption $ \(MkMaxRuns limit) ->
+netBytesEqProps =
   U.testPropertyCompat "NetBytes Eq laws" "netBytesEqProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll (NGens.genNet @'Up @'P)
-        y <- H.forAll (NGens.genNet @'Up @'P)
-        z <- H.forAll (NGens.genNet @'Up @'P)
-        VAlgebra.eqLaws x y z
+    H.property $ do
+      x <- H.forAll (NGens.genNet @'Up @'P)
+      y <- H.forAll (NGens.genNet @'Up @'P)
+      z <- H.forAll (NGens.genNet @'Up @'P)
+      VAlgebra.eqLaws x y z
 
 netBytesOrdProps :: TestTree
-netBytesOrdProps = T.askOption $ \(MkMaxRuns limit) ->
+netBytesOrdProps =
   U.testPropertyCompat "NetBytes Ord laws" "netBytesOrdProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll (NGens.genNet @'Up @'P)
-        y <- H.forAll (NGens.genNet @'Up @'P)
-        z <- H.forAll (NGens.genNet @'Up @'P)
-        VAlgebra.ordLaws x y z
+    H.property $ do
+      x <- H.forAll (NGens.genNet @'Up @'P)
+      y <- H.forAll (NGens.genNet @'Up @'P)
+      z <- H.forAll (NGens.genNet @'Up @'P)
+      VAlgebra.ordLaws x y z
 
 netBytesGroupProps :: TestTree
-netBytesGroupProps = T.askOption $ \(MkMaxRuns limit) ->
+netBytesGroupProps =
   U.testPropertyCompat "NetBytes Group laws" "netBytesGroupProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll (NGens.genNet @'Up @'P)
-        y <- H.forAll (NGens.genNet @'Up @'P)
-        z <- H.forAll (NGens.genNet @'Up @'P)
-        VAlgebra.groupLaws x y z
+    H.property $ do
+      x <- H.forAll (NGens.genNet @'Up @'P)
+      y <- H.forAll (NGens.genNet @'Up @'P)
+      z <- H.forAll (NGens.genNet @'Up @'P)
+      VAlgebra.groupLaws x y z
 
 netBytesVectorSpaceProps :: TestTree
-netBytesVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
+netBytesVectorSpaceProps =
   U.testPropertyCompat "NetBytes Vector Space laws" "netBytesVectorSpaceProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll (NGens.genNet @'Up @'P)
-        y <- H.forAll (NGens.genNet @'Up @'P)
-        k <- H.forAll SGens.genNonZero
-        l <- H.forAll SGens.genNonZero
-        VAlgebra.vectorSpaceLaws x y k l
+    H.property $ do
+      x <- H.forAll (NGens.genNet @'Up @'P)
+      y <- H.forAll (NGens.genNet @'Up @'P)
+      k <- H.forAll SGens.genNonZero
+      l <- H.forAll SGens.genNonZero
+      VAlgebra.vectorSpaceLaws x y k l
 
 --------------------------------------------------------------------------------
 -------------------------------- SOME NET SIZE ---------------------------------
@@ -254,62 +247,57 @@ someNetSizeFormattingTests =
     ]
 
 someNetSizeConvertProps :: TestTree
-someNetSizeConvertProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetSizeConvertProps =
   U.testPropertyCompat "SomeNetSize matches underlying NetBytes" "someNetSizeConvertProps" $
-    H.withTests limit $
-      H.property $ do
-        someNetSize@(MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeDown
+    H.property $ do
+      someNetSize@(MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeDown
 
-        U.annEquals (convert (Proxy @B) someNetSize) (Size.withSingSize sz (convert (Proxy @B) bytes))
-        U.annEquals (convert (Proxy @K) someNetSize) (Size.withSingSize sz (convert (Proxy @K) bytes))
-        U.annEquals (convert (Proxy @M) someNetSize) (Size.withSingSize sz (convert (Proxy @M) bytes))
-        U.annEquals (convert (Proxy @G) someNetSize) (Size.withSingSize sz (convert (Proxy @G) bytes))
-        U.annEquals (convert (Proxy @T) someNetSize) (Size.withSingSize sz (convert (Proxy @T) bytes))
-        U.annEquals (convert (Proxy @P) someNetSize) (Size.withSingSize sz (convert (Proxy @P) bytes))
-        U.annEquals (convert (Proxy @E) someNetSize) (Size.withSingSize sz (convert (Proxy @E) bytes))
-        U.annEquals (convert (Proxy @Z) someNetSize) (Size.withSingSize sz (convert (Proxy @Z) bytes))
-        U.annEquals (convert (Proxy @Y) someNetSize) (Size.withSingSize sz (convert (Proxy @Y) bytes))
+      U.annEquals (convert (Proxy @B) someNetSize) (Size.withSingSize sz (convert (Proxy @B) bytes))
+      U.annEquals (convert (Proxy @K) someNetSize) (Size.withSingSize sz (convert (Proxy @K) bytes))
+      U.annEquals (convert (Proxy @M) someNetSize) (Size.withSingSize sz (convert (Proxy @M) bytes))
+      U.annEquals (convert (Proxy @G) someNetSize) (Size.withSingSize sz (convert (Proxy @G) bytes))
+      U.annEquals (convert (Proxy @T) someNetSize) (Size.withSingSize sz (convert (Proxy @T) bytes))
+      U.annEquals (convert (Proxy @P) someNetSize) (Size.withSingSize sz (convert (Proxy @P) bytes))
+      U.annEquals (convert (Proxy @E) someNetSize) (Size.withSingSize sz (convert (Proxy @E) bytes))
+      U.annEquals (convert (Proxy @Z) someNetSize) (Size.withSingSize sz (convert (Proxy @Z) bytes))
+      U.annEquals (convert (Proxy @Y) someNetSize) (Size.withSingSize sz (convert (Proxy @Y) bytes))
 
 someNetSizeEqProps :: TestTree
-someNetSizeEqProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetSizeEqProps =
   U.testPropertyCompat "SomeNetSize Eq laws" "someNetSizeEqProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll NGens.genSomeNetSizeUp
-        y <- H.forAll NGens.genSomeNetSizeUp
-        z <- H.forAll NGens.genSomeNetSizeUp
-        VAlgebra.eqLaws x y z
+    H.property $ do
+      x <- H.forAll NGens.genSomeNetSizeUp
+      y <- H.forAll NGens.genSomeNetSizeUp
+      z <- H.forAll NGens.genSomeNetSizeUp
+      VAlgebra.eqLaws x y z
 
 someNetSizeOrdProps :: TestTree
-someNetSizeOrdProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetSizeOrdProps =
   U.testPropertyCompat "SomeNetSize Ord laws" "someNetSizeOrdProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll NGens.genSomeNetSizeUp
-        y <- H.forAll NGens.genSomeNetSizeUp
-        z <- H.forAll NGens.genSomeNetSizeUp
-        VAlgebra.ordLaws x y z
+    H.property $ do
+      x <- H.forAll NGens.genSomeNetSizeUp
+      y <- H.forAll NGens.genSomeNetSizeUp
+      z <- H.forAll NGens.genSomeNetSizeUp
+      VAlgebra.ordLaws x y z
 
 someNetSizeGroupProps :: TestTree
-someNetSizeGroupProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetSizeGroupProps =
   U.testPropertyCompat "SomeNetSize Group laws" "someNetSizeGroupProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll NGens.genSomeNetSizeUp
-        y <- H.forAll NGens.genSomeNetSizeUp
-        z <- H.forAll NGens.genSomeNetSizeUp
-        VAlgebra.groupLaws x y z
+    H.property $ do
+      x <- H.forAll NGens.genSomeNetSizeUp
+      y <- H.forAll NGens.genSomeNetSizeUp
+      z <- H.forAll NGens.genSomeNetSizeUp
+      VAlgebra.groupLaws x y z
 
 someNetSizeVectorSpaceProps :: TestTree
-someNetSizeVectorSpaceProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetSizeVectorSpaceProps =
   U.testPropertyCompat "SomeNetSize Vector Space laws" "someNetSizeVectorSpaceProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll NGens.genSomeNetSizeUp
-        y <- H.forAll NGens.genSomeNetSizeUp
-        k <- H.forAll SGens.genNonZero
-        l <- H.forAll SGens.genNonZero
-        VAlgebra.vectorSpaceLaws x y k l
+    H.property $ do
+      x <- H.forAll NGens.genSomeNetSizeUp
+      y <- H.forAll NGens.genSomeNetSizeUp
+      k <- H.forAll SGens.genNonZero
+      l <- H.forAll SGens.genNonZero
+      VAlgebra.vectorSpaceLaws x y k l
 
 someNetSizeNormalizeGoldens :: TestTree
 someNetSizeNormalizeGoldens = T.testGroup "Goldens" tests'
@@ -327,18 +315,17 @@ someNetSizeNormalizeGoldens = T.testGroup "Goldens" tests'
       ]
 
 someNetSizeNormalizeProps :: TestTree
-someNetSizeNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetSizeNormalizeProps =
   U.testPropertyCompat "SomeNetSize normalization" "someNetSizeNormalizeProps" $
-    H.withTests limit $
-      H.property $ do
-        x@(MkSomeNetSize szx bytes) <- H.forAll NGens.genSomeNetSizeUp
-        y <- H.forAll NGens.genSomeNetSizeUp
-        k <- H.forAll SGens.genD
-        nz <- H.forAll SGens.genNonZero
-        -- matches underlying bytes
-        normalize x === Size.withSingSize szx (normalize bytes)
-        -- laws
-        VNormalize.normalizeLaws x y k nz
+    H.property $ do
+      x@(MkSomeNetSize szx bytes) <- H.forAll NGens.genSomeNetSizeUp
+      y <- H.forAll NGens.genSomeNetSizeUp
+      k <- H.forAll SGens.genD
+      nz <- H.forAll SGens.genNonZero
+      -- matches underlying bytes
+      normalize x === Size.withSingSize szx (normalize bytes)
+      -- laws
+      VNormalize.normalizeLaws x y k nz
 
 someSizeToLabel :: SomeNetSize d n -> Size
 someSizeToLabel (MkSomeNetSize sz _) = case sz of
@@ -410,39 +397,38 @@ someNetDirParsingTests =
     ]
 
 someNetDirConvertProps :: TestTree
-someNetDirConvertProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetDirConvertProps =
   U.testPropertyCompat "SomeNetDir matches underlying NetBytes" "someNetDirConvertProps" $
-    H.withTests limit $
-      H.property $ do
-        someNetDir@(MkSomeNetDir d bytes) :: SomeNetDir G Rational <- H.forAll NGens.genSomeNetDirDown
+    H.property $ do
+      someNetDir@(MkSomeNetDir d bytes) :: SomeNetDir G Rational <- H.forAll NGens.genSomeNetDirDown
 
-        U.annEquals
-          (convert (Proxy @B) someNetDir)
-          (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @B) bytes))
-        U.annEquals
-          (convert (Proxy @K) someNetDir)
-          (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @K) bytes))
-        U.annEquals
-          (convert (Proxy @M) someNetDir)
-          (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @M) bytes))
-        U.annEquals
-          (convert (Proxy @G) someNetDir)
-          (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @G) bytes))
-        U.annEquals
-          (convert (Proxy @T) someNetDir)
-          (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @T) bytes))
-        U.annEquals
-          (convert (Proxy @P) someNetDir)
-          (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @P) bytes))
-        U.annEquals
-          (convert (Proxy @E) someNetDir)
-          (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @E) bytes))
-        U.annEquals
-          (convert (Proxy @Z) someNetDir)
-          (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @Z) bytes))
-        U.annEquals
-          (convert (Proxy @Y) someNetDir)
-          (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @Y) bytes))
+      U.annEquals
+        (convert (Proxy @B) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @B) bytes))
+      U.annEquals
+        (convert (Proxy @K) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @K) bytes))
+      U.annEquals
+        (convert (Proxy @M) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @M) bytes))
+      U.annEquals
+        (convert (Proxy @G) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @G) bytes))
+      U.annEquals
+        (convert (Proxy @T) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @T) bytes))
+      U.annEquals
+        (convert (Proxy @P) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @P) bytes))
+      U.annEquals
+        (convert (Proxy @E) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @E) bytes))
+      U.annEquals
+        (convert (Proxy @Z) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @Z) bytes))
+      U.annEquals
+        (convert (Proxy @Y) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @Y) bytes))
 
 someNetDirNormalizeGoldens :: TestTree
 someNetDirNormalizeGoldens = T.testGroup "Goldens" tests'
@@ -460,29 +446,27 @@ someNetDirNormalizeGoldens = T.testGroup "Goldens" tests'
       ]
 
 someNetDirNormalizeProps :: TestTree
-someNetDirNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetDirNormalizeProps =
   U.testPropertyCompat "SomeNetDir matches underlying NetBytes" "someNetSizeNormalizeProps" $
-    H.withTests limit $
-      H.property $ do
-        x@(MkSomeNetDir d bytes) :: SomeNetDir G Rational <- H.forAll NGens.genSomeNetDirUp
-        let normalizedBytes =
-              normalize bytes
-            hidden =
-              Direction.withSingDirection
-                d
-                (Direction.hideDirection (Size.hideSize normalizedBytes))
-        -- matches underlying bytes
-        normalize x === hidden
+    H.property $ do
+      x@(MkSomeNetDir d bytes) :: SomeNetDir G Rational <- H.forAll NGens.genSomeNetDirUp
+      let normalizedBytes =
+            normalize bytes
+          hidden =
+            Direction.withSingDirection
+              d
+              (Direction.hideDirection (Size.hideSize normalizedBytes))
+      -- matches underlying bytes
+      normalize x === hidden
 
 someNetDirEqProps :: TestTree
-someNetDirEqProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetDirEqProps =
   U.testPropertyCompat "SomeNetDir Eq laws" "someNetDirEqProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll $ NGens.genSomeNetDirDown @'P
-        y <- H.forAll $ NGens.genSomeNetDirDown @'P
-        z <- H.forAll $ NGens.genSomeNetDirDown @'P
-        VAlgebra.eqLaws x y z
+    H.property $ do
+      x <- H.forAll $ NGens.genSomeNetDirDown @'P
+      y <- H.forAll $ NGens.genSomeNetDirDown @'P
+      z <- H.forAll $ NGens.genSomeNetDirDown @'P
+      VAlgebra.eqLaws x y z
 
 --------------------------------------------------------------------------------
 ----------------------------------- SOME NET -----------------------------------
@@ -540,82 +524,81 @@ someNetParsingTests =
     genFmt = (,) <$> FGens.genSizedFormatter <*> FGens.genDirectedFormatter
 
 someNetConvertProps :: TestTree
-someNetConvertProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetConvertProps =
   U.testPropertyCompat "SomeNet matches underlying NetBytes" "someNetDirConvertProps" $
-    H.withTests limit $
-      H.property $ do
-        someNet@(MkSomeNet d sz bytes) <- H.forAll NGens.genSomeNet
+    H.property $ do
+      someNet@(MkSomeNet d sz bytes) <- H.forAll NGens.genSomeNet
 
-        U.annEquals
-          (convert (Proxy @B) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @B) bytes
-          )
-        U.annEquals
-          (convert (Proxy @K) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @K) bytes
-          )
-        U.annEquals
-          (convert (Proxy @M) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @M) bytes
-          )
-        U.annEquals
-          (convert (Proxy @G) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @G) bytes
-          )
-        U.annEquals
-          (convert (Proxy @T) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @T) bytes
-          )
-        U.annEquals
-          (convert (Proxy @P) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @P) bytes
-          )
-        U.annEquals
-          (convert (Proxy @E) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @E) bytes
-          )
-        U.annEquals
-          (convert (Proxy @Z) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @Z) bytes
-          )
-        U.annEquals
-          (convert (Proxy @Y) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @Y) bytes
-          )
-        U.annEquals
-          (convert (Proxy @B) someNet)
-          ( Direction.withSingDirection d $
-              Direction.hideDirection $
-                Size.withSingSize sz $
-                  convert (Proxy @B) bytes
-          )
+      U.annEquals
+        (convert (Proxy @B) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @B) bytes
+        )
+      U.annEquals
+        (convert (Proxy @K) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @K) bytes
+        )
+      U.annEquals
+        (convert (Proxy @M) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @M) bytes
+        )
+      U.annEquals
+        (convert (Proxy @G) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @G) bytes
+        )
+      U.annEquals
+        (convert (Proxy @T) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @T) bytes
+        )
+      U.annEquals
+        (convert (Proxy @P) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @P) bytes
+        )
+      U.annEquals
+        (convert (Proxy @E) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @E) bytes
+        )
+      U.annEquals
+        (convert (Proxy @Z) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @Z) bytes
+        )
+      U.annEquals
+        (convert (Proxy @Y) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @Y) bytes
+        )
+      U.annEquals
+        (convert (Proxy @B) someNet)
+        ( Direction.withSingDirection d $
+            Direction.hideDirection $
+              Size.withSingSize sz $
+                convert (Proxy @B) bytes
+        )
 
 someNetNormalizeGoldens :: TestTree
 someNetNormalizeGoldens = T.testGroup "Goldens" tests'
@@ -633,28 +616,26 @@ someNetNormalizeGoldens = T.testGroup "Goldens" tests'
       ]
 
 someNetNormalizeProps :: TestTree
-someNetNormalizeProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetNormalizeProps =
   U.testPropertyCompat "SomeNet matches underlying NetBytes" "someNetSizeNormalizeProps" $
-    H.withTests limit $
-      H.property $ do
-        x@(MkSomeNet d sz bytes) :: SomeNet Rational <- H.forAll NGens.genSomeNet
-        let normalizedBytes = Size.withSingSize sz $ normalize bytes
-            hidden =
-              Direction.withSingDirection
-                d
-                (Direction.hideDirection (Size.hideSize normalizedBytes))
-        -- matches underlying bytes
-        normalize x === hidden
+    H.property $ do
+      x@(MkSomeNet d sz bytes) :: SomeNet Rational <- H.forAll NGens.genSomeNet
+      let normalizedBytes = Size.withSingSize sz $ normalize bytes
+          hidden =
+            Direction.withSingDirection
+              d
+              (Direction.hideDirection (Size.hideSize normalizedBytes))
+      -- matches underlying bytes
+      normalize x === hidden
 
 someNetEqProps :: TestTree
-someNetEqProps = T.askOption $ \(MkMaxRuns limit) ->
+someNetEqProps =
   U.testPropertyCompat "SomeNet Eq laws" "someNetEqProps" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll NGens.genSomeNet
-        y <- H.forAll NGens.genSomeNet
-        z <- H.forAll NGens.genSomeNet
-        VAlgebra.eqLaws x y z
+    H.property $ do
+      x <- H.forAll NGens.genSomeNet
+      y <- H.forAll NGens.genSomeNet
+      z <- H.forAll NGens.genSomeNet
+      VAlgebra.eqLaws x y z
 
 someNetFormattingTests :: TestTree
 someNetFormattingTests =

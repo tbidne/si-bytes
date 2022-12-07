@@ -9,7 +9,6 @@ import Hedgehog qualified as H
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Unit.Props.Generators.Size qualified as Gens
-import Unit.Props.MaxRuns (MaxRuns (..))
 import Unit.Utils qualified as U
 
 -- | @since 0.1.
@@ -17,16 +16,15 @@ tests :: TestTree
 tests = T.testGroup "Data.Bytes.Class.Conversion" [convertProps]
 
 convertProps :: TestTree
-convertProps = T.askOption $ \(MkMaxRuns limit) ->
+convertProps =
   U.testPropertyCompat "Convert" "convertProps" $
-    H.withTests limit $
-      H.property $ do
-        (s1, s2, n) <- H.forAll genConvertInput
-        let expected = n * sizesToMult s1 s2
-            result = Conv.convert' s1 s2 n
-        H.footnote $ "expected: " <> show expected
-        H.footnote $ "result: " <> show result
-        result === expected
+    H.property $ do
+      (s1, s2, n) <- H.forAll genConvertInput
+      let expected = n * sizesToMult s1 s2
+          result = Conv.convert' s1 s2 n
+      H.footnote $ "expected: " <> show expected
+      H.footnote $ "result: " <> show result
+      result === expected
 
 genConvertInput :: Gen (Size, Size, Rational)
 genConvertInput =

@@ -32,8 +32,6 @@ import Numeric.Algebra qualified as Algebra
 import Numeric.Data.NonZero (NonZero)
 import Numeric.Literal.Integer (FromInteger (..))
 import Test.Tasty (TestTree)
-import Test.Tasty qualified as T
-import Unit.Props.MaxRuns (MaxRuns (..))
 import Unit.Utils qualified as U
 
 data ExpectedConvs n = MkExpectedConvs
@@ -255,9 +253,9 @@ testConvertToAll ::
   -- | Test description
   String ->
   TestTree
-testConvertToAll gen expects desc = T.askOption $ \(MkMaxRuns limit) ->
+testConvertToAll gen expects desc = 
   U.testPropertyCompat desc "testConversion" $
-    H.withTests limit $
+    
       H.property $ do
         x <- H.forAll gen
         let x' = unwrap x

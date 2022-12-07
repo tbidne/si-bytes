@@ -14,8 +14,6 @@ import Data.Text qualified as T
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
 import Test.Tasty (TestTree)
-import Test.Tasty qualified as T
-import Unit.Props.MaxRuns (MaxRuns (..))
 import Unit.Utils qualified as U
 
 -- | Tests that @parsing . format@ is a round trip.
@@ -35,21 +33,20 @@ parsingRoundTrip ::
   -- | Format function.
   (f -> a -> Text) ->
   TestTree
-parsingRoundTrip genX genFmt fmt = T.askOption $ \(MkMaxRuns limit) ->
+parsingRoundTrip genX genFmt fmt =
   U.testPropertyCompat "parse . format is a round trip" "parsingRoundTrip" $
-    H.withTests limit $
-      H.property $ do
-        x <- H.forAll genX
-        f <- H.forAll genFmt
-        let formatted = fmt f x
-        H.annotate $ T.unpack formatted
-        case parse @a formatted of
-          Left err -> do
-            H.annotate (T.unpack err)
-            H.failure
-          Right x' -> do
-            H.annotateShow x'
-            x === x'
+    H.property $ do
+      x <- H.forAll genX
+      f <- H.forAll genFmt
+      let formatted = fmt f x
+      H.annotate $ T.unpack formatted
+      case parse @a formatted of
+        Left err -> do
+          H.annotate (T.unpack err)
+          H.failure
+        Right x' -> do
+          H.annotateShow x'
+          x === x'
 
 -- | Verifies that the 'Text' is successfully parsed into the expected type.
 parsesText ::
@@ -62,13 +59,12 @@ parsesText ::
   -- | The expected type.
   Proxy a ->
   TestTree
-parsesText desc gen _ = T.askOption $ \(MkMaxRuns limit) ->
+parsesText desc gen _ =
   U.testPropertyCompat desc "parsesText" $
-    H.withTests limit $
-      H.property $ do
-        txt <- H.forAll gen
-        case parse @a txt of
-          Left err -> do
-            H.annotate (T.unpack err)
-            H.failure
-          Right _ -> pure ()
+    H.property $ do
+      txt <- H.forAll gen
+      case parse @a txt of
+        Left err -> do
+          H.annotate (T.unpack err)
+          H.failure
+        Right _ -> pure ()
