@@ -22,7 +22,7 @@ genBytes :: Gen (Bytes s Rational)
 genBytes = MkBytes <$> Gens.genBNum
 
 -- | Generates 'Bytes' over 'Gens.genBNum'.
-genBytesFloating :: Floating a => Gen (Bytes s a)
+genBytesFloating :: (Floating a) => Gen (Bytes s a)
 genBytesFloating = (fmap . fmap) fromRational genBytes
 
 -- | Chooses one from [B, K, M, ...]
@@ -41,7 +41,7 @@ genSomeBytes = do
     ]
 
 -- | Generates 'Bytes' over 'Gens.genBNum'.
-genSomeBytesFloating :: Floating a => Gen (SomeSize a)
+genSomeBytesFloating :: (Floating a) => Gen (SomeSize a)
 genSomeBytesFloating = (fmap . fmap) fromRational genSomeBytes
 
 -- | Generates 'SomeSize' from the given 'SSize'.

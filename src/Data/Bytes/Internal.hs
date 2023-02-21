@@ -140,7 +140,7 @@ resizeBytes (MkBytes x) = MkBytes x
 -- SK
 --
 -- @since 0.1
-bytesToSSize :: SingSize s => Bytes s n -> SSize s
+bytesToSSize :: (SingSize s) => Bytes s n -> SSize s
 bytesToSSize _ = singSize
 {-# INLINE bytesToSSize #-}
 
@@ -173,62 +173,62 @@ instance Monad (Bytes s) where
   {-# INLINE (>>=) #-}
 
 -- | @since 0.1
-instance FromInteger n => FromInteger (Bytes s n) where
+instance (FromInteger n) => FromInteger (Bytes s n) where
   afromInteger = MkBytes . afromInteger
   {-# INLINE afromInteger #-}
 
 -- | @since 0.1
-instance FromRational n => FromRational (Bytes s n) where
+instance (FromRational n) => FromRational (Bytes s n) where
   afromRational = MkBytes . afromRational
   {-# INLINE afromRational #-}
 
 -- | @since 0.1
-instance ASemigroup n => ASemigroup (Bytes s n) where
+instance (ASemigroup n) => ASemigroup (Bytes s n) where
   (.+.) = liftA2 (.+.)
   {-# INLINE (.+.) #-}
 
 -- | @since 0.1
-instance AMonoid n => AMonoid (Bytes s n) where
+instance (AMonoid n) => AMonoid (Bytes s n) where
   zero = MkBytes zero
   {-# INLINE zero #-}
 
 -- | @since 0.1
-instance AGroup n => AGroup (Bytes s n) where
+instance (AGroup n) => AGroup (Bytes s n) where
   (.-.) = liftA2 (.-.)
   {-# INLINE (.-.) #-}
 
 -- | @since 0.1
-instance MSemigroup n => MSemiSpace (Bytes s n) n where
+instance (MSemigroup n) => MSemiSpace (Bytes s n) n where
   MkBytes x .* k = MkBytes $ x .*. k
   {-# INLINE (.*) #-}
 
 -- | @since 0.1
-instance MGroup n => MSpace (Bytes s n) n where
+instance (MGroup n) => MSpace (Bytes s n) n where
   MkBytes x .% k = MkBytes $ x .%. k
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
-instance Normed n => Normed (Bytes s n) where
+instance (Normed n) => Normed (Bytes s n) where
   norm (MkBytes x) = MkBytes (norm x)
   {-# INLINE norm #-}
 
 -- | @since 0.1
-instance Semiring n => Semimodule (Bytes s n) n
+instance (Semiring n) => Semimodule (Bytes s n) n
 
 -- | @since 0.1
-instance Ring n => Module (Bytes s n) n
+instance (Ring n) => Module (Bytes s n) n
 
 -- | @since 0.1
-instance Semifield n => SemivectorSpace (Bytes s n) n
+instance (Semifield n) => SemivectorSpace (Bytes s n) n
 
 -- | @since 0.1
-instance Field n => VectorSpace (Bytes s n) n
+instance (Field n) => VectorSpace (Bytes s n) n
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (Bytes s n) where
   type Converted t (Bytes s n) = Bytes t n
 
-  convert :: forall t. SingSize t => Proxy t -> Bytes s n -> Bytes t n
+  convert :: forall t. (SingSize t) => Proxy t -> Bytes s n -> Bytes t n
   convert _ (MkBytes x) = MkBytes $ Conv.convertWitness @s (Size.ssizeToSize $ singSize @t) x
 
 -- | @since 0.1
@@ -297,7 +297,7 @@ instance (Pretty n, SingSize s) => Pretty (Bytes s n) where
   {-# INLINEABLE pretty #-}
 
 -- | @since 0.1
-instance SingSize s => Sized (Bytes s n) where
+instance (SingSize s) => Sized (Bytes s n) where
   type HideSize (Bytes s n) = SomeSize n
 
   sizeOf = Size.ssizeToSize . bytesToSSize
@@ -313,7 +313,7 @@ instance Unwrapper (Bytes s n) where
   {-# INLINE unwrap #-}
 
 -- | @since 0.1
-instance Read n => Parser (Bytes s n) where
+instance (Read n) => Parser (Bytes s n) where
   parser = MkBytes <$> (Parser.parseDigits <* (MPC.space *> MP.eof))
 
 -- | Wrapper for 'Bytes', existentially quantifying the size. This is useful
@@ -368,7 +368,7 @@ _MkSomeSize = iso (convert Proxy) hideSize
 {-# INLINE _MkSomeSize #-}
 
 -- | @since 0.1
-deriving stock instance Show n => Show (SomeSize n)
+deriving stock instance (Show n) => Show (SomeSize n)
 
 -- | @since 0.1
 deriving stock instance Functor SomeSize
@@ -379,7 +379,7 @@ instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeSize n) where
     i `hashWithSalt` Size.ssizeToSize sz `hashWithSalt` x
 
 -- | @since 0.1
-instance NFData n => NFData (SomeSize n) where
+instance (NFData n) => NFData (SomeSize n) where
   rnf (MkSomeSize sz x) = sz `deepseq` x `deepseq` ()
 
 -- | @since 0.1
@@ -395,14 +395,14 @@ instance (FromInteger n, MGroup n, Ord n) => Ord (SomeSize n) where
 -- | Fixed size 'B'.
 --
 -- @since 0.1
-instance FromInteger n => FromInteger (SomeSize n) where
+instance (FromInteger n) => FromInteger (SomeSize n) where
   afromInteger = MkSomeSize SB . afromInteger
   {-# INLINE afromInteger #-}
 
 -- | Fixed size 'B'.
 --
 -- @since 0.1
-instance FromRational n => FromRational (SomeSize n) where
+instance (FromRational n) => FromRational (SomeSize n) where
   afromRational = MkSomeSize SB . afromRational
   {-# INLINE afromRational #-}
 
@@ -432,7 +432,7 @@ instance (FromInteger n, MGroup n, Normed n, Ord n) => MSpace (SomeSize n) n whe
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
-instance Normed n => Normed (SomeSize n) where
+instance (Normed n) => Normed (SomeSize n) where
   norm (MkSomeSize sz x) = MkSomeSize sz (norm x)
   {-# INLINE norm #-}
 
@@ -452,7 +452,7 @@ instance (Field n, FromInteger n, Normed n, Ord n) => VectorSpace (SomeSize n) n
 instance (FromInteger n, MGroup n) => Conversion (SomeSize n) where
   type Converted t (SomeSize n) = Bytes t n
 
-  convert :: forall t. SingSize t => Proxy t -> SomeSize n -> Bytes t n
+  convert :: forall t. (SingSize t) => Proxy t -> SomeSize n -> Bytes t n
   convert proxy (MkSomeSize sz x) = Size.withSingSize sz $ convert proxy x
 
 -- | @since 0.1
@@ -462,7 +462,7 @@ instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeSize n) wh
   {-# INLINE normalize #-}
 
 -- | @since 0.1
-instance Pretty n => Pretty (SomeSize n) where
+instance (Pretty n) => Pretty (SomeSize n) where
   pretty (MkSomeSize sz b) = Size.withSingSize sz $ pretty b
   {-# INLINE pretty #-}
 
@@ -483,7 +483,7 @@ instance Unwrapper (SomeSize n) where
   {-# INLINE unwrap #-}
 
 -- | @since 0.1
-instance Read n => Parser (SomeSize n) where
+instance (Read n) => Parser (SomeSize n) where
   parser = do
     bytes <- Parser.parseDigits
     MPC.space

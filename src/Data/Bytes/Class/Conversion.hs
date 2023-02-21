@@ -49,7 +49,7 @@ class Conversion a where
   -- MkBytes 200000.0
   --
   -- @since 0.1
-  convert :: SingSize t => Proxy t -> a -> Converted t a
+  convert :: (SingSize t) => Proxy t -> a -> Converted t a
 
 -- | Low level function for converting a numeric literal /from/ the inferred
 -- 'SingSize' /to/ the parameter 'Size'. For instance,
@@ -183,6 +183,6 @@ convert' Y Z n = n .*. afromInteger 1_000
 convert' Y Y n = n
 {-# INLINEABLE convert' #-}
 
-nzafromInteger :: forall n. FromInteger n => Integer -> NonZero n
+nzafromInteger :: forall n. (FromInteger n) => Integer -> NonZero n
 nzafromInteger = reallyUnsafeNonZero . afromInteger
 {-# INLINE nzafromInteger #-}

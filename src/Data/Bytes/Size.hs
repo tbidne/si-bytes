@@ -328,7 +328,7 @@ instance SingSize Y where
 -- every time.
 --
 -- @since 0.1
-withSingSize :: SSize s -> (SingSize s => r) -> r
+withSingSize :: SSize s -> ((SingSize s) => r) -> r
 withSingSize s x = case s of
   SB -> x
   SK -> x

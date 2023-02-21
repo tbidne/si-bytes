@@ -30,7 +30,7 @@ class Parser a where
 -- | Parser combinator for digits with a 'Read' instance.
 --
 -- @since 0.1
-parseDigits :: Read n => Parsec Void Text n
+parseDigits :: (Read n) => Parsec Void Text n
 parseDigits = do
   MPC.space
   b <- MP.takeWhile1P Nothing (\c -> Ch.isDigit c || c == '.')
@@ -87,7 +87,7 @@ parseDigits = do
 -- Right (MkSomeNet SDown SM (MkNetBytes (MkBytes 5.5)))
 --
 -- @since 0.1
-parse :: Parser a => Text -> Either Text a
+parse :: (Parser a) => Text -> Either Text a
 parse t = case MP.runParser parser "Data.Bytes.Class.Parser.parse" t of
   Left err -> Left . T.pack . MP.errorBundlePretty $ err
   Right v -> Right v

@@ -171,7 +171,7 @@ sizedFormatterVerbose = MkSizedFormatter CaseFormatLower True SizeFormatLong
 -- | Formats size units.
 --
 -- @since 0.1
-formatSize :: Sized a => SizedFormatter -> a -> Text
+formatSize :: (Sized a) => SizedFormatter -> a -> Text
 formatSize fmt x = T.pack $ printf (T.unpack $ formatStr fmt) size'
   where
     size = formatSize' (fmt ^. #sizeFormat) (sizeOf x)

@@ -270,7 +270,7 @@ floatSizeDirFormatters =
 floatFormatter :: Word8 -> FloatingFormatter
 floatFormatter = MkFloatingFormatter . Just
 
-titleCase :: LabelOptic "caseFormat" A_Lens n n CaseFormat CaseFormat => n -> n
+titleCase :: (LabelOptic "caseFormat" A_Lens n n CaseFormat CaseFormat) => n -> n
 titleCase = set' #caseFormat CaseFormatTitle
 
 sizeLong :: SizedFormatter -> SizedFormatter

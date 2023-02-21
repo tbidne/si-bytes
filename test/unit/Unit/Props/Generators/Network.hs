@@ -49,7 +49,7 @@ genSomeNetSizeDown =
     ]
 
 -- | Generates 'SomeNetSize' 'Down' over 'BGens.genNet'.
-genFloatingSomeNetSizeDown :: Floating a => Gen (SomeNetSize Down a)
+genFloatingSomeNetSizeDown :: (Floating a) => Gen (SomeNetSize Down a)
 genFloatingSomeNetSizeDown = (fmap . fmap) fromRational genSomeNetSizeDown
 
 -- | Generates 'SomeNetSize' from 'SSize'.
@@ -138,5 +138,5 @@ genSomeNet = do
       Up -> MkSomeNet SUp SY <$> genNet
 
 -- | Generates 'SomeNet'.
-genFloatingSomeNet :: Floating a => Gen (SomeNet a)
+genFloatingSomeNet :: (Floating a) => Gen (SomeNet a)
 genFloatingSomeNet = (fmap . fmap) fromRational genSomeNet

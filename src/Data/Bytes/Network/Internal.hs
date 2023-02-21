@@ -150,7 +150,7 @@ pattern MkNetBytesP x <-
 -- SUp
 --
 -- @since 0.1
-netToSDirection :: SingDirection d => NetBytes d s n -> SDirection d
+netToSDirection :: (SingDirection d) => NetBytes d s n -> SDirection d
 netToSDirection _ = singDirection
 {-# INLINE netToSDirection #-}
 
@@ -160,7 +160,7 @@ netToSDirection _ = singDirection
 -- SK
 --
 -- @since 0.1
-netToSSize :: SingSize s => NetBytes d s n -> SSize s
+netToSSize :: (SingSize s) => NetBytes d s n -> SSize s
 netToSSize _ = singSize
 {-# INLINE netToSSize #-}
 
@@ -193,62 +193,62 @@ instance Monad (NetBytes d s) where
   {-# INLINE (>>=) #-}
 
 -- | @since 0.1
-instance FromInteger n => FromInteger (NetBytes d s n) where
+instance (FromInteger n) => FromInteger (NetBytes d s n) where
   afromInteger = MkNetBytes . afromInteger
   {-# INLINE afromInteger #-}
 
 -- | @since 0.1
-instance FromRational n => FromRational (NetBytes d s n) where
+instance (FromRational n) => FromRational (NetBytes d s n) where
   afromRational = MkNetBytes . afromRational
   {-# INLINE afromRational #-}
 
 -- | @since 0.1
-instance ASemigroup n => ASemigroup (NetBytes d s n) where
+instance (ASemigroup n) => ASemigroup (NetBytes d s n) where
   (.+.) = liftA2 (.+.)
   {-# INLINE (.+.) #-}
 
 -- | @since 0.1
-instance AMonoid n => AMonoid (NetBytes d s n) where
+instance (AMonoid n) => AMonoid (NetBytes d s n) where
   zero = MkNetBytes zero
   {-# INLINE zero #-}
 
 -- | @since 0.1
-instance AGroup n => AGroup (NetBytes d s n) where
+instance (AGroup n) => AGroup (NetBytes d s n) where
   (.-.) = liftA2 (.-.)
   {-# INLINE (.-.) #-}
 
 -- | @since 0.1
-instance Normed n => Normed (NetBytes d s n) where
+instance (Normed n) => Normed (NetBytes d s n) where
   norm (MkNetBytes b) = MkNetBytes (norm b)
   {-# INLINE norm #-}
 
 -- | @since 0.1
-instance MSemigroup n => MSemiSpace (NetBytes d s n) n where
+instance (MSemigroup n) => MSemiSpace (NetBytes d s n) n where
   MkNetBytes x .* k = MkNetBytes $ x .* k
   {-# INLINE (.*) #-}
 
 -- | @since 0.1
-instance MGroup n => MSpace (NetBytes d s n) n where
+instance (MGroup n) => MSpace (NetBytes d s n) n where
   MkNetBytes x .% k = MkNetBytes $ x .% k
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
-instance Semiring n => Semimodule (NetBytes d s n) n
+instance (Semiring n) => Semimodule (NetBytes d s n) n
 
 -- | @since 0.1
-instance Ring n => Module (NetBytes d s n) n
+instance (Ring n) => Module (NetBytes d s n) n
 
 -- | @since 0.1
-instance Semifield n => SemivectorSpace (NetBytes d s n) n
+instance (Semifield n) => SemivectorSpace (NetBytes d s n) n
 
 -- | @since 0.1
-instance Field n => VectorSpace (NetBytes d s n) n
+instance (Field n) => VectorSpace (NetBytes d s n) n
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (NetBytes d s n) where
   type Converted t (NetBytes d s n) = NetBytes d t n
 
-  convert :: forall t. SingSize t => Proxy t -> NetBytes d s n -> NetBytes d t n
+  convert :: forall t. (SingSize t) => Proxy t -> NetBytes d s n -> NetBytes d t n
   convert proxy (MkNetBytes x) = MkNetBytes $ convert proxy x
 
 -- | @since 0.1
@@ -271,7 +271,7 @@ instance
   {-# INLINEABLE pretty #-}
 
 -- | @since 0.1
-instance SingSize s => Sized (NetBytes d s n) where
+instance (SingSize s) => Sized (NetBytes d s n) where
   type HideSize (NetBytes d s n) = SomeNetSize d n
 
   sizeOf = Size.ssizeToSize . netToSSize
@@ -281,7 +281,7 @@ instance SingSize s => Sized (NetBytes d s n) where
   {-# INLINE hideSize #-}
 
 -- | @since 0.1
-instance SingDirection d => Directed (NetBytes d s n) where
+instance (SingDirection d) => Directed (NetBytes d s n) where
   type HideDirection (NetBytes d s n) = SomeNetDir s n
 
   directionOf = Direction.sdirectionToDirection . netToSDirection
@@ -297,7 +297,7 @@ instance Unwrapper (NetBytes d s n) where
   {-# INLINE unwrap #-}
 
 -- | @since 0.1
-instance Read n => Parser (NetBytes d s n) where
+instance (Read n) => Parser (NetBytes d s n) where
   parser = MkNetBytes <$> parser
   {-# INLINE parser #-}
 
@@ -353,7 +353,7 @@ _MkSomeNetSize = iso (convert Proxy) hideSize
 {-# INLINE _MkSomeNetSize #-}
 
 -- | @since 0.1
-deriving stock instance Show n => Show (SomeNetSize d n)
+deriving stock instance (Show n) => Show (SomeNetSize d n)
 
 -- | @since 0.1
 instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNetSize d n) where
@@ -361,7 +361,7 @@ instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNetSize d n) whe
     i `hashWithSalt` Size.ssizeToSize sz `hashWithSalt` x
 
 -- | @since 0.1
-instance NFData n => NFData (SomeNetSize d n) where
+instance (NFData n) => NFData (SomeNetSize d n) where
   rnf (MkSomeNetSize sz x) = sz `deepseq` x `deepseq` ()
 
 -- | @since 0.1
@@ -380,14 +380,14 @@ instance (FromInteger n, MGroup n, Ord n) => Ord (SomeNetSize d n) where
 -- | Fixed size 'B'.
 --
 -- @since 0.1
-instance FromInteger n => FromInteger (SomeNetSize d n) where
+instance (FromInteger n) => FromInteger (SomeNetSize d n) where
   afromInteger = MkSomeNetSize SB . afromInteger
   {-# INLINE afromInteger #-}
 
 -- | Fixed size 'B'.
 --
 -- @since 0.1
-instance FromRational n => FromRational (SomeNetSize d n) where
+instance (FromRational n) => FromRational (SomeNetSize d n) where
   afromRational = MkSomeNetSize SB . afromRational
   {-# INLINE afromRational #-}
 
@@ -432,7 +432,7 @@ instance (FromInteger n, Field n, Normed n, Ord n) => VectorSpace (SomeNetSize d
 instance (FromInteger n, MGroup n) => Conversion (SomeNetSize d n) where
   type Converted t (SomeNetSize d n) = NetBytes d t n
 
-  convert :: forall t. SingSize t => Proxy t -> SomeNetSize d n -> NetBytes d t n
+  convert :: forall t. (SingSize t) => Proxy t -> SomeNetSize d n -> NetBytes d t n
   convert proxy (MkSomeNetSize sz x) = Size.withSingSize sz $ convert proxy x
 
 -- | @since 0.1
@@ -457,7 +457,7 @@ instance Sized (SomeNetSize d n) where
   {-# INLINE hideSize #-}
 
 -- | @since 0.1
-instance SingDirection d => Directed (SomeNetSize d n) where
+instance (SingDirection d) => Directed (SomeNetSize d n) where
   type HideDirection (SomeNetSize d n) = SomeNet n
 
   directionOf = Direction.sdirectionToDirection . someNetSizeToSDirection
@@ -473,7 +473,7 @@ instance Unwrapper (SomeNetSize d n) where
   {-# INLINE unwrap #-}
 
 -- | @since 0.1
-instance Read n => Parser (SomeNetSize d n) where
+instance (Read n) => Parser (SomeNetSize d n) where
   parser = do
     MkSomeSize sz bytes <- parser
     pure $ MkSomeNetSize sz (MkNetBytes bytes)
@@ -482,7 +482,7 @@ instance Read n => Parser (SomeNetSize d n) where
 -- 'Direction'.
 --
 -- @since 0.1
-someNetSizeToSDirection :: SingDirection d => SomeNetSize d n -> SDirection d
+someNetSizeToSDirection :: (SingDirection d) => SomeNetSize d n -> SDirection d
 someNetSizeToSDirection _ = singDirection
 {-# INLINE someNetSizeToSDirection #-}
 
@@ -532,7 +532,7 @@ data SomeNetDir (s :: Size) (n :: Type) where
 -- 'Size'.
 --
 -- @since 0.1
-someNetDirToSSize :: SingSize s => SomeNetDir s n -> SSize s
+someNetDirToSSize :: (SingSize s) => SomeNetDir s n -> SSize s
 someNetDirToSSize _ = singSize
 {-# INLINE someNetDirToSSize #-}
 
@@ -548,12 +548,12 @@ someNetDirToSSize _ = singSize
 -- MkSomeNetDir SUp (MkNetBytes (MkBytes 70))
 --
 -- @since 0.1
-_MkSomeNetDir :: forall s d n. SingDirection d => Review (SomeNetDir s n) (NetBytes d s n)
+_MkSomeNetDir :: forall s d n. (SingDirection d) => Review (SomeNetDir s n) (NetBytes d s n)
 _MkSomeNetDir = unto (\b -> MkSomeNetDir (netToSDirection b) b)
 {-# INLINE _MkSomeNetDir #-}
 
 -- | @since 0.1
-deriving stock instance Show n => Show (SomeNetDir s n)
+deriving stock instance (Show n) => Show (SomeNetDir s n)
 
 -- | @since 0.1
 instance
@@ -564,7 +564,7 @@ instance
     i `hashWithSalt` Direction.sdirectionToDirection d `hashWithSalt` x
 
 -- | @since 0.1
-instance NFData n => NFData (SomeNetDir s n) where
+instance (NFData n) => NFData (SomeNetDir s n) where
   rnf (MkSomeNetDir d x) = d `deepseq` x `deepseq` ()
 
 -- | @since 0.1
@@ -580,17 +580,17 @@ instance (Eq n, FromInteger n, SingSize s) => Eq (SomeNetDir s n) where
   {-# INLINEABLE (==) #-}
 
 -- | @since 0.1
-instance MSemigroup n => MSemiSpace (SomeNetDir s n) n where
+instance (MSemigroup n) => MSemiSpace (SomeNetDir s n) n where
   MkSomeNetDir dx x .* k = MkSomeNetDir dx (x .* k)
   {-# INLINE (.*) #-}
 
 -- | @since 0.1
-instance MGroup n => MSpace (SomeNetDir s n) n where
+instance (MGroup n) => MSpace (SomeNetDir s n) n where
   MkSomeNetDir dx x .% k = MkSomeNetDir dx (x .% k)
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
-instance Normed n => Normed (SomeNetDir s n) where
+instance (Normed n) => Normed (SomeNetDir s n) where
   norm (MkSomeNetDir dx x) = MkSomeNetDir dx (norm x)
   {-# INLINE norm #-}
 
@@ -598,7 +598,7 @@ instance Normed n => Normed (SomeNetDir s n) where
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (SomeNetDir s n) where
   type Converted t (SomeNetDir s n) = SomeNetDir t n
 
-  convert :: forall t. SingSize t => Proxy t -> SomeNetDir s n -> SomeNetDir t n
+  convert :: forall t. (SingSize t) => Proxy t -> SomeNetDir s n -> SomeNetDir t n
   convert proxy (MkSomeNetDir dir x) = MkSomeNetDir dir $ convert proxy x
 
 -- | @since 0.1
@@ -616,7 +616,7 @@ instance (Pretty n, SingSize s) => Pretty (SomeNetDir s n) where
   {-# INLINE pretty #-}
 
 -- | @since 0.1
-instance SingSize s => Sized (SomeNetDir s n) where
+instance (SingSize s) => Sized (SomeNetDir s n) where
   type HideSize (SomeNetDir s n) = SomeNet n
   sizeOf = Size.ssizeToSize . someNetDirToSSize
   {-# INLINE sizeOf #-}
@@ -641,7 +641,7 @@ instance Unwrapper (SomeNetDir s n) where
   {-# INLINE unwrap #-}
 
 -- | @since 0.1
-instance Read n => Parser (SomeNetDir s n) where
+instance (Read n) => Parser (SomeNetDir s n) where
   parser = do
     bytes <- Parser.parseDigits
     MPC.space
@@ -708,7 +708,7 @@ _MkSomeNet = unto (\b -> MkSomeNet (netToSDirection b) (netToSSize b) b)
 {-# INLINE _MkSomeNet #-}
 
 -- | @since 0.1
-deriving stock instance Show n => Show (SomeNet n)
+deriving stock instance (Show n) => Show (SomeNet n)
 
 -- | @since 0.1
 instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNet n) where
@@ -719,7 +719,7 @@ instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNet n) where
       `hashWithSalt` x
 
 -- | @since 0.1
-instance NFData n => NFData (SomeNet n) where
+instance (NFData n) => NFData (SomeNet n) where
   rnf (MkSomeNet d s x) = d `deepseq` s `deepseq` x `deepseq` ()
 
 -- | @since 0.1
@@ -737,17 +737,17 @@ instance (Eq n, FromInteger n, MGroup n) => Eq (SomeNet n) where
   {-# INLINEABLE (==) #-}
 
 -- | @since 0.1
-instance MSemigroup n => MSemiSpace (SomeNet n) n where
+instance (MSemigroup n) => MSemiSpace (SomeNet n) n where
   MkSomeNet d s x .* k = MkSomeNet d s (x .* k)
   {-# INLINE (.*) #-}
 
 -- | @since 0.1
-instance MGroup n => MSpace (SomeNet n) n where
+instance (MGroup n) => MSpace (SomeNet n) n where
   MkSomeNet d s x .% k = MkSomeNet d s (x .% k)
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
-instance Normed n => Normed (SomeNet n) where
+instance (Normed n) => Normed (SomeNet n) where
   norm (MkSomeNet d s x) = MkSomeNet d s (norm x)
   {-# INLINE norm #-}
 
@@ -755,7 +755,7 @@ instance Normed n => Normed (SomeNet n) where
 instance (FromInteger n, MGroup n) => Conversion (SomeNet n) where
   type Converted t (SomeNet n) = SomeNetDir t n
 
-  convert :: forall t. SingSize t => Proxy t -> SomeNet n -> SomeNetDir t n
+  convert :: forall t. (SingSize t) => Proxy t -> SomeNet n -> SomeNetDir t n
   convert proxy (MkSomeNet dir sz x) = Size.withSingSize sz $ MkSomeNetDir dir $ convert proxy x
 
 -- | @since 0.1
@@ -767,7 +767,7 @@ instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNet n) whe
   {-# INLINEABLE normalize #-}
 
 -- | @since 0.1
-instance Pretty n => Pretty (SomeNet n) where
+instance (Pretty n) => Pretty (SomeNet n) where
   pretty (MkSomeNet dir sz x) =
     Direction.withSingDirection dir $
       Size.withSingSize sz $
@@ -800,7 +800,7 @@ instance Unwrapper (SomeNet n) where
   {-# INLINE unwrap #-}
 
 -- | @since 0.1
-instance Read n => Parser (SomeNet n) where
+instance (Read n) => Parser (SomeNet n) where
   parser = do
     bytes <- Parser.parseDigits
     MPC.space

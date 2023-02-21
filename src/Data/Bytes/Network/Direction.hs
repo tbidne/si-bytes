@@ -119,7 +119,7 @@ instance SingDirection Up where
 -- every time.
 --
 -- @since 0.1
-withSingDirection :: SDirection d -> (SingDirection d => r) -> r
+withSingDirection :: SDirection d -> ((SingDirection d) => r) -> r
 withSingDirection s x = case s of
   SDown -> x
   SUp -> x

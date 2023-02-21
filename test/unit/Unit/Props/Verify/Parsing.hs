@@ -51,7 +51,7 @@ parsingRoundTrip genX genFmt fmt =
 -- | Verifies that the 'Text' is successfully parsed into the expected type.
 parsesText ::
   forall a.
-  Parser a =>
+  (Parser a) =>
   -- | Test description.
   String ->
   -- | Text generator.
