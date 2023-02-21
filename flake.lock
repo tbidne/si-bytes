@@ -13,11 +13,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1676935671,
-        "narHash": "sha256-Gai8r+DWdYCEzBIFccau32if2Fo2AJ7ifokw37utE5o=",
+        "lastModified": 1676966085,
+        "narHash": "sha256-RSxcMvpjsX+Ed44Qc51zWDINk4hn4e4yQWqTLL8kYXI=",
         "owner": "tbidne",
         "repo": "algebra-simple",
-        "rev": "814f878e740f80a7231b97e7faa893392039ea85",
+        "rev": "a2e206727241931cd55f26cd12816bc8a8b5bfcf",
         "type": "github"
       },
       "original": {
@@ -39,11 +39,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1676935740,
-        "narHash": "sha256-HRuVba/tYsss4A4DFLUaTZqVfX3qcERLVwGPTmZmO40=",
+        "lastModified": 1676966300,
+        "narHash": "sha256-BgRsLIhPuC7jTwnHbZ9hK+sMQAtaHxfdmqvLijv1AZc=",
         "owner": "tbidne",
         "repo": "bounds",
-        "rev": "8dcff65c1b72ed4d587ff6d38219f73facf77d18",
+        "rev": "c898e79ff31151e11d69e3fd2ae9c71011e4f558",
         "type": "github"
       },
       "original": {
