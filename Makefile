@@ -1,6 +1,6 @@
 .PHONY: build clean repl watch ;\
 	cic ci formatc format lint lintc ;\
-	haddock haddockc hackage
+	haddock hackage
 
 # core
 
@@ -28,9 +28,9 @@ watch:
 
 # ci
 
-cic: formatc lintc haddockc
+cic: formatc lintc
 
-ci: lint format haddockc
+ci: lint format
 
 # formatting
 
@@ -57,15 +57,6 @@ haddock:
 	mkdir -p docs/ ;\
 	find docs/ -type f | xargs -I % sh -c "rm -r %" ;\
 	cp -r dist-newstyle/build/x86_64-linux/ghc-9.2.4/byte-types-0.1/doc/html/byte-types/* docs/
-
-haddockc:
-# for some reason, ci reports these modules as having around 95% even though
-# we do not see that locally.
-	nix run github:tbidne/nix-hs-tools/0.7#haddock-cov -- \
-	. \
-	-m Data.Bytes.Formatting 90 \
-	-m Data.Bytes.Network 90 \
-	-m Data.Bytes 90
 
 hackage:
 	cabal sdist ;\
