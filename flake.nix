@@ -24,14 +24,14 @@
     };
   };
   outputs =
-    { algebra-simple
+    inputs@{ algebra-simple
     , bounds
     , flake-compat
     , flake-parts
     , nixpkgs
     , self
     }:
-    flake-parts.lib.mkFlake { inherit self; } {
+    flake-parts.lib.mkFlake { inherit inputs; } {
       perSystem = { pkgs, ... }:
         let
           buildTools = c: with c; [
@@ -40,10 +40,20 @@
             pkgs.zlib
           ];
           devTools = c: with c; [
-            ghcid
-            haskell-language-server
+            (hlib.dontCheck ghcid)
+            (hlib.overrideCabal haskell-language-server (old: {
+              # Fourmolu tests must be flaky since they're failing on CI.
+              # We don't need it or these others anyway.
+              configureFlags = (old.configureFlags or [ ]) ++
+                [
+                  "-f -brittany"
+                  "-f -floskell"
+                  "-f -fourmolu"
+                  "-f -stylishhaskell"
+                ];
+            }))
           ];
-          ghc-version = "ghc925";
+          ghc-version = "ghc944";
           hlib = pkgs.haskell.lib;
           compiler = pkgs.haskell.packages."${ghc-version}".override {
             overrides = final: prev: {
