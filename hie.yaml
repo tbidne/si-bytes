@@ -1,10 +1,10 @@
 cradle:
   cabal:
     - path: "./src"
-      component: "lib:byte-types"
+      component: "lib:si-bytes"
 
     - path: "./test/doctest"
-      component: "byte-types:test:doctest"
+      component: "si-bytes:test:doctest"
 
     - path: "./test/unit"
-      component: "byte-types:test:unit"
+      component: "si-bytes:test:unit"

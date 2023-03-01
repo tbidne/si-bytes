@@ -1,6 +1,6 @@
 packages: .
 
-package byte-types
+package si-bytes
   ghc-options:
     -Wall -Wcompat -Werror -Widentities
     -Wincomplete-record-updates -Wincomplete-uni-patterns

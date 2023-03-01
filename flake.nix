@@ -1,5 +1,5 @@
 {
-  description = "Byte with type-level units (e.g. B, KB, MB, ...)";
+  description = "Byte with SI type-level units (e.g. B, KB, MB, ...)";
   inputs = {
     # nix
     flake-compat = {
@@ -64,7 +64,7 @@
           mkPkg = returnShellEnv:
             compiler.developPackage {
               inherit returnShellEnv;
-              name = "byte-types";
+              name = "si-bytes";
               root = ./.;
               modifier = drv:
                 pkgs.haskell.lib.addBuildTools drv

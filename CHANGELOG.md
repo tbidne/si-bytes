@@ -1,4 +1,4 @@
-# Revision history for byte-types
+# Revision history for si-bytes
 
 ## 0.1.0.0 -- YYYY-mm-dd
 
