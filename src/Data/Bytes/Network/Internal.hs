@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Internal module for "Data.Network.NetBytes". The primary
@@ -54,9 +53,6 @@ import Data.Bytes.Size qualified as Size
 import Data.Hashable (Hashable (hashWithSalt))
 import Data.Kind (Type)
 import Data.Proxy (Proxy (..))
-#if !MIN_VERSION_prettyprinter(1, 7, 1)
-import Data.Text.Prettyprint.Doc (Pretty (..), (<+>))
-#endif
 import GHC.Generics (Generic)
 import Numeric.Algebra
   ( AGroup (..),
@@ -79,9 +75,6 @@ import Numeric.Algebra
 import Numeric.Literal.Integer (FromInteger (..))
 import Numeric.Literal.Rational (FromRational (..))
 import Optics.Core (Iso', Review, iso, unto)
-#if MIN_VERSION_prettyprinter(1, 7, 1)
-import Prettyprinter (Pretty (..), (<+>))
-#endif
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
 
@@ -260,17 +253,6 @@ instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (Ne
   {-# INLINE normalize #-}
 
 -- | @since 0.1
-instance
-  forall d s n.
-  (Pretty n, SingDirection d, SingSize s) =>
-  Pretty (NetBytes d s n)
-  where
-  pretty (MkNetBytes x) = case singDirection @d of
-    SDown -> pretty x <+> pretty @String "Down"
-    SUp -> pretty x <+> pretty @String "Up"
-  {-# INLINEABLE pretty #-}
-
--- | @since 0.1
 instance (SingSize s) => Sized (NetBytes d s n) where
   type HideSize (NetBytes d s n) = SomeNetSize d n
 
@@ -442,11 +424,6 @@ instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNetSize d 
   {-# INLINE normalize #-}
 
 -- | @since 0.1
-instance (Pretty n, SingDirection d) => Pretty (SomeNetSize d n) where
-  pretty (MkSomeNetSize sz b) = Size.withSingSize sz $ pretty b
-  {-# INLINE pretty #-}
-
--- | @since 0.1
 instance Sized (SomeNetSize d n) where
   type HideSize (SomeNetSize d n) = SomeNetSize d n
 
@@ -610,12 +587,6 @@ instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (So
   {-# INLINEABLE normalize #-}
 
 -- | @since 0.1
-instance (Pretty n, SingSize s) => Pretty (SomeNetDir s n) where
-  pretty (MkSomeNetDir dir x) =
-    Direction.withSingDirection dir $ pretty x
-  {-# INLINE pretty #-}
-
--- | @since 0.1
 instance (SingSize s) => Sized (SomeNetDir s n) where
   type HideSize (SomeNetDir s n) = SomeNet n
   sizeOf = Size.ssizeToSize . someNetDirToSSize
@@ -765,14 +736,6 @@ instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNet n) whe
     case Size.withSingSize sz normalize x of
       MkSomeNetSize sz' x' -> MkSomeNet dir sz' x'
   {-# INLINEABLE normalize #-}
-
--- | @since 0.1
-instance (Pretty n) => Pretty (SomeNet n) where
-  pretty (MkSomeNet dir sz x) =
-    Direction.withSingDirection dir $
-      Size.withSingSize sz $
-        pretty x
-  {-# INLINEABLE pretty #-}
 
 -- | @since 0.1
 instance Sized (SomeNet n) where

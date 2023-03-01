@@ -26,6 +26,11 @@ repl:
 watch:
 	ghcid --command "cabal repl $(ARGS)"
 
+doctest:
+	cabal build --write-ghc-environment-files=always; \
+	RUN_DOCTEST=1 cabal test doctest; \
+	rm .ghc.environment.*
+
 # ci
 
 cic: formatc lintc
