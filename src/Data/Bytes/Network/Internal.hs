@@ -389,26 +389,26 @@ instance (Field n, FromInteger n) => AGroup (SomeNetSize d n) where
   {-# INLINE (.-.) #-}
 
 -- | @since 0.1
-instance (FromInteger n, MGroup n, Normed n, Ord n) => MSemiSpace (SomeNetSize d n) n where
+instance (MGroup n) => MSemiSpace (SomeNetSize d n) n where
   MkSomeNetSize sz x .* k = MkSomeNetSize sz $ x .* k
   {-# INLINE (.*) #-}
 
 -- | @since 0.1
-instance (FromInteger n, MGroup n, Normed n, Ord n) => MSpace (SomeNetSize d n) n where
+instance (MGroup n) => MSpace (SomeNetSize d n) n where
   MkSomeNetSize sz x .% k = MkSomeNetSize sz $ x .% k
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
-instance (FromInteger n, Normed n, Ord n, Semifield n) => Semimodule (SomeNetSize d n) n
+instance (FromInteger n, Semifield n) => Semimodule (SomeNetSize d n) n
 
 -- | @since 0.1
-instance (Field n, FromInteger n, Normed n, Ord n) => Module (SomeNetSize d n) n
+instance (Field n, FromInteger n) => Module (SomeNetSize d n) n
 
 -- | @since 0.1
-instance (FromInteger n, Normed n, Ord n, Semifield n) => SemivectorSpace (SomeNetSize d n) n
+instance (FromInteger n, Semifield n) => SemivectorSpace (SomeNetSize d n) n
 
 -- | @since 0.1
-instance (FromInteger n, Field n, Normed n, Ord n) => VectorSpace (SomeNetSize d n) n
+instance (FromInteger n, Field n) => VectorSpace (SomeNetSize d n) n
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n) => Conversion (SomeNetSize d n) where
