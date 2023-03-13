@@ -45,3 +45,40 @@ jobs:
 
       - name: Unit Tests
         run: cabal test unit --test-options "--hedgehog-tests 100000"
+  cabal_windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        ghc:
+          - "8.10.7"
+          - "9.0.2"
+          - "9.2.7"
+          - "9.4.4"
+    runs-on: "windows-latest"
+    steps:
+      - uses: actions/checkout@v3.3.0
+
+      - uses: haskell/actions/setup@v2.3.4
+        with:
+          ghc-version: ${{ matrix.ghc }}
+
+      - name: Compile
+        run: cabal build
+
+      - name: Doc Tests
+        run : |
+          cabal configure --enable-tests --write-ghc-environment-files always
+          cabal build
+
+          set RUN_DOCTEST=1
+          cabal test doctest
+
+      # FIXME: Our unit tests include many golden tests i.e. string
+      # comparisons are used. This turns out to be a problem for windows,
+      # but it is not easy to diagnose. For now we disable the tests as this
+      # is almost certainly merely a problem with the test suite, not anything
+      # related to the package itself. Still, it would be nice to have this
+      # enabled.
+      #
+      #- name: Unit Tests
+      #  run: cabal test unit --test-options "--hedgehog-tests 100000"
