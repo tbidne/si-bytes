@@ -1,10 +1,10 @@
 -- | Property tests for Network.
 module Unit.Data.Bytes.Network (tests) where
 
+import Data.Bytes.Class.Conversion (Conversion (convert))
 import Data.Bytes.Class.Normalize (Normalize (..))
 import Data.Bytes.Class.Wrapper (Unwrapper (..))
 import Data.Bytes.Formatting qualified as Formatting
-import Data.Bytes.Network (Conversion (convert))
 import Data.Bytes.Network.Direction (Direction (..), SDirection (..))
 import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Network.Internal
@@ -20,7 +20,6 @@ import Hedgehog ((===))
 import Hedgehog qualified as H
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
-import Unit.Golden qualified as Golden
 import Unit.Props.Generators.Formatting qualified as FGens
 import Unit.Props.Generators.Network qualified as NGens
 import Unit.Props.Generators.Parsing qualified as PGens
@@ -29,6 +28,9 @@ import Unit.Props.Verify.Algebra qualified as VAlgebra
 import Unit.Props.Verify.Conversion qualified as VConv
 import Unit.Props.Verify.Normalize qualified as VNormalize
 import Unit.Props.Verify.Parsing qualified as VParsing
+import Unit.Specs.Verify.Conversion qualified as VSpecsConv
+import Unit.Specs.Verify.Formatting qualified as VSpecsFmt
+import Unit.Specs.Verify.Normalize qualified as VSpecsNorm
 import Unit.Utils qualified as U
 
 -- | @since 0.1.
@@ -63,23 +65,56 @@ convertTests =
   T.testGroup
     "Conversions"
     [ convertProps,
-      Golden.convGoldens "net-bytes" (MkNetBytesP @Up @B) (MkNetBytesP @Down @Y)
+      VSpecsConv.convSpecs expected (MkNetBytesP @Up @B) (MkNetBytesP @Down @Y)
     ]
+  where
+    expected =
+      VSpecsConv.MkExpectedConvs
+        { VSpecsConv.bExp = 1_000_000_000_000_000_000_000_000,
+          VSpecsConv.kExp = 1_000_000_000_000_000_000_000,
+          VSpecsConv.mExp = 1_000_000_000_000_000_000,
+          VSpecsConv.gExp = 1_000_000_000_000_000,
+          VSpecsConv.tExp = 1_000_000_000_000,
+          VSpecsConv.pExp = 1_000_000_000,
+          VSpecsConv.eExp = 1_000_000,
+          VSpecsConv.zExp = 1_000,
+          VSpecsConv.yExp = 1
+        }
 
 normalizeTests :: TestTree
 normalizeTests =
   T.testGroup
     "Normalize"
     [ normalizeProps,
-      normalizeGoldens
+      normalizeSpecs
     ]
 
 formattingTests :: TestTree
 formattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "Integrals" "net-bytes-int" (MkNetBytesP @Up @T @Int 50) Golden.intSizeDirFormatters,
-      Golden.formatGoldens "Floats" "net-bytes-float" (MkNetBytesP @Down @P @Float 120.3648) Golden.floatSizeDirFormatters
+    [ VSpecsFmt.formatSpecs
+        "Integrals"
+        (MkNetBytesP @Up @T @Int 50)
+        VSpecsFmt.intSizeDirFormatters
+        [ "50T",
+          "50T U",
+          "50 tb U",
+          "50 terabytes up",
+          "50 tb up",
+          "50 Terabytes U"
+        ],
+      VSpecsFmt.formatSpecs
+        "Floats"
+        (MkNetBytesP @Down @P @Float 120.3648)
+        VSpecsFmt.floatSizeDirFormatters
+        [ "120.36P",
+          "120.365P D",
+          "120.3648 pb D",
+          "120.36480 petabytes down",
+          "120.3648 pb down",
+          "120.36 Petabytes D"
+        ]
     ]
 
 parsingTests :: TestTree
@@ -134,19 +169,82 @@ normalizeProps =
       H.footnote $ "normalized: " <> show normalized
       VNormalize.isNormalized label x
 
-normalizeGoldens :: TestTree
-normalizeGoldens = T.testGroup "Goldens" tests'
+normalizeSpecs :: TestTree
+normalizeSpecs = T.testGroup "Specs" tests'
   where
     tests' =
-      [ Golden.normGoldensForUnit "net-bytes" 'B' (MkNetBytesP @Up @B),
-        Golden.normGoldensForUnit "net-bytes" 'K' (MkNetBytesP @Up @K),
-        Golden.normGoldensForUnit "net-bytes" 'M' (MkNetBytesP @Up @M),
-        Golden.normGoldensForUnit "net-bytes" 'G' (MkNetBytesP @Up @G),
-        Golden.normGoldensForUnit "net-bytes" 'T' (MkNetBytesP @Up @T),
-        Golden.normGoldensForUnit "net-bytes" 'P' (MkNetBytesP @Down @P),
-        Golden.normGoldensForUnit "net-bytes" 'E' (MkNetBytesP @Down @E),
-        Golden.normGoldensForUnit "net-bytes" 'Z' (MkNetBytesP @Down @Z),
-        Golden.normGoldensForUnit "net-bytes" 'Y' (MkNetBytesP @Down @Y)
+      [ VSpecsNorm.normSpecs
+          'B'
+          (MkNetBytesP @Up @B)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SB (MkNetBytes (MkBytes 0.25))"
+              "MkSomeNetSize SB (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SK (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'K'
+          (MkNetBytesP @Up @K)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SB (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SK (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SM (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'M'
+          (MkNetBytesP @Up @M)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SK (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SM (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SG (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'G'
+          (MkNetBytesP @Up @G)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SM (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SG (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize ST (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'T'
+          (MkNetBytesP @Up @T)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SG (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize ST (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SP (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'P'
+          (MkNetBytesP @Down @P)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize ST (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SP (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SE (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'E'
+          (MkNetBytesP @Down @E)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SP (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SE (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SZ (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'Z'
+          (MkNetBytesP @Down @Z)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SE (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SZ (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SY (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'Y'
+          (MkNetBytesP @Down @Y)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SZ (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SY (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SY (MkNetBytes (MkBytes 1500.0))"
+          )
       ]
 
 netBytesEqProps :: TestTree
@@ -206,18 +304,31 @@ someNetSizeConvertTests =
   T.testGroup
     "Conversions"
     [ someNetSizeConvertProps,
-      Golden.convGoldens
-        "some-net-size"
+      VSpecsConv.convSpecs
+        expected
         (MkSomeNetSize @B @Up SB . MkNetBytesP)
         (MkSomeNetSize @Y @Down SY . MkNetBytesP)
     ]
+  where
+    expected =
+      VSpecsConv.MkExpectedConvs
+        { VSpecsConv.bExp = 1_000_000_000_000_000_000_000_000,
+          VSpecsConv.kExp = 1_000_000_000_000_000_000_000,
+          VSpecsConv.mExp = 1_000_000_000_000_000_000,
+          VSpecsConv.gExp = 1_000_000_000_000_000,
+          VSpecsConv.tExp = 1_000_000_000_000,
+          VSpecsConv.pExp = 1_000_000_000,
+          VSpecsConv.eExp = 1_000_000,
+          VSpecsConv.zExp = 1_000,
+          VSpecsConv.yExp = 1
+        }
 
 someNetSizeNormalizeTests :: TestTree
 someNetSizeNormalizeTests =
   T.testGroup
     "Normalize"
     [ someNetSizeNormalizeProps,
-      someNetSizeNormalizeGoldens
+      someNetSizeNormalizeSpecs
     ]
 
 someNetSizeAlgebraProps :: TestTree
@@ -242,8 +353,28 @@ someNetSizeFormattingTests :: TestTree
 someNetSizeFormattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "Integrals" "some-net-size-int" (MkSomeNetSize SE $ MkNetBytesP @Up @_ @Int 50) Golden.intSizeDirFormatters,
-      Golden.formatGoldens "Floats" "some-net-size-float" (MkSomeNetSize SZ $ MkNetBytesP @Down @_ @Float 120.3648) Golden.floatSizeDirFormatters
+    [ VSpecsFmt.formatSpecs
+        "Integrals"
+        (MkSomeNetSize SE $ MkNetBytesP @Up @_ @Int 50)
+        VSpecsFmt.intSizeDirFormatters
+        [ "50E",
+          "50E U",
+          "50 eb U",
+          "50 exabytes up",
+          "50 eb up",
+          "50 Exabytes U"
+        ],
+      VSpecsFmt.formatSpecs
+        "Floats"
+        (MkSomeNetSize SZ $ MkNetBytesP @Down @_ @Float 120.3648)
+        VSpecsFmt.floatSizeDirFormatters
+        [ "120.36Z",
+          "120.365Z D",
+          "120.3648 zb D",
+          "120.36480 zettabytes down",
+          "120.3648 zb down",
+          "120.36 Zettabytes D"
+        ]
     ]
 
 someNetSizeConvertProps :: TestTree
@@ -299,19 +430,82 @@ someNetSizeVectorSpaceProps =
       l <- H.forAll SGens.genNonZero
       VAlgebra.vectorSpaceLaws x y k l
 
-someNetSizeNormalizeGoldens :: TestTree
-someNetSizeNormalizeGoldens = T.testGroup "Goldens" tests'
+someNetSizeNormalizeSpecs :: TestTree
+someNetSizeNormalizeSpecs = T.testGroup "Specs" tests'
   where
     tests' =
-      [ Golden.normGoldensForUnit "some-net-size" 'B' (MkSomeNetSize @_ @Up SB . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-size" 'K' (MkSomeNetSize @_ @Up SK . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-size" 'M' (MkSomeNetSize @_ @Up SM . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-size" 'G' (MkSomeNetSize @_ @Up SG . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-size" 'T' (MkSomeNetSize @_ @Up ST . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-size" 'P' (MkSomeNetSize @_ @Down SP . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-size" 'E' (MkSomeNetSize @_ @Down SE . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-size" 'Z' (MkSomeNetSize @_ @Down SZ . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-size" 'Y' (MkSomeNetSize @_ @Down SY . MkNetBytesP)
+      [ VSpecsNorm.normSpecs
+          'B'
+          (MkSomeNetSize @_ @Up SB . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SB (MkNetBytes (MkBytes 0.25))"
+              "MkSomeNetSize SB (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SK (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'K'
+          (MkSomeNetSize @_ @Up SK . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SB (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SK (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SM (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'M'
+          (MkSomeNetSize @_ @Up SM . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SK (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SM (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SG (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'G'
+          (MkSomeNetSize @_ @Up SG . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SM (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SG (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize ST (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'T'
+          (MkSomeNetSize @_ @Up ST . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SG (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize ST (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SP (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'P'
+          (MkSomeNetSize @_ @Down SP . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize ST (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SP (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SE (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'E'
+          (MkSomeNetSize @_ @Down SE . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SP (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SE (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SZ (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'Z'
+          (MkSomeNetSize @_ @Down SZ . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SE (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SZ (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SY (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'Y'
+          (MkSomeNetSize @_ @Down SY . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNetSize SZ (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNetSize SY (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNetSize SY (MkNetBytes (MkBytes 1500.0))"
+          )
       ]
 
 someNetSizeNormalizeProps :: TestTree
@@ -359,18 +553,31 @@ someNetDirConvertTests =
   T.testGroup
     "Conversions"
     [ someNetDirConvertProps,
-      Golden.convGoldens
-        "some-net-dir"
+      VSpecsConv.convSpecs
+        expected
         (MkSomeNetDir @Up @B SUp . MkNetBytesP)
         (MkSomeNetDir @Down @Y SDown . MkNetBytesP)
     ]
+  where
+    expected =
+      VSpecsConv.MkExpectedConvs
+        { VSpecsConv.bExp = 1_000_000_000_000_000_000_000_000,
+          VSpecsConv.kExp = 1_000_000_000_000_000_000_000,
+          VSpecsConv.mExp = 1_000_000_000_000_000_000,
+          VSpecsConv.gExp = 1_000_000_000_000_000,
+          VSpecsConv.tExp = 1_000_000_000_000,
+          VSpecsConv.pExp = 1_000_000_000,
+          VSpecsConv.eExp = 1_000_000,
+          VSpecsConv.zExp = 1_000,
+          VSpecsConv.yExp = 1
+        }
 
 someNetDirNormalizeTests :: TestTree
 someNetDirNormalizeTests =
   T.testGroup
     "Normalize"
     [ someNetDirNormalizeProps,
-      someNetDirNormalizeGoldens
+      someNetDirNormalizeSpecs
     ]
 
 someNetDirAlgebraProps :: TestTree
@@ -384,8 +591,28 @@ someNetDirFormattingTests :: TestTree
 someNetDirFormattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "Integrals" "some-net-dir-int" (MkSomeNetDir SUp $ MkNetBytesP @_ @Y @Int 50) Golden.intSizeDirFormatters,
-      Golden.formatGoldens "Floats" "some-net-dir-float" (MkSomeNetDir SDown $ MkNetBytesP @_ @K @Float 120.3648) Golden.floatSizeDirFormatters
+    [ VSpecsFmt.formatSpecs
+        "Integrals"
+        (MkSomeNetDir SUp $ MkNetBytesP @_ @Y @Int 50)
+        VSpecsFmt.intSizeDirFormatters
+        [ "50Y",
+          "50Y U",
+          "50 yb U",
+          "50 yottabytes up",
+          "50 yb up",
+          "50 Yottabytes U"
+        ],
+      VSpecsFmt.formatSpecs
+        "Floats"
+        (MkSomeNetDir SDown $ MkNetBytesP @_ @K @Float 120.3648)
+        VSpecsFmt.floatSizeDirFormatters
+        [ "120.36K",
+          "120.365K D",
+          "120.3648 kb D",
+          "120.36480 kilobytes down",
+          "120.3648 kb down",
+          "120.36 Kilobytes D"
+        ]
     ]
 
 someNetDirParsingTests :: TestTree
@@ -430,19 +657,82 @@ someNetDirConvertProps =
         (convert (Proxy @Y) someNetDir)
         (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @Y) bytes))
 
-someNetDirNormalizeGoldens :: TestTree
-someNetDirNormalizeGoldens = T.testGroup "Goldens" tests'
+someNetDirNormalizeSpecs :: TestTree
+someNetDirNormalizeSpecs = T.testGroup "Specs" tests'
   where
     tests' =
-      [ Golden.normGoldensForUnit "some-net-dir" 'B' (MkSomeNetDir @_ @B SUp . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'K' (MkSomeNetDir @_ @K SUp . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'M' (MkSomeNetDir @_ @M SUp . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'G' (MkSomeNetDir @_ @G SUp . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'T' (MkSomeNetDir @_ @T SUp . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'P' (MkSomeNetDir @_ @P SDown . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'E' (MkSomeNetDir @_ @E SDown . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'Z' (MkSomeNetDir @_ @Z SDown . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'Y' (MkSomeNetDir @_ @Y SDown . MkNetBytesP)
+      [ VSpecsNorm.normSpecs
+          'B'
+          (MkSomeNetDir @_ @B SUp . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SB (MkNetBytes (MkBytes 0.25))"
+              "MkSomeNet SUp SB (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp SK (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'K'
+          (MkSomeNetDir @_ @K SUp . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SB (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SUp SK (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp SM (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'M'
+          (MkSomeNetDir @_ @M SUp . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SK (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SUp SM (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp SG (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'G'
+          (MkSomeNetDir @_ @G SUp . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SM (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SUp SG (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp ST (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'T'
+          (MkSomeNetDir @_ @T SUp . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SG (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SUp ST (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp SP (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'P'
+          (MkSomeNetDir @_ @P SDown . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SDown ST (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SDown SP (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SDown SE (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'E'
+          (MkSomeNetDir @_ @E SDown . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SDown SP (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SDown SE (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SDown SZ (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'Z'
+          (MkSomeNetDir @_ @Z SDown . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SDown SE (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SDown SZ (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SDown SY (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'Y'
+          (MkSomeNetDir @_ @Y SDown . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SDown SZ (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SDown SY (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SDown SY (MkNetBytes (MkBytes 1500.0))"
+          )
       ]
 
 someNetDirNormalizeProps :: TestTree
@@ -488,18 +778,31 @@ someNetConvertTests =
   T.testGroup
     "Conversions"
     [ someNetConvertProps,
-      Golden.convGoldens
-        "some-net"
-        (MkSomeNet SUp SK . MkNetBytesP)
+      VSpecsConv.convSpecs
+        expected
+        (MkSomeNet SUp SB . MkNetBytesP)
         (MkSomeNet SDown SY . MkNetBytesP)
     ]
+  where
+    expected =
+      VSpecsConv.MkExpectedConvs
+        { VSpecsConv.bExp = 1_000_000_000_000_000_000_000_000,
+          VSpecsConv.kExp = 1_000_000_000_000_000_000_000,
+          VSpecsConv.mExp = 1_000_000_000_000_000_000,
+          VSpecsConv.gExp = 1_000_000_000_000_000,
+          VSpecsConv.tExp = 1_000_000_000_000,
+          VSpecsConv.pExp = 1_000_000_000,
+          VSpecsConv.eExp = 1_000_000,
+          VSpecsConv.zExp = 1_000,
+          VSpecsConv.yExp = 1
+        }
 
 someNetNormalizeTests :: TestTree
 someNetNormalizeTests =
   T.testGroup
     "Normalize"
     [ someNetNormalizeProps,
-      someNetNormalizeGoldens
+      someNetNormalizeSpecs
     ]
 
 someNetAlgebraProps :: TestTree
@@ -600,19 +903,82 @@ someNetConvertProps =
                 convert (Proxy @B) bytes
         )
 
-someNetNormalizeGoldens :: TestTree
-someNetNormalizeGoldens = T.testGroup "Goldens" tests'
+someNetNormalizeSpecs :: TestTree
+someNetNormalizeSpecs = T.testGroup "Specs" tests'
   where
     tests' =
-      [ Golden.normGoldensForUnit "some-net-dir" 'B' (MkSomeNet SUp SB . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'K' (MkSomeNet SUp SK . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'M' (MkSomeNet SUp SM . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'G' (MkSomeNet SUp SG . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'T' (MkSomeNet SUp ST . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'P' (MkSomeNet SDown SP . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'E' (MkSomeNet SDown SE . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'Z' (MkSomeNet SDown SZ . MkNetBytesP),
-        Golden.normGoldensForUnit "some-net-dir" 'Y' (MkSomeNet SDown SY . MkNetBytesP)
+      [ VSpecsNorm.normSpecs
+          'B'
+          (MkSomeNet SUp SB . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SB (MkNetBytes (MkBytes 0.25))"
+              "MkSomeNet SUp SB (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp SK (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'K'
+          (MkSomeNet SUp SK . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SB (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SUp SK (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp SM (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'M'
+          (MkSomeNet SUp SM . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SK (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SUp SM (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp SG (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'G'
+          (MkSomeNet SUp SG . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SM (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SUp SG (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp ST (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'T'
+          (MkSomeNet SUp ST . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SUp SG (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SUp ST (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SUp SP (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'P'
+          (MkSomeNet SDown SP . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SDown ST (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SDown SP (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SDown SE (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'E'
+          (MkSomeNet SDown SE . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SDown SP (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SDown SE (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SDown SZ (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'Z'
+          (MkSomeNet SDown SZ . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SDown SE (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SDown SZ (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SDown SY (MkNetBytes (MkBytes 1.5))"
+          ),
+        VSpecsNorm.normSpecs
+          'Y'
+          (MkSomeNet SDown SY . MkNetBytesP)
+          ( VSpecsNorm.MkExpectedNorms
+              "MkSomeNet SDown SZ (MkNetBytes (MkBytes 250.0))"
+              "MkSomeNet SDown SY (MkNetBytes (MkBytes 750.0))"
+              "MkSomeNet SDown SY (MkNetBytes (MkBytes 1500.0))"
+          )
       ]
 
 someNetNormalizeProps :: TestTree
@@ -641,6 +1007,26 @@ someNetFormattingTests :: TestTree
 someNetFormattingTests =
   T.testGroup
     "Formatting"
-    [ Golden.formatGoldens "Integrals" "some-net-int" (MkSomeNet SUp SK $ MkNetBytesP @_ @_ @Int 50) Golden.intSizeDirFormatters,
-      Golden.formatGoldens "Floats" "some-net-float" (MkSomeNet SDown SY $ MkNetBytesP @_ @_ @Float 120.3648) Golden.floatSizeDirFormatters
+    [ VSpecsFmt.formatSpecs
+        "Integrals"
+        (MkSomeNet SUp SK $ MkNetBytesP @_ @_ @Int 50)
+        VSpecsFmt.intSizeDirFormatters
+        [ "50K",
+          "50K U",
+          "50 kb U",
+          "50 kilobytes up",
+          "50 kb up",
+          "50 Kilobytes U"
+        ],
+      VSpecsFmt.formatSpecs
+        "Floats"
+        (MkSomeNet SDown SY $ MkNetBytesP @_ @_ @Float 120.3648)
+        VSpecsFmt.floatSizeDirFormatters
+        [ "120.36Y",
+          "120.365Y D",
+          "120.3648 yb D",
+          "120.36480 yottabytes down",
+          "120.3648 yb down",
+          "120.36 Yottabytes D"
+        ]
     ]

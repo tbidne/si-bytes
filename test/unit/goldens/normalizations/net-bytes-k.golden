@@ -1,3 +1,0 @@
-MkSomeNetSize SB (MkNetBytes (MkBytes 250.0))
-MkSomeNetSize SK (MkNetBytes (MkBytes 750.0))
-MkSomeNetSize SM (MkNetBytes (MkBytes 1.5))

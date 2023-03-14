@@ -1,3 +1,0 @@
-MkSomeSize ST (MkBytes 250.0)
-MkSomeSize SP (MkBytes 750.0)
-MkSomeSize SE (MkBytes 1.5)
