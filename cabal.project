@@ -11,11 +11,11 @@ package si-bytes
 source-repository-package
     type: git
     location: https://github.com/tbidne/algebra-simple.git
-    tag: 1f2e11d0a0d7753f6a2a89b193ec76ce74a52552
+    tag: 63f86638145baa32fdd21d87344701b9c8c93c23
 
 source-repository-package
     type: git
     location: https://github.com/tbidne/bounds.git
-    tag: 6c48304f75c42f91060bfaaaf25ef7fac8b24804
+    tag: aeb822deb5593a0e774105f94e65527e63931cfa
 
 test-show-details: direct
