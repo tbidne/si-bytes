@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Internal module for "Data.Network.NetBytes". The primary
@@ -27,7 +28,9 @@ module Data.Bytes.Network.Internal
   )
 where
 
+#if !MIN_VERSION_base(4, 18, 0)
 import Control.Applicative (liftA2)
+#endif
 import Control.DeepSeq (NFData (rnf), deepseq)
 import Data.Bounds
   ( LowerBounded,

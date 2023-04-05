@@ -17,7 +17,6 @@ import Numeric.Algebra
     MSpace (..),
     VectorSpace,
   )
-import Numeric.Data.NonZero (NonZero (..))
 import Unit.Utils ((<=>))
 
 -- | Verifies that the parameter numberic value is normalized, taking care
@@ -54,7 +53,7 @@ normalizeLaws ::
   n ->
   n ->
   k ->
-  NonZero k ->
+  k ->
   PropertyT IO ()
 normalizeLaws x y k nz = do
   -- order preserving

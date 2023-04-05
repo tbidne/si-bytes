@@ -347,7 +347,7 @@ withSingSize s x = case s of
 --
 -- >>> :kind! NextSize 'M
 -- NextSize 'M :: Size
--- = 'G
+-- = G
 --
 -- >>> :kind! NextSize 'Y
 -- NextSize 'Y :: Size
@@ -372,7 +372,7 @@ type family NextSize (s :: Size) = (t :: Size) where
 --
 -- >>> :kind! PrevSize 'M
 -- PrevSize 'M :: Size
--- = 'K
+-- = K
 --
 -- >>> :kind! PrevSize 'B
 -- PrevSize 'B :: Size

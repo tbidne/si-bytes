@@ -43,7 +43,6 @@ module Data.Bytes
     -- * Algebra
     -- $algebra
     module Numeric.Algebra,
-    module Numeric.Data.NonZero,
     module Numeric.Literal.Integer,
     module Numeric.Literal.Rational,
 
@@ -104,7 +103,6 @@ import Data.Bytes.Size
     _Z,
   )
 import Numeric.Algebra
-import Numeric.Data.NonZero
 import Numeric.Literal.Integer
 import Numeric.Literal.Rational
 
@@ -227,8 +225,7 @@ import Numeric.Literal.Rational
 --
 -- === Division
 -- >>> import Numeric.Algebra (MSpace ((.%)))
--- >>> import Numeric.Data.NonZero (unsafeNonZero)
--- >>> mb1 .% (unsafeNonZero 10)
+-- >>> mb1 .% 10
 -- MkBytes 2
 --
 -- One may wonder how the 'Numeric.Algebra.Additive.AGroup.AGroup' instance

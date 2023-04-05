@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Internal module for "Data.Bytes". The primary difference is
@@ -17,7 +18,9 @@ module Data.Bytes.Internal
   )
 where
 
+#if !MIN_VERSION_base(4, 18, 0)
 import Control.Applicative (liftA2)
+#endif
 import Control.DeepSeq (NFData (rnf), deepseq)
 import Data.Bounds
   ( LowerBounded,
@@ -62,7 +65,6 @@ import Numeric.Algebra
     SemivectorSpace,
     VectorSpace,
   )
-import Numeric.Data.NonZero (reallyUnsafeNonZero)
 import Numeric.Literal.Integer (FromInteger (..))
 import Numeric.Literal.Rational (FromRational (..))
 import Optics.Core (Iso', iso)
@@ -489,7 +491,7 @@ instance (Read n) => Parser (SomeSize n) where
 incSize :: forall s n. (FromInteger n, MGroup n) => Bytes s n -> Bytes (NextSize s) n
 incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
   where
-    nz1000 = reallyUnsafeNonZero $ afromInteger 1_000
+    nz1000 = afromInteger 1_000
 {-# INLINE incSize #-}
 
 -- | Decreases 'Bytes' to the previous size.

@@ -13,7 +13,6 @@ where
 import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
 import Data.Proxy (Proxy (..))
 import Numeric.Algebra (MGroup (..), MSemigroup (..))
-import Numeric.Data.NonZero (NonZero (..), reallyUnsafeNonZero)
 import Numeric.Literal.Integer (FromInteger (..))
 
 -- $setup
@@ -37,14 +36,14 @@ class Conversion a where
   -- >>> let bytes = MkBytes 50_000 :: Bytes 'M Int
   -- >>> let gBytes = convert @_ @G Proxy bytes
   -- >>> :type gBytes
-  -- gBytes :: Bytes 'G Int
+  -- gBytes :: Bytes G Int
   -- >>> gBytes
   -- MkBytes 50
   --
   -- >>> let bytes = hideSize (MkBytes 0.2 :: Bytes 'T Float)
   -- >>> let mBytes = convert @_ @M Proxy bytes
   -- >>> :type mBytes
-  -- mBytes :: Bytes 'M Float
+  -- mBytes :: Bytes M Float
   -- >>> mBytes
   -- MkBytes 200000.0
   --
@@ -101,59 +100,59 @@ convert' ::
   n ->
   n
 convert' B B n = n
-convert' B K n = n .%. nzafromInteger @n 1_000
-convert' B M n = n .%. nzafromInteger @n 1_000_000
-convert' B G n = n .%. nzafromInteger @n 1_000_000_000
-convert' B T n = n .%. nzafromInteger @n 1_000_000_000_000
-convert' B P n = n .%. nzafromInteger @n 1_000_000_000_000_000
-convert' B E n = n .%. nzafromInteger @n 1_000_000_000_000_000_000
-convert' B Z n = n .%. nzafromInteger @n 1_000_000_000_000_000_000_000
-convert' B Y n = n .%. nzafromInteger @n 1_000_000_000_000_000_000_000_000
+convert' B K n = n .%. afromInteger 1_000
+convert' B M n = n .%. afromInteger 1_000_000
+convert' B G n = n .%. afromInteger 1_000_000_000
+convert' B T n = n .%. afromInteger 1_000_000_000_000
+convert' B P n = n .%. afromInteger 1_000_000_000_000_000
+convert' B E n = n .%. afromInteger 1_000_000_000_000_000_000
+convert' B Z n = n .%. afromInteger 1_000_000_000_000_000_000_000
+convert' B Y n = n .%. afromInteger 1_000_000_000_000_000_000_000_000
 convert' K B n = n .*. afromInteger 1_000
 convert' K K n = n
-convert' K M n = n .%. nzafromInteger @n 1_000
-convert' K G n = n .%. nzafromInteger @n 1_000_000
-convert' K T n = n .%. nzafromInteger @n 1_000_000_000
-convert' K P n = n .%. nzafromInteger @n 1_000_000_000_000
-convert' K E n = n .%. nzafromInteger @n 1_000_000_000_000_000
-convert' K Z n = n .%. nzafromInteger @n 1_000_000_000_000_000_000
-convert' K Y n = n .%. nzafromInteger @n 1_000_000_000_000_000_000_000
+convert' K M n = n .%. afromInteger 1_000
+convert' K G n = n .%. afromInteger 1_000_000
+convert' K T n = n .%. afromInteger 1_000_000_000
+convert' K P n = n .%. afromInteger 1_000_000_000_000
+convert' K E n = n .%. afromInteger 1_000_000_000_000_000
+convert' K Z n = n .%. afromInteger 1_000_000_000_000_000_000
+convert' K Y n = n .%. afromInteger 1_000_000_000_000_000_000_000
 convert' M B n = n .*. afromInteger 1_000_000
 convert' M K n = n .*. afromInteger 1_000
 convert' M M n = n
-convert' M G n = n .%. nzafromInteger @n 1_000
-convert' M T n = n .%. nzafromInteger @n 1_000_000
-convert' M P n = n .%. nzafromInteger @n 1_000_000_000
-convert' M E n = n .%. nzafromInteger @n 1_000_000_000_000
-convert' M Z n = n .%. nzafromInteger @n 1_000_000_000_000_000
-convert' M Y n = n .%. nzafromInteger @n 1_000_000_000_000_000_000
+convert' M G n = n .%. afromInteger 1_000
+convert' M T n = n .%. afromInteger 1_000_000
+convert' M P n = n .%. afromInteger 1_000_000_000
+convert' M E n = n .%. afromInteger 1_000_000_000_000
+convert' M Z n = n .%. afromInteger 1_000_000_000_000_000
+convert' M Y n = n .%. afromInteger 1_000_000_000_000_000_000
 convert' G B n = n .*. afromInteger 1_000_000_000
 convert' G K n = n .*. afromInteger 1_000_000
 convert' G M n = n .*. afromInteger 1_000
 convert' G G n = n
-convert' G T n = n .%. nzafromInteger @n 1_000
-convert' G P n = n .%. nzafromInteger @n 1_000_000
-convert' G E n = n .%. nzafromInteger @n 1_000_000_000
-convert' G Z n = n .%. nzafromInteger @n 1_000_000_000_000
-convert' G Y n = n .%. nzafromInteger @n 1_000_000_000_000_000
+convert' G T n = n .%. afromInteger 1_000
+convert' G P n = n .%. afromInteger 1_000_000
+convert' G E n = n .%. afromInteger 1_000_000_000
+convert' G Z n = n .%. afromInteger 1_000_000_000_000
+convert' G Y n = n .%. afromInteger 1_000_000_000_000_000
 convert' T B n = n .*. afromInteger 1_000_000_000_000
 convert' T K n = n .*. afromInteger 1_000_000_000
 convert' T M n = n .*. afromInteger 1_000_000
 convert' T G n = n .*. afromInteger 1_000
 convert' T T n = n
-convert' T P n = n .%. nzafromInteger @n 1_000
-convert' T E n = n .%. nzafromInteger @n 1_000_000
-convert' T Z n = n .%. nzafromInteger @n 1_000_000_000
-convert' T Y n = n .%. nzafromInteger @n 1_000_000_000_000
+convert' T P n = n .%. afromInteger 1_000
+convert' T E n = n .%. afromInteger 1_000_000
+convert' T Z n = n .%. afromInteger 1_000_000_000
+convert' T Y n = n .%. afromInteger 1_000_000_000_000
 convert' P B n = n .*. afromInteger 1_000_000_000_000_000
 convert' P K n = n .*. afromInteger 1_000_000_000_000
 convert' P M n = n .*. afromInteger 1_000_000_000
 convert' P G n = n .*. afromInteger 1_000_000
 convert' P T n = n .*. afromInteger 1_000
 convert' P P n = n
-convert' P E n = n .%. nzafromInteger @n 1_000
-convert' P Z n = n .%. nzafromInteger @n 1_000_000
-convert' P Y n = n .%. nzafromInteger @n 1_000_000_000
+convert' P E n = n .%. afromInteger 1_000
+convert' P Z n = n .%. afromInteger 1_000_000
+convert' P Y n = n .%. afromInteger 1_000_000_000
 convert' E B n = n .*. afromInteger 1_000_000_000_000_000_000
 convert' E K n = n .*. afromInteger 1_000_000_000_000_000
 convert' E M n = n .*. afromInteger 1_000_000_000_000
@@ -161,8 +160,8 @@ convert' E G n = n .*. afromInteger 1_000_000_000
 convert' E T n = n .*. afromInteger 1_000_000
 convert' E P n = n .*. afromInteger 1_000
 convert' E E n = n
-convert' E Z n = n .%. nzafromInteger @n 1_000
-convert' E Y n = n .%. nzafromInteger @n 1_000_000
+convert' E Z n = n .%. afromInteger 1_000
+convert' E Y n = n .%. afromInteger 1_000_000
 convert' Z B n = n .*. afromInteger 1_000_000_000_000_000_000_000
 convert' Z K n = n .*. afromInteger 1_000_000_000_000_000_000
 convert' Z M n = n .*. afromInteger 1_000_000_000_000_000
@@ -171,7 +170,7 @@ convert' Z T n = n .*. afromInteger 1_000_000_000
 convert' Z P n = n .*. afromInteger 1_000_000
 convert' Z E n = n .*. afromInteger 1_000
 convert' Z Z n = n
-convert' Z Y n = n .%. nzafromInteger @n 1_000
+convert' Z Y n = n .%. afromInteger 1_000
 convert' Y B n = n .*. afromInteger 1_000_000_000_000_000_000_000_000
 convert' Y K n = n .*. afromInteger 1_000_000_000_000_000_000_000
 convert' Y M n = n .*. afromInteger 1_000_000_000_000_000_000
@@ -182,7 +181,3 @@ convert' Y E n = n .*. afromInteger 1_000_000
 convert' Y Z n = n .*. afromInteger 1_000
 convert' Y Y n = n
 {-# INLINEABLE convert' #-}
-
-nzafromInteger :: forall n. (FromInteger n) => Integer -> NonZero n
-nzafromInteger = reallyUnsafeNonZero . afromInteger
-{-# INLINE nzafromInteger #-}

@@ -28,8 +28,6 @@ import Numeric.Algebra
     VectorSpace,
     (*.),
   )
-import Numeric.Algebra qualified as Algebra
-import Numeric.Data.NonZero (NonZero (..))
 import Unit.Utils ((<=>), (==>))
 
 -- | Verifies 'Eq' laws for 'BytesEq'.
@@ -88,11 +86,11 @@ ringLaws x y z = do
   (y .+. z) .*. x === (y .*. x) .+. (z .*. x)
 
 -- | Verify 'Field' laws.
-fieldLaws :: (Eq a, Field a, Show a) => NonZero a -> a -> a -> PropertyT IO ()
-fieldLaws x'@(MkNonZero x) y z = do
+fieldLaws :: (Eq a, Field a, Show a) => a -> a -> a -> PropertyT IO ()
+fieldLaws x y z = do
   ringLaws x y z
   -- identity
-  one === x .%. x'
+  one === x .%. x
 
 -- | Verify 'Module' laws.
 moduleLaws :: forall m r. (Eq m, Module m r, Show m) => m -> m -> r -> r -> PropertyT IO ()
@@ -113,16 +111,16 @@ moduleLaws x y k l = do
 
 -- | Verify 'VectorSpace' laws.
 vectorSpaceLaws ::
-  (Eq v, Eq k, VectorSpace v k, Show v) =>
+  (Eq v, VectorSpace v k, Show v) =>
   v ->
   v ->
-  NonZero k ->
-  NonZero k ->
+  k ->
+  k ->
   PropertyT IO ()
-vectorSpaceLaws x y k'@(MkNonZero k) l'@(MkNonZero l) = do
+vectorSpaceLaws x y k l = do
   moduleLaws x y k l
 
-  x .% Algebra.unsafeAMonoidNonZero (k .*. l) === (x .% k') .% l'
+  x .% (k .*. l) === (x .% k) .% l
 
   -- identity
   x === one *. x

@@ -21,6 +21,7 @@ jobs:
           - "9.0.2"
           - "9.2.7"
           - "9.4.4"
+          - "9.6.1"
         platform:
           - os: "macos-latest"
             set-env: "export"
@@ -30,16 +31,24 @@ jobs:
             set-env: "set"
     runs-on: ${{ matrix.platform.os }}
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.5.0
 
-      - uses: haskell/actions/setup@v2.3.4
+      - uses: haskell/actions/setup@v2.3.7
         with:
           ghc-version: ${{ matrix.ghc }}
 
+      - name: Configure
+        run: cabal configure --enable-tests
+
       - name: Compile
-        run: cabal build
+        run: cabal build lib:si-bytes
+
+      # Only run doctests on latest ghc due to ghc 9.6 changing how DataKinds
+      # are printed (i.e. no ticks). Trying to make this work across multiple
+      # versions would be too much work.
 
       - name: Doc Tests
+        if: ${{ matrix.ghc == '9.6.1' }}
         run : |
           cabal configure --enable-tests --write-ghc-environment-files always
           cabal build
