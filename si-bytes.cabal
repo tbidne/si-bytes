@@ -152,4 +152,5 @@ test-suite unit
     , text
 
   hs-source-dirs:   test/unit
+  ghc-options:      -threaded -with-rtsopts=-N
   default-language: Haskell2010
