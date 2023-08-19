@@ -2,50 +2,40 @@
   description = "Byte with SI type-level units (e.g. B, KB, MB, ...)";
   inputs = {
     # nix
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nix-hs-utils = {
-      url = "github:tbidne/nix-hs-utils";
-      inputs.flake-compat.follows = "flake-compat";
-    };
+    nix-hs-utils.url = "github:tbidne/nix-hs-utils";
 
     # haskell
     algebra-simple = {
       url = "github:tbidne/algebra-simple";
-      inputs.flake-compat.follows = "flake-compat";
       inputs.flake-parts.follows = "flake-parts";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix-hs-utils.follows = "nix-hs-utils";
     };
     bounds = {
       url = "github:tbidne/bounds";
-      inputs.flake-compat.follows = "flake-compat";
       inputs.flake-parts.follows = "flake-parts";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix-hs-utils.follows = "nix-hs-utils";
     };
   };
   outputs =
-    inputs@{ algebra-simple
-    , bounds
-    , flake-compat
-    , flake-parts
+    inputs@{ flake-parts
     , nix-hs-utils
-    , nixpkgs
     , self
+    , ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       perSystem = { pkgs, ... }:
         let
-          ghc-version = "ghc944";
+          ghc-version = "ghc962";
           hlib = pkgs.haskell.lib;
           compiler = pkgs.haskell.packages."${ghc-version}".override {
             overrides = final: prev: {
-              apply-refact = prev.apply-refact_0_11_0_0;
-              # https://github.com/ddssff/listlike/issues/23
-              ListLike = hlib.dontCheck prev.ListLike;
+              hedgehog = prev.hedgehog_1_3;
+              hlint = prev.hlint_3_6_1;
+              ormolu = prev.ormolu_0_7_1_0;
             } // nix-hs-utils.mkLibs inputs final [
               "algebra-simple"
               "bounds"
@@ -57,7 +47,7 @@
               name = "si-bytes";
               root = ./.;
             };
-          hs-dirs = "src test";
+          hsDirs = "src test";
         in
         {
           packages.default = mkPkg false;
@@ -65,13 +55,13 @@
 
           apps = {
             format = nix-hs-utils.format {
-              inherit compiler hs-dirs pkgs;
+              inherit compiler hsDirs pkgs;
             };
             lint = nix-hs-utils.lint {
-              inherit compiler hs-dirs pkgs;
+              inherit compiler hsDirs pkgs;
             };
             lint-refactor = nix-hs-utils.lint-refactor {
-              inherit compiler hs-dirs pkgs;
+              inherit compiler hsDirs pkgs;
             };
           };
         };
