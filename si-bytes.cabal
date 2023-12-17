@@ -4,7 +4,7 @@ version:            0.1
 license:            MIT
 license-file:       LICENSE
 tested-with:
-  GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.6 || ==9.6.2
+  GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.6 || ==9.6.2 || ==9.8.1
 
 copyright:          2021-2023 Thomas Bidne
 author:             Thomas Bidne
@@ -93,14 +93,14 @@ library
 
   build-depends:
     , algebra-simple  ^>=0.1
-    , base            >=4.14.1.0 && <4.19
+    , base            >=4.14.1.0 && <4.20
     , bounds          ^>=0.1
     , data-default    >=0.2      && <0.8
     , deepseq         >=1.4.4.0  && <1.6
     , hashable        >=1.3.0.0  && <1.5
-    , megaparsec      >=7.0.5    && <9.5
+    , megaparsec      >=7.0.5    && <9.7
     , optics-core     ^>=0.4
-    , text            >=1.2.3.2  && <2.1
+    , text            >=1.2.3.2  && <2.2
 
   hs-source-dirs:   src
   default-language: Haskell2010
@@ -146,7 +146,7 @@ test-suite unit
     , hedgehog        >=1.0.2   && <1.5
     , optics-core
     , si-bytes
-    , tasty           >=1.1.0.3 && <1.5
+    , tasty           >=1.1.0.3 && <1.6
     , tasty-hedgehog  >=1.0.1.0 && <1.5
     , tasty-hunit     >=0.9     && <0.11
     , text
