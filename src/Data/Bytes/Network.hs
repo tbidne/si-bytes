@@ -66,7 +66,6 @@ module Data.Bytes.Network
     module Data.Bytes.Formatting,
 
     -- ** Parsing
-    -- $parsing
     Parser,
     parse,
 
