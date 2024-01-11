@@ -1,0 +1,933 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- | Provides typeclasses for convert between byte sizes.</span><span>
+</span><span id="line-4"></span><span class="hs-comment">--</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- @since 0.1</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Data.Bytes.Class.Conversion</span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#Conversion"><span class="hs-identifier">Conversion</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier">convert'</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convertWitness"><span class="hs-identifier">convertWitness</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html"><span class="hs-identifier">Data.Bytes.Size</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#SSize"><span class="hs-identifier">SSize</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Size.html#SB"><span class="hs-identifier">SB</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#SE"><span class="hs-identifier">SE</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#SG"><span class="hs-identifier">SG</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#SK"><span class="hs-identifier">SK</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#SM"><span class="hs-identifier">SM</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#SP"><span class="hs-identifier">SP</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#ST"><span class="hs-identifier">ST</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#SY"><span class="hs-identifier">SY</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#SZ"><span class="hs-identifier">SZ</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#SingSize"><span class="hs-identifier">SingSize</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Size.html#singSize"><span class="hs-identifier">singSize</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#Size"><span class="hs-identifier">Size</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Size.html#B"><span class="hs-identifier">B</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#E"><span class="hs-identifier">E</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#G"><span class="hs-identifier">G</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#K"><span class="hs-identifier">K</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#M"><span class="hs-identifier">M</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#P"><span class="hs-identifier">P</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#T"><span class="hs-identifier">T</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier">Y</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier">Z</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Proxy</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Proxy</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.html"><span class="hs-identifier">Numeric.Algebra</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#MGroup"><span class="hs-identifier">MGroup</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator">(.%.)</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#MSemigroup"><span class="hs-identifier">MSemigroup</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator">(.*.)</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html"><span class="hs-identifier">Numeric.Literal.Integer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#FromInteger"><span class="hs-identifier">FromInteger</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier">afromInteger</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- $setup</span><span>
+</span><span id="line-23"></span><span class="hs-comment">-- &gt;&gt;&gt; import Data.Bytes.Internal (Bytes (..))</span><span>
+</span><span id="line-24"></span><span class="hs-comment">-- &gt;&gt;&gt; import Data.Bytes.Size (Size (..), Sized (..))</span><span>
+</span><span id="line-25"></span><span class="hs-comment">-- &gt;&gt;&gt; import Data.Proxy (Proxy (Proxy))</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- | This class allows one to transform a bytes type to any 'Size'. For types</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- with existentially quantified 'Size' (e.g. 'Data.Bytes.SomeSize',</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- 'Data.Bytes.Network.NetBytes.SomeNetSize'), this will &quot;undo&quot; the existential quantification.</span><span>
+</span><span id="line-30"></span><span class="hs-comment">--</span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- @since 0.1</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">class</span><span> </span><span id="Conversion"><span class="annot"><a href="Data.Bytes.Class.Conversion.html#Conversion"><span class="hs-identifier hs-var">Conversion</span></a></span></span><span> </span><span id="local-6989586621679085814"><span class="annot"><a href="#local-6989586621679085814"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-comment">-- | @since 0.1</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-keyword">type</span><span> </span><span id="Converted"><span class="annot"><a href="Data.Bytes.Class.Conversion.html#Converted"><span class="hs-identifier hs-var">Converted</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085816"><span class="annot"><a href="#local-6989586621679085816"><span class="hs-identifier hs-type">t</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679085814"><span class="annot"><a href="#local-6989586621679085814"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="local-6989586621679085817"><span class="annot"><a href="#local-6989586621679085817"><span class="hs-identifier hs-type">r</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><a href="#local-6989586621679085817"><span class="hs-identifier hs-type">r</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679085816"><span class="hs-identifier hs-type">t</span></a></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-comment">-- | @convert (Proxy :: Proxy t) x@ converts @x@ to size @t@.</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-comment">-- ==== __Examples__</span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; let bytes = MkBytes 50_000 :: Bytes 'M Int</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; let gBytes = convert @_ @G Proxy bytes</span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; :type gBytes</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-comment">-- gBytes :: Bytes G Int</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; gBytes</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-comment">-- MkBytes 50</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; let bytes = hideSize (MkBytes 0.2 :: Bytes 'T Float)</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; let mBytes = convert @_ @M Proxy bytes</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; :type mBytes</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-comment">-- mBytes :: Bytes M Float</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-comment">-- &gt;&gt;&gt; mBytes</span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-comment">-- MkBytes 200000.0</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-comment">--</span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-comment">-- @since 0.1</span><span>
+</span><span id="line-55"></span><span>  </span><span id="convert"><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert"><span class="hs-identifier hs-type">convert</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span id="local-6989586621679085819"><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Size.html#SingSize"><span class="hs-identifier hs-type">SingSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679085819"><span class="hs-identifier hs-type">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span> </span><span class="annot"><a href="#local-6989586621679085819"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679085814"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#Converted"><span class="hs-identifier hs-type">Converted</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679085819"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679085814"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="hs-comment">-- | Low level function for converting a numeric literal /from/ the inferred</span><span>
+</span><span id="line-58"></span><span class="hs-comment">-- 'SingSize' /to/ the parameter 'Size'. For instance,</span><span>
+</span><span id="line-59"></span><span class="hs-comment">--</span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- &gt;&gt;&gt; convertWitness @K M 5_000</span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- 5</span><span>
+</span><span id="line-62"></span><span class="hs-comment">--</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- This is slightly more principled than 'convert', but the higher level</span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- byte types and functions should still be preferred</span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- (e.g. 'Data.Bytes', 'Data.Bytes.Class.Normalize').</span><span>
+</span><span id="line-66"></span><span class="hs-comment">--</span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- @since 0.1</span><span>
+</span><span id="line-68"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convertWitness"><span class="hs-identifier hs-type">convertWitness</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679085773"><span class="annot"><a href="#local-6989586621679085773"><span class="hs-identifier hs-type">s</span></a></span></span><span> </span><span id="local-6989586621679085770"><span class="annot"><a href="#local-6989586621679085770"><span class="hs-identifier hs-type">n</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#FromInteger"><span class="hs-identifier hs-type">FromInteger</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679085770"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-71"></span><span>    </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#MGroup"><span class="hs-identifier hs-type">MGroup</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679085770"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-72"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#SingSize"><span class="hs-identifier hs-type">SingSize</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679085773"><span class="hs-identifier hs-type">s</span></a></span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-74"></span><span>  </span><span class="annot"><a href="Data.Bytes.Size.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-75"></span><span>  </span><span class="annot"><a href="#local-6989586621679085770"><span class="hs-identifier hs-type">n</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-76"></span><span>  </span><span class="annot"><a href="#local-6989586621679085770"><span class="hs-identifier hs-type">n</span></a></span><span>
+</span><span id="line-77"></span><span id="convertWitness"><span class="annot"><span class="annottext">convertWitness :: forall (s :: Size) n.
+(FromInteger n, MGroup n, SingSize s) =&gt;
+Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convertWitness"><span class="hs-identifier hs-var hs-var">convertWitness</span></a></span></span><span> </span><span id="local-6989586621679085824"><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span></span><span> </span><span id="local-6989586621679085825"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">forall (s :: Size). SingSize s =&gt; SSize s
+</span><a href="Data.Bytes.Size.html#singSize"><span class="hs-identifier hs-var">singSize</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="#local-6989586621679085773"><span class="hs-identifier hs-type">s</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-78"></span><span>  </span><span class="annot"><span class="annottext">SSize s
+</span><a href="Data.Bytes.Size.html#SB"><span class="hs-identifier hs-var">SB</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Size -&gt; Size -&gt; n -&gt; n
+forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-79"></span><span>  </span><span class="annot"><span class="annottext">SSize s
+</span><a href="Data.Bytes.Size.html#SK"><span class="hs-identifier hs-var">SK</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Size -&gt; Size -&gt; n -&gt; n
+forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-80"></span><span>  </span><span class="annot"><span class="annottext">SSize s
+</span><a href="Data.Bytes.Size.html#SM"><span class="hs-identifier hs-var">SM</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Size -&gt; Size -&gt; n -&gt; n
+forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-81"></span><span>  </span><span class="annot"><span class="annottext">SSize s
+</span><a href="Data.Bytes.Size.html#SG"><span class="hs-identifier hs-var">SG</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Size -&gt; Size -&gt; n -&gt; n
+forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-82"></span><span>  </span><span class="annot"><span class="annottext">SSize s
+</span><a href="Data.Bytes.Size.html#ST"><span class="hs-identifier hs-var">ST</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Size -&gt; Size -&gt; n -&gt; n
+forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-83"></span><span>  </span><span class="annot"><span class="annottext">SSize s
+</span><a href="Data.Bytes.Size.html#SP"><span class="hs-identifier hs-var">SP</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Size -&gt; Size -&gt; n -&gt; n
+forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-84"></span><span>  </span><span class="annot"><span class="annottext">SSize s
+</span><a href="Data.Bytes.Size.html#SE"><span class="hs-identifier hs-var">SE</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Size -&gt; Size -&gt; n -&gt; n
+forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-85"></span><span>  </span><span class="annot"><span class="annottext">SSize s
+</span><a href="Data.Bytes.Size.html#SZ"><span class="hs-identifier hs-var">SZ</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Size -&gt; Size -&gt; n -&gt; n
+forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-86"></span><span>  </span><span class="annot"><span class="annottext">SSize s
+</span><a href="Data.Bytes.Size.html#SY"><span class="hs-identifier hs-var">SY</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Size -&gt; Size -&gt; n -&gt; n
+forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="#local-6989586621679085824"><span class="hs-identifier hs-var">toUnits</span></a></span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679085825"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-87"></span><span class="hs-pragma">{-# INLINEABLE</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convertWitness"><span class="hs-pragma hs-type">convertWitness</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="hs-comment">-- | Low level function for converting a numeric literal between</span><span>
+</span><span id="line-90"></span><span class="hs-comment">-- byte sizes. @convert b1 b2@ converts /from/ @b1@ /to/ @b2@,</span><span>
+</span><span id="line-91"></span><span class="hs-comment">-- e.g. @convert G K = \\n -&gt; n * 1_000_000@. The higher level</span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- byte types and functions should be preferred</span><span>
+</span><span id="line-93"></span><span class="hs-comment">-- (e.g. 'Conversion', &quot;Data.Bytes.Class.Normalize&quot;), but this is</span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- here when it is needed.</span><span>
+</span><span id="line-95"></span><span class="hs-comment">--</span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- @since 0.1</span><span>
+</span><span id="line-97"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-type">convert'</span></a></span><span> </span><span class="hs-glyph">::</span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679085780"><span class="annot"><a href="#local-6989586621679085780"><span class="hs-identifier hs-type">n</span></a></span></span><span class="hs-operator">.</span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#FromInteger"><span class="hs-identifier hs-type">FromInteger</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679085780"><span class="hs-identifier hs-type">n</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-100"></span><span>    </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#MGroup"><span class="hs-identifier hs-type">MGroup</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679085780"><span class="hs-identifier hs-type">n</span></a></span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span>
+</span><span id="line-102"></span><span>  </span><span class="annot"><a href="Data.Bytes.Size.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-103"></span><span>  </span><span class="annot"><a href="Data.Bytes.Size.html#Size"><span class="hs-identifier hs-type">Size</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-104"></span><span>  </span><span class="annot"><a href="#local-6989586621679085780"><span class="hs-identifier hs-type">n</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-105"></span><span>  </span><span class="annot"><a href="#local-6989586621679085780"><span class="hs-identifier hs-type">n</span></a></span><span>
+</span><span id="line-106"></span><span id="convert%27"><span class="annot"><span class="annottext">convert' :: forall n. (FromInteger n, MGroup n) =&gt; Size -&gt; Size -&gt; n -&gt; n
+</span><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var hs-var">convert'</span></a></span></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span id="local-6989586621679086147"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086147"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086147"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-107"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span id="local-6989586621679086148"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086148"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086148"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-108"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span id="local-6989586621679086149"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086149"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086149"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-109"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span id="local-6989586621679086150"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086150"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086150"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-110"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span id="local-6989586621679086151"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086151"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086151"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-111"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span id="local-6989586621679086152"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086152"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086152"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000</span></span><span>
+</span><span id="line-112"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span id="local-6989586621679086153"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086153"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086153"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000</span></span><span>
+</span><span id="line-113"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span id="local-6989586621679086154"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086154"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086154"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000_000</span></span><span>
+</span><span id="line-114"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span id="local-6989586621679086155"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086155"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086155"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000_000_000</span></span><span>
+</span><span id="line-115"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span id="local-6989586621679086156"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086156"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086156"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-116"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span id="local-6989586621679086157"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086157"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086157"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-117"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span id="local-6989586621679086158"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086158"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086158"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-118"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span id="local-6989586621679086159"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086159"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086159"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-119"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span id="local-6989586621679086160"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086160"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086160"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-120"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span id="local-6989586621679086161"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086161"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086161"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-121"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span id="local-6989586621679086162"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086162"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086162"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000</span></span><span>
+</span><span id="line-122"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span id="local-6989586621679086163"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086163"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086163"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000</span></span><span>
+</span><span id="line-123"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span id="local-6989586621679086164"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086164"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086164"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000_000</span></span><span>
+</span><span id="line-124"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span id="local-6989586621679086165"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086165"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086165"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-125"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span id="local-6989586621679086166"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086166"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086166"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-126"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span id="local-6989586621679086167"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086167"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086167"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-127"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span id="local-6989586621679086168"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086168"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086168"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-128"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span id="local-6989586621679086169"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086169"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086169"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-129"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span id="local-6989586621679086170"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086170"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086170"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-130"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span id="local-6989586621679086171"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086171"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086171"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-131"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span id="local-6989586621679086172"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086172"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086172"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000</span></span><span>
+</span><span id="line-132"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span id="local-6989586621679086173"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086173"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086173"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000</span></span><span>
+</span><span id="line-133"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span id="local-6989586621679086174"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086174"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086174"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-134"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span id="local-6989586621679086175"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086175"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086175"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-135"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span id="local-6989586621679086176"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086176"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086176"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-136"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span id="local-6989586621679086177"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086177"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086177"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-137"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span id="local-6989586621679086178"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086178"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086178"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-138"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span id="local-6989586621679086179"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086179"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086179"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-139"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span id="local-6989586621679086180"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086180"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086180"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-140"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span id="local-6989586621679086181"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086181"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086181"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-141"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span id="local-6989586621679086182"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086182"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086182"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000</span></span><span>
+</span><span id="line-142"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span id="local-6989586621679086183"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086183"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086183"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-143"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span id="local-6989586621679086184"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086184"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086184"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-144"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span id="local-6989586621679086185"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086185"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086185"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-145"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span id="local-6989586621679086186"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086186"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086186"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-146"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span id="local-6989586621679086187"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086187"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086187"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-147"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span id="local-6989586621679086188"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086188"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086188"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-148"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span id="local-6989586621679086189"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086189"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086189"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-149"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span id="local-6989586621679086190"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086190"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086190"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-150"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span id="local-6989586621679086191"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086191"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086191"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-151"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span id="local-6989586621679086192"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086192"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086192"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000</span></span><span>
+</span><span id="line-152"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span id="local-6989586621679086193"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086193"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086193"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-153"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span id="local-6989586621679086194"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086194"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086194"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-154"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span id="local-6989586621679086195"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086195"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086195"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-155"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span id="local-6989586621679086196"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086196"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086196"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-156"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span id="local-6989586621679086197"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086197"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086197"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-157"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span id="local-6989586621679086198"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086198"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086198"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-158"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span id="local-6989586621679086199"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086199"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086199"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-159"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span id="local-6989586621679086200"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086200"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086200"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-160"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span id="local-6989586621679086201"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086201"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086201"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000</span></span><span>
+</span><span id="line-161"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span id="local-6989586621679086202"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086202"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086202"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000</span></span><span>
+</span><span id="line-162"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span id="local-6989586621679086203"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086203"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086203"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-163"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span id="local-6989586621679086204"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086204"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086204"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-164"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span id="local-6989586621679086205"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086205"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086205"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-165"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span id="local-6989586621679086206"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086206"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086206"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-166"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span id="local-6989586621679086207"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086207"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086207"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-167"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span id="local-6989586621679086208"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086208"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086208"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-168"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span id="local-6989586621679086209"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086209"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086209"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-169"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span id="local-6989586621679086210"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086210"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086210"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000_000</span></span><span>
+</span><span id="line-170"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span id="local-6989586621679086211"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086211"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086211"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000</span></span><span>
+</span><span id="line-171"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span id="local-6989586621679086212"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086212"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086212"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000</span></span><span>
+</span><span id="line-172"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span id="local-6989586621679086213"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086213"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086213"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-173"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span id="local-6989586621679086214"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086214"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086214"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-174"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span id="local-6989586621679086215"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086215"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086215"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-175"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span id="local-6989586621679086216"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086216"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086216"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-176"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span id="local-6989586621679086217"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086217"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086217"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-177"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span id="local-6989586621679086218"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086218"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086218"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall g. MGroup g =&gt; g -&gt; g -&gt; g
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MGroup.html#.%25."><span class="hs-operator hs-var">.%.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-178"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#B"><span class="hs-identifier hs-var">B</span></a></span><span> </span><span id="local-6989586621679086219"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086219"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086219"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000_000_000</span></span><span>
+</span><span id="line-179"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#K"><span class="hs-identifier hs-var">K</span></a></span><span> </span><span id="local-6989586621679086220"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086220"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086220"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000_000</span></span><span>
+</span><span id="line-180"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#M"><span class="hs-identifier hs-var">M</span></a></span><span> </span><span id="local-6989586621679086221"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086221"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086221"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000_000</span></span><span>
+</span><span id="line-181"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#G"><span class="hs-identifier hs-var">G</span></a></span><span> </span><span id="local-6989586621679086222"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086222"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086222"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000_000</span></span><span>
+</span><span id="line-182"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#T"><span class="hs-identifier hs-var">T</span></a></span><span> </span><span id="local-6989586621679086223"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086223"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086223"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000_000</span></span><span>
+</span><span id="line-183"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#P"><span class="hs-identifier hs-var">P</span></a></span><span> </span><span id="local-6989586621679086224"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086224"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086224"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000_000</span></span><span>
+</span><span id="line-184"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#E"><span class="hs-identifier hs-var">E</span></a></span><span> </span><span id="local-6989586621679086225"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086225"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086225"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000_000</span></span><span>
+</span><span id="line-185"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier hs-var">Z</span></a></span><span> </span><span id="local-6989586621679086226"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086226"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086226"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">n -&gt; n -&gt; n
+forall s. MSemigroup s =&gt; s -&gt; s -&gt; s
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Algebra.Multiplicative.MSemigroup.html#.%2A."><span class="hs-operator hs-var">.*.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; n
+forall a. (FromInteger a, HasCallStack) =&gt; Integer -&gt; a
+</span><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.6.3/algebra-simple-0.1-0f0dd48bfcbc9bbd637ffdf995dbc65c45943a377befab55fe1b702e9362a26c/share/doc/html/src/Numeric.Literal.Integer.html#afromInteger"><span class="hs-identifier hs-var">afromInteger</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1_000</span></span><span>
+</span><span id="line-186"></span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-identifier hs-var">convert'</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span class="annot"><span class="annottext">Size
+</span><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier hs-var">Y</span></a></span><span> </span><span id="local-6989586621679086227"><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086227"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">n
+</span><a href="#local-6989586621679086227"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-187"></span><span class="hs-pragma">{-# INLINEABLE</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert%27"><span class="hs-pragma hs-type">convert'</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
+</span><span id="line-188"></span></pre></body></html>
