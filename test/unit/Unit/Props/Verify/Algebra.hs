@@ -14,15 +14,15 @@ where
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
 import Numeric.Algebra
-  ( AGroup (..),
-    AMonoid (..),
-    ASemigroup (..),
+  ( AGroup ((.-.)),
+    AMonoid (zero),
+    ASemigroup ((.+.)),
     Field,
-    MGroup (..),
-    MMonoid (..),
-    MSemiSpace (..),
-    MSemigroup (..),
-    MSpace (..),
+    MGroup ((.%.)),
+    MMonoid (one),
+    MSemiSpace ((.*)),
+    MSemigroup ((.*.)),
+    MSpace ((.%)),
     Module,
     Ring,
     VectorSpace,
@@ -69,6 +69,10 @@ groupLaws x y z = do
   H.annotateShow (x .+. y, (x .+. y) .+. z)
   H.annotateShow (y .+. z, x .+. (y .+. z))
   (x .+. y) .+. z === x .+. (y .+. z)
+  -- inverse
+  H.annotateShow $ x .-. x
+  x .-. x === zero
+  zero === x .-. x
 
 -- | Verify 'Ring' laws.
 ringLaws :: (Eq a, Ring a, Show a) => a -> a -> a -> PropertyT IO ()

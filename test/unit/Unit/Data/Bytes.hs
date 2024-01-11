@@ -2,11 +2,14 @@
 module Unit.Data.Bytes (tests) where
 
 import Data.Bytes.Class.Conversion (Conversion (convert))
-import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Class.Normalize (Normalize (normalize))
+import Data.Bytes.Class.RawNumeric (RawNumeric (toRaw))
 import Data.Bytes.Formatting qualified as Formatting
-import Data.Bytes.Internal (Bytes (..), SomeSize (..))
-import Data.Bytes.Size (SSize (..), Size (..))
+import Data.Bytes.Internal (Bytes (MkBytes), SomeSize (MkSomeSize))
+import Data.Bytes.Size
+  ( SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
+    Size (B, E, G, K, M, P, T, Y, Z),
+  )
 import Data.Bytes.Size qualified as Size
 import Data.Proxy (Proxy (Proxy))
 import Hedgehog ((===))
@@ -97,10 +100,10 @@ parsingTests =
 
 unBytesProps :: TestTree
 unBytesProps =
-  U.testPropertyCompat "Bytes unwrapping + wrap is a no-op" "unBytesProps" $
+  U.testPropertyCompat "Bytes toRaw + wrap is a no-op" "unBytesProps" $
     H.property $ do
       (MkSomeSize _ bytes) <- H.forAll Gens.genSomeBytes
-      bytes === MkBytes (unwrap bytes)
+      bytes === MkBytes (toRaw bytes)
 
 convertTests :: TestTree
 convertTests =

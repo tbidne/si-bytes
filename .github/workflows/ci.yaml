@@ -39,17 +39,17 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
 
       - name: Configure
-        run: cabal configure --enable-tests
+        run: cabal configure --enable-tests --ghc-options -Werror
 
       - name: Compile
         run: cabal build lib:si-bytes
 
-      # Only run doctests on latest ghc due to ghc 9.6 changing how DataKinds
-      # are printed (i.e. no ticks). Trying to make this work across multiple
+      # Only run doctests on ghc >= 9.6 changing how DataKinds are printed
+      # (i.e. no ticks). Trying to make this work across multiple
       # versions would be too much work.
 
       - name: Doc Tests
-        if: ${{ matrix.ghc == '9.6.1' }}
+        if: ${{ matrix.ghc == '9.6.3' || matrix.ghc == '9.8.1' }}
         run : |
           cabal configure --enable-tests --write-ghc-environment-files always
           cabal build

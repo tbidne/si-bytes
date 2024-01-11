@@ -5,16 +5,16 @@ module Unit.Props.Verify.Normalize
   )
 where
 
-import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Size (Size (..))
+import Data.Bytes.Class.Normalize (Normalize (Norm, normalize))
+import Data.Bytes.Size (Size (B, Y))
 import Hedgehog (PropertyT, (===))
 import Hedgehog qualified as H
 import Numeric.Algebra
-  ( AGroup (..),
-    AMonoid (..),
-    ASemigroup (..),
-    MSemiSpace (..),
-    MSpace (..),
+  ( AGroup ((.-.)),
+    AMonoid (zero),
+    ASemigroup ((.+.)),
+    MSemiSpace ((.*)),
+    MSpace ((.%)),
     VectorSpace,
   )
 import Unit.Utils ((<=>))

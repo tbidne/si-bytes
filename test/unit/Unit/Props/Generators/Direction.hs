@@ -4,7 +4,7 @@ module Unit.Props.Generators.Direction
   )
 where
 
-import Data.Bytes.Network.Direction (Direction (..))
+import Data.Bytes.Network.Direction (Direction (Down, Up))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
 

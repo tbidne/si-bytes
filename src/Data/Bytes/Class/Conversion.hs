@@ -10,10 +10,14 @@ module Data.Bytes.Class.Conversion
   )
 where
 
-import Data.Bytes.Size (SSize (..), SingSize (..), Size (..))
-import Data.Proxy (Proxy (..))
-import Numeric.Algebra (MGroup (..), MSemigroup (..))
-import Numeric.Literal.Integer (FromInteger (..))
+import Data.Bytes.Size
+  ( SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
+    SingSize (singSize),
+    Size (B, E, G, K, M, P, T, Y, Z),
+  )
+import Data.Proxy (Proxy)
+import Numeric.Algebra (MGroup ((.%.)), MSemigroup ((.*.)))
+import Numeric.Literal.Integer (FromInteger (afromInteger))
 
 -- $setup
 -- >>> import Data.Bytes.Internal (Bytes (..))

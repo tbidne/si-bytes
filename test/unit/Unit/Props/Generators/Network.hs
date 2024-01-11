@@ -14,15 +14,21 @@ module Unit.Props.Generators.Network
   )
 where
 
-import Data.Bytes.Internal (SomeSize (..))
-import Data.Bytes.Network.Direction (Direction (..), SDirection (..))
-import Data.Bytes.Network.Internal
-  ( NetBytes (..),
-    SomeNet (..),
-    SomeNetDir (..),
-    SomeNetSize (..),
+import Data.Bytes.Internal (SomeSize (MkSomeSize))
+import Data.Bytes.Network.Direction
+  ( Direction (Down, Up),
+    SDirection (SDown, SUp),
   )
-import Data.Bytes.Size (SSize (..), Size (..))
+import Data.Bytes.Network.Internal
+  ( NetBytes (MkNetBytes),
+    SomeNet (MkSomeNet),
+    SomeNetDir (MkSomeNetDir),
+    SomeNetSize (MkSomeNetSize),
+  )
+import Data.Bytes.Size
+  ( SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
+    Size (B, E, G, K, M, P, T, Y, Z),
+  )
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
 import Unit.Props.Generators.Bytes qualified as BGens

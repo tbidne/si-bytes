@@ -13,7 +13,7 @@ module Unit.Props.Generators.Parsing
   )
 where
 
-import Data.Bytes.Size (Size (..))
+import Data.Bytes.Size (Size)
 import Data.Char qualified as Ch
 import Data.Text (Text)
 import Data.Text qualified as T

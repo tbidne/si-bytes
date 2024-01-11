@@ -17,10 +17,10 @@ module Data.Bytes.Network.Direction
 where
 
 import Control.DeepSeq (NFData (rnf))
-import Data.Bytes.Class.Parser (Parser (..))
+import Data.Bytes.Class.Parser (Parser (parser))
 import Data.Hashable (Hashable)
 import Data.Kind (Constraint, Type)
-import Data.Type.Equality (TestEquality (..), (:~:) (..))
+import Data.Type.Equality (TestEquality (testEquality), (:~:) (Refl))
 import GHC.Generics (Generic)
 import Optics.Core (Prism', prism)
 import Text.Megaparsec qualified as MP

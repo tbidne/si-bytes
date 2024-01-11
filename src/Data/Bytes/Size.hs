@@ -34,12 +34,12 @@ where
 
 import Control.Applicative ((<|>))
 import Control.DeepSeq (NFData (rnf))
-import Data.Bytes.Class.Parser (Parser (..))
+import Data.Bytes.Class.Parser (Parser (parser))
 import Data.Hashable (Hashable)
 import Data.Kind (Constraint, Type)
-import Data.Type.Equality (TestEquality (..), (:~:) (..))
+import Data.Type.Equality (TestEquality (testEquality), (:~:) (Refl))
 import GHC.Generics (Generic)
-import GHC.TypeLits (ErrorMessage (..), TypeError)
+import GHC.TypeLits (ErrorMessage (Text), TypeError)
 import Optics.Core (Prism', prism)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC

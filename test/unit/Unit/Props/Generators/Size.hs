@@ -12,7 +12,7 @@ module Unit.Props.Generators.Size
   )
 where
 
-import Data.Bytes.Size (Size (..))
+import Data.Bytes.Size (Size (B, E, G, K, M, P, T, Y, Z))
 import Data.Ratio ((%))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen
@@ -20,7 +20,7 @@ import Hedgehog.Range qualified as HRange
 
 -- | Uniform distribution over 'Size'.
 genSize :: Gen Size
-genSize = HGen.element [B, K, M, G, T, P]
+genSize = HGen.element [B, K, M, G, T, P, E, Z, Y]
 
 -- | Generates a linear distribution from 0 to 1,000,000,000,000,000.
 genD :: Gen Rational

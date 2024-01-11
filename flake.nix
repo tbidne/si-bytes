@@ -29,13 +29,14 @@
     flake-parts.lib.mkFlake { inherit inputs; } {
       perSystem = { pkgs, ... }:
         let
-          ghc-version = "ghc962";
+          ghc-version = "ghc963";
           hlib = pkgs.haskell.lib;
           compiler = pkgs.haskell.packages."${ghc-version}".override {
             overrides = final: prev: {
-              hedgehog = prev.hedgehog_1_3;
+              hedgehog = prev.hedgehog_1_4;
               hlint = prev.hlint_3_6_1;
-              ormolu = prev.ormolu_0_7_1_0;
+              ormolu = prev.ormolu_0_7_2_0;
+              tasty-hedgehog = prev.tasty-hedgehog_1_4_0_2;
             } // nix-hs-utils.mkLibs inputs final [
               "algebra-simple"
               "bounds"
@@ -47,22 +48,16 @@
               name = "si-bytes";
               root = ./.;
             };
-          hsDirs = "src test";
+          compilerPkgs = { inherit compiler pkgs; };
         in
         {
           packages.default = mkPkg false;
           devShells.default = mkPkg true;
 
           apps = {
-            format = nix-hs-utils.format {
-              inherit compiler hsDirs pkgs;
-            };
-            lint = nix-hs-utils.lint {
-              inherit compiler hsDirs pkgs;
-            };
-            lint-refactor = nix-hs-utils.lint-refactor {
-              inherit compiler hsDirs pkgs;
-            };
+            format = nix-hs-utils.format compilerPkgs;
+            lint = nix-hs-utils.lint compilerPkgs;
+            lintRefactor = nix-hs-utils.lintRefactor compilerPkgs;
           };
         };
       systems = [

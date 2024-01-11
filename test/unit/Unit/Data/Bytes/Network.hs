@@ -2,18 +2,24 @@
 module Unit.Data.Bytes.Network (tests) where
 
 import Data.Bytes.Class.Conversion (Conversion (convert))
-import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Class.Normalize (Normalize (normalize))
+import Data.Bytes.Class.RawNumeric (RawNumeric (toRaw))
 import Data.Bytes.Formatting qualified as Formatting
-import Data.Bytes.Network.Direction (Direction (..), SDirection (..))
+import Data.Bytes.Network.Direction
+  ( Direction (Down, Up),
+    SDirection (SDown, SUp),
+  )
 import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Network.Internal
-  ( NetBytes (..),
-    SomeNet (..),
-    SomeNetDir (..),
-    SomeNetSize (..),
+  ( NetBytes (MkNetBytesP),
+    SomeNet (MkSomeNet),
+    SomeNetDir (MkSomeNetDir),
+    SomeNetSize (MkSomeNetSize),
   )
-import Data.Bytes.Size (SSize (..), Size (..))
+import Data.Bytes.Size
+  ( SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
+    Size (B, E, G, K, M, P, T, Y, Z),
+  )
 import Data.Bytes.Size qualified as Size
 import Data.Proxy (Proxy (Proxy))
 import Hedgehog ((===))
@@ -137,10 +143,10 @@ algebraTests =
 
 unNetBytesProps :: TestTree
 unNetBytesProps =
-  U.testPropertyCompat "NetBytes unwrapping + wrap is a no-op" "unNetBytesProps" $
+  U.testPropertyCompat "NetBytes toRaw + wrap is a no-op" "unNetBytesProps" $
     H.property $ do
       (MkSomeNetSize _ bytes) <- H.forAll NGens.genSomeNetSizeUp
-      bytes === MkNetBytesP (unwrap bytes)
+      bytes === MkNetBytesP (toRaw bytes)
 
 convertProps :: TestTree
 convertProps =

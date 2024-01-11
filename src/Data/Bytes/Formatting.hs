@@ -38,24 +38,24 @@ module Data.Bytes.Formatting
   )
 where
 
-import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Class.RawNumeric (RawNumeric (Raw, toRaw))
 import Data.Bytes.Formatting.Base
   ( BaseFormatter,
-    CaseFormat (..),
-    FloatingFormatter (..),
+    CaseFormat (CaseFormatLower, CaseFormatTitle, CaseFormatUpper),
+    FloatingFormatter (MkFloatingFormatter),
     Formatter,
-    IntegralFormatter (..),
+    IntegralFormatter (MkIntegralFormatter),
     formatBase,
   )
 import Data.Bytes.Formatting.Direction
   ( DirectedFormatter (MkDirectedFormatter),
-    DirectionFormat (..),
+    DirectionFormat (DirectionFormatLong, DirectionFormatShort),
     directedFormatterUnix,
     directedFormatterVerbose,
     formatDirection,
   )
 import Data.Bytes.Formatting.Size
-  ( SizeFormat (..),
+  ( SizeFormat (SizeFormatLong, SizeFormatMedium, SizeFormatShort),
     SizedFormatter (MkSizedFormatter),
     formatSize,
     sizedFormatterNatural,
@@ -90,21 +90,22 @@ import Text.Printf (PrintfArg)
 --
 -- @since 0.1
 formatSized ::
-  ( Formatter (BaseFormatter (Unwrapped a)),
-    PrintfArg (Unwrapped a),
-    Sized a,
-    Unwrapper a
+  ( Formatter (BaseFormatter (Raw a)),
+    PrintfArg (Raw a),
+    RawNumeric a,
+    Sized a
   ) =>
   -- | Formatter to use on the underlying value i.e. 'IntegralFormatter'
   -- or 'FloatingFormatter'.
-  BaseFormatter (Unwrapped a) ->
+  BaseFormatter (Raw a) ->
   -- | Formatter to use on the size units.
   SizedFormatter ->
   -- | Value to be formatted.
   a ->
   -- | Result.
   Text
-formatSized basefmt sizefmt x = formatBase basefmt (unwrap x) <> formatSize sizefmt x
+formatSized basefmt sizefmt x =
+  formatBase basefmt (toRaw x) <> formatSize sizefmt x
 
 -- | Formats a value with 'Data.Bytes.Size.Size' and
 -- 'Data.Bytes.Direction.Direction' units. Can only be used when /both/ units
@@ -131,14 +132,14 @@ formatSized basefmt sizefmt x = formatBase basefmt (unwrap x) <> formatSize size
 -- @since 0.1
 formatSizedDirected ::
   ( Directed a,
-    Formatter (BaseFormatter (Unwrapped a)),
-    PrintfArg (Unwrapped a),
-    Sized a,
-    Unwrapper a
+    Formatter (BaseFormatter (Raw a)),
+    PrintfArg (Raw a),
+    RawNumeric a,
+    Sized a
   ) =>
   -- | Formatter to use on the underlying value i.e. 'IntegralFormatter'
   -- or 'FloatingFormatter'.
-  BaseFormatter (Unwrapped a) ->
+  BaseFormatter (Raw a) ->
   -- | Formatter to use on the size units.
   SizedFormatter ->
   -- | Formatter to use on the direction units.
@@ -149,7 +150,7 @@ formatSizedDirected ::
   Text
 formatSizedDirected basefmt sizefmt dirfmt x =
   mconcat
-    [ formatBase basefmt (unwrap x),
+    [ formatBase basefmt (toRaw x),
       formatSize sizefmt x,
       formatDirection dirfmt x
     ]

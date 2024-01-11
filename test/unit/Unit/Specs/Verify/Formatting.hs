@@ -15,7 +15,7 @@ module Unit.Specs.Verify.Formatting
 where
 
 import Control.Monad (when, zipWithM_)
-import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Class.RawNumeric (RawNumeric (Raw))
 import Data.Bytes.Formatting
   ( Default (def),
     DirectedFormatter,
@@ -67,12 +67,12 @@ formatSpecs desc x formatters expected = testCase desc $ do
     results = T.unpack . ($ x) <$> formatters
 
 intSizedFormatters ::
-  ( BaseFormatter (Unwrapped a) ~ b,
+  ( BaseFormatter (Raw a) ~ b,
     b ~ IntegralFormatter,
     Formatter b,
-    PrintfArg (Unwrapped a),
+    PrintfArg (Raw a),
     Sized a,
-    Unwrapper a
+    RawNumeric a
   ) =>
   [a -> Text]
 intSizedFormatters =
@@ -84,12 +84,12 @@ intSizedFormatters =
   ]
 
 floatSizedFormatters ::
-  ( BaseFormatter (Unwrapped a) ~ b,
+  ( BaseFormatter (Raw a) ~ b,
     b ~ FloatingFormatter,
     Formatter b,
-    PrintfArg (Unwrapped a),
+    PrintfArg (Raw a),
     Sized a,
-    Unwrapper a
+    RawNumeric a
   ) =>
   [a -> Text]
 floatSizedFormatters =
@@ -101,13 +101,13 @@ floatSizedFormatters =
   ]
 
 intSizeDirFormatters ::
-  ( BaseFormatter (Unwrapped a) ~ b,
+  ( BaseFormatter (Raw a) ~ b,
     Directed a,
     IntegralFormatter ~ b,
     Formatter b,
-    PrintfArg (Unwrapped a),
+    PrintfArg (Raw a),
     Sized a,
-    Unwrapper a
+    RawNumeric a
   ) =>
   [a -> Text]
 intSizeDirFormatters =
@@ -120,13 +120,13 @@ intSizeDirFormatters =
   ]
 
 floatSizeDirFormatters ::
-  ( BaseFormatter (Unwrapped a) ~ b,
+  ( BaseFormatter (Raw a) ~ b,
     Directed a,
     FloatingFormatter ~ b,
     Formatter b,
-    PrintfArg (Unwrapped a),
+    PrintfArg (Raw a),
     Sized a,
-    Unwrapper a
+    RawNumeric a
   ) =>
   [a -> Text]
 floatSizeDirFormatters =

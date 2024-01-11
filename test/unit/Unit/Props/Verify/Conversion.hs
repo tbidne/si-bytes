@@ -18,17 +18,17 @@ module Unit.Props.Verify.Conversion
   )
 where
 
-import Data.Bytes.Class.Conversion (Conversion (..))
-import Data.Bytes.Class.Wrapper (Unwrapper (..))
-import Data.Bytes.Size (Size (..))
+import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
+import Data.Bytes.Class.RawNumeric (RawNumeric (Raw, toRaw))
+import Data.Bytes.Size (Size (B, E, G, K, M, P, T, Y, Z))
 #if MIN_VERSION_base(4, 16, 0)
 import Data.Kind (Constraint, Type)
 #endif
-import Data.Proxy (Proxy (..))
+import Data.Proxy (Proxy (Proxy))
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
-import Numeric.Algebra (MGroup (..), MSemigroup (..), Semifield)
-import Numeric.Literal.Integer (FromInteger (..))
+import Numeric.Algebra (MGroup ((.%.)), MSemigroup ((.*.)), Semifield)
+import Numeric.Literal.Integer (FromInteger (afromInteger))
 import Test.Tasty (TestTree)
 import Unit.Utils qualified as U
 
@@ -172,8 +172,8 @@ expectedY =
 
 #if MIN_VERSION_base(4, 16, 0)
 -- | This class exists so that we can tell testConvertToAll that
--- @Unwrapped (Converted s a) ~ c@ for /all/ @s@. We would like to write
--- it directly i.e. @forall s. Unwrapped (Converted s a) ~ c@, but this runs
+-- @Raw (Converted s a) ~ c@ for /all/ @s@. We would like to write
+-- it directly i.e. @forall s. Raw (Converted s a) ~ c@, but this runs
 -- afoul of the type checker; see:
 --
 -- * https://gitlab.haskell.org/ghc/ghc/-/issues/17959
@@ -185,20 +185,20 @@ expectedY =
 -- This saves us from having to write e.g.
 --
 -- @
--- Unwrapper (Converted B a),
--- Unwrapped (Converted B a) ~ c
+-- RawNumeric (Converted B a),
+-- Raw (Converted B a) ~ c
 -- ...
 -- @
 --
 -- for every single size.
 type ConvEquality :: Size -> Type -> Type -> Constraint
-class (Unwrapper (Converted s a), Unwrapped (Converted s a) ~ c) => ConvEquality s a c
+class (RawNumeric (Converted s a), Raw (Converted s a) ~ c) => ConvEquality s a c
 
-instance (Unwrapper (Converted s a), Unwrapped (Converted s a) ~ c) => ConvEquality s a c
+instance (RawNumeric (Converted s a), Raw (Converted s a) ~ c) => ConvEquality s a c
 
 -- NB. The cpp exists because this trick seems to only work on ghc 9.2+.
 -- On earlier versions we still get errors like "Could not deduce
--- Unwrapper (Converted B a)" for every single size. Might be related to
+-- RawNumeric (Converted B a)" for every single size. Might be related to
 -- this issue: https://gitlab.haskell.org/ghc/ghc/-/issues/21037
 --
 -- Sadly this means we have to list all sizes in these cases.
@@ -216,27 +216,27 @@ testConvertToAll ::
     Eq c,
     Show a,
     Show c,
-    Unwrapper a,
-    Unwrapped a ~ c,
+    RawNumeric a,
+    Raw a ~ c,
 #if !MIN_VERSION_base(4, 16, 0)
-    Unwrapper (Converted B a),
-    Unwrapped (Converted B a) ~ c,
-    Unwrapper (Converted K a),
-    Unwrapped (Converted K a) ~ c,
-    Unwrapper (Converted M a),
-    Unwrapped (Converted M a) ~ c,
-    Unwrapper (Converted G a),
-    Unwrapped (Converted G a) ~ c,
-    Unwrapper (Converted T a),
-    Unwrapped (Converted T a) ~ c,
-    Unwrapper (Converted P a),
-    Unwrapped (Converted P a) ~ c,
-    Unwrapper (Converted E a),
-    Unwrapped (Converted E a) ~ c,
-    Unwrapper (Converted Z a),
-    Unwrapped (Converted Z a) ~ c,
-    Unwrapper (Converted Y a),
-    Unwrapped (Converted Y a) ~ c
+    RawNumeric (Converted B a),
+    Raw (Converted B a) ~ c,
+    RawNumeric (Converted K a),
+    Raw (Converted K a) ~ c,
+    RawNumeric (Converted M a),
+    Raw (Converted M a) ~ c,
+    RawNumeric (Converted G a),
+    Raw (Converted G a) ~ c,
+    RawNumeric (Converted T a),
+    Raw (Converted T a) ~ c,
+    RawNumeric (Converted P a),
+    Raw (Converted P a) ~ c,
+    RawNumeric (Converted E a),
+    Raw (Converted E a) ~ c,
+    RawNumeric (Converted Z a),
+    Raw (Converted Z a) ~ c,
+    RawNumeric (Converted Y a),
+    Raw (Converted Y a) ~ c
 #else
     forall s. ConvEquality s a c
 #endif
@@ -248,18 +248,17 @@ testConvertToAll ::
   -- | Test description
   String ->
   TestTree
-testConvertToAll gen expects desc = 
+testConvertToAll gen expects desc =
   U.testPropertyCompat desc "testConversion" $
-    
-      H.property $ do
-        x <- H.forAll gen
-        let x' = unwrap x
-        bExp expects x' === unwrap (convert @_ @B Proxy x)
-        kExp expects x' === unwrap (convert @_ @K Proxy x)
-        mExp expects x' === unwrap (convert @_ @M Proxy x)
-        gExp expects x' === unwrap (convert @_ @G Proxy x)
-        tExp expects x' === unwrap (convert @_ @T Proxy x)
-        pExp expects x' === unwrap (convert @_ @P Proxy x)
-        eExp expects x' === unwrap (convert @_ @E Proxy x)
-        zExp expects x' === unwrap (convert @_ @Z Proxy x)
-        yExp expects x' === unwrap (convert @_ @Y Proxy x)
+    H.property $ do
+      x <- H.forAll gen
+      let x' = toRaw x
+      bExp expects x' === toRaw (convert @_ @B Proxy x)
+      kExp expects x' === toRaw (convert @_ @K Proxy x)
+      mExp expects x' === toRaw (convert @_ @M Proxy x)
+      gExp expects x' === toRaw (convert @_ @G Proxy x)
+      tExp expects x' === toRaw (convert @_ @T Proxy x)
+      pExp expects x' === toRaw (convert @_ @P Proxy x)
+      eExp expects x' === toRaw (convert @_ @E Proxy x)
+      zExp expects x' === toRaw (convert @_ @Z Proxy x)
+      yExp expects x' === toRaw (convert @_ @Y Proxy x)

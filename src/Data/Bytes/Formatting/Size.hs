@@ -16,14 +16,21 @@ module Data.Bytes.Formatting.Size
   )
 where
 
-import Data.Bytes.Formatting.Base (CaseFormat (..), Formatter (..), caseFormatToFn)
-import Data.Bytes.Size (Size (..), Sized (..))
-import Data.Default (Default (..))
+import Data.Bytes.Formatting.Base
+  ( CaseFormat
+      ( CaseFormatLower,
+        CaseFormatUpper
+      ),
+    Formatter (formatStr),
+    caseFormatToFn,
+  )
+import Data.Bytes.Size (Size (B, E, G, K, M, P, T, Y, Z), Sized (sizeOf))
+import Data.Default (Default (def))
 import Data.Text (Text)
 import Data.Text qualified as T
 import Optics.Core
   ( A_Lens,
-    LabelOptic (..),
+    LabelOptic (labelOptic),
     Prism',
     lens,
     prism,

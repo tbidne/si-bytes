@@ -9,8 +9,11 @@ module Unit.Props.Generators.Bytes
   )
 where
 
-import Data.Bytes.Internal (Bytes (..), SomeSize (..))
-import Data.Bytes.Size (SSize (..), Size (..))
+import Data.Bytes.Internal (Bytes (MkBytes), SomeSize (MkSomeSize))
+import Data.Bytes.Size
+  ( SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
+    Size (B, E, G, K, M, P, T, Y, Z),
+  )
 import Data.Ratio ((%))
 import Hedgehog (Gen)
 import Hedgehog.Gen qualified as HGen

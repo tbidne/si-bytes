@@ -23,41 +23,43 @@ import Control.Applicative (liftA2)
 #endif
 import Control.DeepSeq (NFData (rnf), deepseq)
 import Data.Bounds
-  ( LowerBounded,
+  ( AnyLowerBounded,
+    AnyUpperBounded,
+    LowerBounded,
     LowerBoundless,
     UpperBounded,
     UpperBoundless,
   )
-import Data.Bytes.Class.Conversion (Conversion (..))
+import Data.Bytes.Class.Conversion (Conversion (convert))
 import Data.Bytes.Class.Conversion qualified as Conv
-import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.Parser (Parser (..))
+import Data.Bytes.Class.Normalize (Normalize (Norm, normalize))
+import Data.Bytes.Class.Parser (Parser (parser))
 import Data.Bytes.Class.Parser qualified as Parser
-import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Class.RawNumeric (RawNumeric (Raw, toRaw))
 import Data.Bytes.Size
   ( NextSize,
     PrevSize,
-    SSize (..),
-    SingSize (..),
-    Size (..),
-    Sized (..),
+    SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
+    SingSize (singSize),
+    Size (B, E, G, K, M, P, T, Y, Z),
+    Sized (hideSize),
   )
 import Data.Bytes.Size qualified as Size
 import Data.Hashable as X (Hashable (hashWithSalt))
 import Data.Kind (Type)
-import Data.Proxy (Proxy (..))
+import Data.Proxy (Proxy (Proxy))
 import GHC.Generics (Generic)
 import Numeric.Algebra
-  ( AGroup (..),
-    AMonoid (..),
-    ASemigroup (..),
+  ( AGroup ((.-.)),
+    AMonoid (zero),
+    ASemigroup ((.+.)),
     Field,
-    MGroup (..),
-    MSemiSpace (..),
-    MSemigroup (..),
-    MSpace (..),
+    MGroup ((.%.)),
+    MSemiSpace ((.*)),
+    MSemigroup ((.*.)),
+    MSpace ((.%)),
     Module,
-    Normed (..),
+    Normed (norm),
     Ring,
     Semifield,
     Semimodule,
@@ -65,8 +67,8 @@ import Numeric.Algebra
     SemivectorSpace,
     VectorSpace,
   )
-import Numeric.Literal.Integer (FromInteger (..))
-import Numeric.Literal.Rational (FromRational (..))
+import Numeric.Literal.Integer (FromInteger (afromInteger))
+import Numeric.Literal.Rational (FromRational (afromRational))
 import Optics.Core (Iso', iso)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
@@ -109,6 +111,10 @@ newtype Bytes (s :: Size) (n :: Type) = MkBytes n
     )
   deriving
     ( -- | @since 0.1
+      AnyLowerBounded,
+      -- | @since 0.1
+      AnyUpperBounded,
+      -- | @since 0.1
       Hashable,
       -- | @since 0.1
       LowerBounded,
@@ -151,7 +157,7 @@ bytesToSSize _ = singSize
 --
 -- @since 0.1
 _MkBytes :: forall s n. Iso' (Bytes s n) n
-_MkBytes = iso unwrap MkBytes
+_MkBytes = iso toRaw MkBytes
 {-# INLINE _MkBytes #-}
 
 -- | @since 0.1
@@ -287,10 +293,10 @@ instance (SingSize s) => Sized (Bytes s n) where
   {-# INLINE hideSize #-}
 
 -- | @since 0.1
-instance Unwrapper (Bytes s n) where
-  type Unwrapped (Bytes s n) = n
-  unwrap (MkBytes x) = x
-  {-# INLINE unwrap #-}
+instance RawNumeric (Bytes s n) where
+  type Raw (Bytes s n) = n
+  toRaw (MkBytes x) = x
+  {-# INLINE toRaw #-}
 
 -- | @since 0.1
 instance (Read n) => Parser (Bytes s n) where
@@ -452,10 +458,10 @@ instance Sized (SomeSize n) where
   {-# INLINE hideSize #-}
 
 -- | @since 0.1
-instance Unwrapper (SomeSize n) where
-  type Unwrapped (SomeSize n) = n
-  unwrap (MkSomeSize _ b) = unwrap b
-  {-# INLINE unwrap #-}
+instance RawNumeric (SomeSize n) where
+  type Raw (SomeSize n) = n
+  toRaw (MkSomeSize _ b) = toRaw b
+  {-# INLINE toRaw #-}
 
 -- | @since 0.1
 instance (Read n) => Parser (SomeSize n) where
@@ -489,7 +495,7 @@ instance (Read n) => Parser (SomeSize n) where
 --
 -- @since 0.1
 incSize :: forall s n. (FromInteger n, MGroup n) => Bytes s n -> Bytes (NextSize s) n
-incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
+incSize = resizeBytes . MkBytes . (.%. nz1000) . toRaw
   where
     nz1000 = afromInteger 1_000
 {-# INLINE incSize #-}
@@ -506,5 +512,5 @@ incSize = resizeBytes . MkBytes . (.%. nz1000) . unwrap
 --
 -- @since 0.1
 decSize :: forall s n. (FromInteger n, MSemigroup n) => Bytes s n -> Bytes (PrevSize s) n
-decSize = resizeBytes . MkBytes . (.*. afromInteger @n 1_000) . unwrap
+decSize = resizeBytes . MkBytes . (.*. afromInteger @n 1_000) . toRaw
 {-# INLINE decSize #-}

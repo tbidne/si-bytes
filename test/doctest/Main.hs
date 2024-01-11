@@ -1,8 +1,7 @@
 module Main (main) where
 
-import System.Environment.Guard (ExpectEnv (..), guardOrElse')
+import System.Environment.Guard (ExpectEnv (ExpectEnvSet), guardOrElse')
 import Test.DocTest qualified as DocTest
-import Prelude
 
 main :: IO ()
 main =
@@ -21,7 +20,7 @@ files =
     "src/Data/Bytes/Class/Conversion.hs",
     "src/Data/Bytes/Class/Normalize.hs",
     "src/Data/Bytes/Class/Parser.hs",
-    "src/Data/Bytes/Class/Wrapper.hs",
+    "src/Data/Bytes/Class/RawNumeric.hs",
     "src/Data/Bytes/Formatting.hs",
     "src/Data/Bytes/Formatting/Direction.hs",
     "src/Data/Bytes/Formatting/Size.hs",

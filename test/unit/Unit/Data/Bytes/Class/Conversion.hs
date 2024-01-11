@@ -2,8 +2,8 @@
 module Unit.Data.Bytes.Class.Conversion (tests) where
 
 import Data.Bytes.Class.Conversion qualified as Conv
-import Data.Bytes.Size (Size (..))
-import GHC.Real (Ratio (..))
+import Data.Bytes.Size (Size (B, E, G, K, M, P, T, Y, Z))
+import GHC.Real (Ratio ((:%)))
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
 import Test.Tasty (TestTree)

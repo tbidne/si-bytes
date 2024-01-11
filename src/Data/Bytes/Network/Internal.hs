@@ -33,41 +33,48 @@ import Control.Applicative (liftA2)
 #endif
 import Control.DeepSeq (NFData (rnf), deepseq)
 import Data.Bounds
-  ( LowerBounded,
+  ( AnyLowerBounded,
+    AnyUpperBounded,
+    LowerBounded,
     LowerBoundless,
     UpperBounded,
     UpperBoundless,
   )
-import Data.Bytes.Class.Conversion (Conversion (..))
-import Data.Bytes.Class.Normalize (Normalize (..))
-import Data.Bytes.Class.Parser (Parser (..))
+import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
+import Data.Bytes.Class.Normalize (Normalize (Norm, normalize))
+import Data.Bytes.Class.Parser (Parser (parser))
 import Data.Bytes.Class.Parser qualified as Parser
-import Data.Bytes.Class.Wrapper (Unwrapper (..))
-import Data.Bytes.Internal (Bytes (..), SomeSize (..))
+import Data.Bytes.Class.RawNumeric (RawNumeric (Raw, toRaw))
+import Data.Bytes.Internal (Bytes (MkBytes), SomeSize (MkSomeSize))
 import Data.Bytes.Network.Direction
-  ( Directed (..),
-    Direction (..),
-    SDirection (..),
-    SingDirection (..),
+  ( Directed,
+    Direction (Down, Up),
+    SDirection (SDown, SUp),
+    SingDirection (singDirection),
   )
 import Data.Bytes.Network.Direction qualified as Direction
-import Data.Bytes.Size (SSize (..), SingSize (..), Size (..), Sized (..))
+import Data.Bytes.Size
+  ( SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
+    SingSize (singSize),
+    Size (B, E, G, K, M, P, T, Y, Z),
+    Sized (hideSize),
+  )
 import Data.Bytes.Size qualified as Size
 import Data.Hashable (Hashable (hashWithSalt))
 import Data.Kind (Type)
-import Data.Proxy (Proxy (..))
+import Data.Proxy (Proxy (Proxy))
 import GHC.Generics (Generic)
 import Numeric.Algebra
-  ( AGroup (..),
-    AMonoid (..),
-    ASemigroup (..),
+  ( AGroup ((.-.)),
+    AMonoid (zero),
+    ASemigroup ((.+.)),
     Field,
-    MGroup (..),
-    MSemiSpace (..),
-    MSemigroup (..),
-    MSpace (..),
+    MGroup,
+    MSemiSpace ((.*)),
+    MSemigroup,
+    MSpace ((.%)),
     Module,
-    Normed (..),
+    Normed (norm),
     Ring,
     Semifield,
     Semimodule,
@@ -75,8 +82,8 @@ import Numeric.Algebra
     SemivectorSpace,
     VectorSpace,
   )
-import Numeric.Literal.Integer (FromInteger (..))
-import Numeric.Literal.Rational (FromRational (..))
+import Numeric.Literal.Integer (FromInteger (afromInteger))
+import Numeric.Literal.Rational (FromRational (afromRational))
 import Optics.Core (Iso', Review, iso, unto)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
@@ -115,7 +122,11 @@ newtype NetBytes (d :: Direction) (s :: Size) (n :: Type) = MkNetBytes (Bytes s 
       NFData
     )
   deriving
-    ( -- | @since 0.1,
+    ( -- | @since 0.1
+      AnyLowerBounded,
+      -- | @since 0.1
+      AnyUpperBounded,
+      -- | @since 0.1,
       Hashable,
       -- | @since 0.1
       LowerBounded,
@@ -276,10 +287,10 @@ instance (SingDirection d) => Directed (NetBytes d s n) where
   {-# INLINE hideDirection #-}
 
 -- | @since 0.1
-instance Unwrapper (NetBytes d s n) where
-  type Unwrapped (NetBytes d s n) = n
-  unwrap (MkNetBytes b) = unwrap b
-  {-# INLINE unwrap #-}
+instance RawNumeric (NetBytes d s n) where
+  type Raw (NetBytes d s n) = n
+  toRaw (MkNetBytes b) = toRaw b
+  {-# INLINE toRaw #-}
 
 -- | @since 0.1
 instance (Read n) => Parser (NetBytes d s n) where
@@ -447,10 +458,10 @@ instance (SingDirection d) => Directed (SomeNetSize d n) where
   {-# INLINE hideDirection #-}
 
 -- | @since 0.1
-instance Unwrapper (SomeNetSize d n) where
-  type Unwrapped (SomeNetSize d n) = n
-  unwrap (MkSomeNetSize _ b) = unwrap b
-  {-# INLINE unwrap #-}
+instance RawNumeric (SomeNetSize d n) where
+  type Raw (SomeNetSize d n) = n
+  toRaw (MkSomeNetSize _ b) = toRaw b
+  {-# INLINE toRaw #-}
 
 -- | @since 0.1
 instance (Read n) => Parser (SomeNetSize d n) where
@@ -609,10 +620,10 @@ instance Directed (SomeNetDir s n) where
   {-# INLINE hideDirection #-}
 
 -- | @since 0.1
-instance Unwrapper (SomeNetDir s n) where
-  type Unwrapped (SomeNetDir s n) = n
-  unwrap (MkSomeNetDir _ b) = unwrap b
-  {-# INLINE unwrap #-}
+instance RawNumeric (SomeNetDir s n) where
+  type Raw (SomeNetDir s n) = n
+  toRaw (MkSomeNetDir _ b) = toRaw b
+  {-# INLINE toRaw #-}
 
 -- | @since 0.1
 instance (Read n) => Parser (SomeNetDir s n) where
@@ -760,10 +771,10 @@ instance Directed (SomeNet n) where
   {-# INLINE hideDirection #-}
 
 -- | @since 0.1
-instance Unwrapper (SomeNet n) where
-  type Unwrapped (SomeNet n) = n
-  unwrap (MkSomeNet _ _ b) = unwrap b
-  {-# INLINE unwrap #-}
+instance RawNumeric (SomeNet n) where
+  type Raw (SomeNet n) = n
+  toRaw (MkSomeNet _ _ b) = toRaw b
+  {-# INLINE toRaw #-}
 
 -- | @since 0.1
 instance (Read n) => Parser (SomeNet n) where

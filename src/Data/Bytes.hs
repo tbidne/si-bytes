@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
+
 -- | This module serves as the main entry point for the library. It provides
 -- the types and operations for typical usage and is usually the only import
 -- required. The core concept is:
@@ -29,7 +31,7 @@ module Data.Bytes
 
     -- ** Elimination
     -- $elimination1
-    Unwrapper (..),
+    RawNumeric (..),
     -- $elimination2
 
     -- * Transformations
@@ -78,20 +80,20 @@ module Data.Bytes
   )
 where
 
-import Data.Bytes.Class.Conversion (Conversion (..))
-import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
+import Data.Bytes.Class.Normalize (Normalize (Norm, normalize))
 import Data.Bytes.Class.Parser (Parser, parse)
-import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Class.RawNumeric (RawNumeric (Raw, toRaw))
 import Data.Bytes.Formatting
 import Data.Bytes.Internal
-  ( Bytes (..),
+  ( Bytes (MkBytes),
     SomeSize,
     _MkBytes,
     _MkSomeSize,
   )
 import Data.Bytes.Size
-  ( Size (..),
-    Sized (..),
+  ( Size (B, E, G, K, M, P, T, Y, Z),
+    Sized (HideSize, hideSize, sizeOf),
     _B,
     _E,
     _G,
@@ -149,7 +151,7 @@ import Numeric.Literal.Rational
 -- MkSomeSize SG (MkBytes 70)
 
 -- $elimination1
--- We provide the 'Unwrapper' class for conveniently unwrapping a type
+-- We provide the 'RawNumeric' class for conveniently unwrapping a type
 -- to the underlying numeric value.
 
 -- $elimination2

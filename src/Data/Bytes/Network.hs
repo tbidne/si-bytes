@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
+
 -- | This module serves as an alternative entry point to "Data.Bytes", for
 -- when tracking uploaded vs. downloaded bytes is necessary. It provides the
 -- types and operations for typical usage and is usually the only import
@@ -40,7 +42,7 @@ module Data.Bytes.Network
 
     -- ** Elimination
     -- $elimination1
-    Unwrapper (..),
+    RawNumeric (..),
     -- $elimination2
 
     -- * Transformations
@@ -96,14 +98,19 @@ module Data.Bytes.Network
   )
 where
 
-import Data.Bytes.Class.Conversion (Conversion (..))
-import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
+import Data.Bytes.Class.Normalize (Normalize (Norm, normalize))
 import Data.Bytes.Class.Parser (Parser, parse)
-import Data.Bytes.Class.Wrapper (Unwrapper (..))
+import Data.Bytes.Class.RawNumeric (RawNumeric (Raw, toRaw))
 import Data.Bytes.Formatting
-import Data.Bytes.Network.Direction (Directed (..), Direction (..), _Down, _Up)
+import Data.Bytes.Network.Direction
+  ( Directed (HideDirection, directionOf, hideDirection),
+    Direction (Down, Up),
+    _Down,
+    _Up,
+  )
 import Data.Bytes.Network.Internal
-  ( NetBytes (..),
+  ( NetBytes (MkNetBytes, MkNetBytesP),
     SomeNet,
     SomeNetDir,
     SomeNetSize,
@@ -113,8 +120,8 @@ import Data.Bytes.Network.Internal
     _MkSomeNetSize,
   )
 import Data.Bytes.Size
-  ( Size (..),
-    Sized (..),
+  ( Size (B, E, G, K, M, P, T, Y, Z),
+    Sized (HideSize, hideSize, sizeOf),
     _B,
     _E,
     _G,
@@ -202,7 +209,7 @@ import Numeric.Literal.Rational
 -- MkSomeNet SDown SG (MkNetBytes (MkBytes 70))
 
 -- $elimination1
--- We provide the 'Unwrapper' class for conveniently unwrapping a type
+-- We provide the 'RawNumeric' class for conveniently unwrapping a type
 -- to the underlying numeric value.
 
 -- $elimination2

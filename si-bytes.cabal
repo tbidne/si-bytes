@@ -53,6 +53,7 @@ common common-exts
     FlexibleInstances
     FunctionalDependencies
     GADTs
+    GeneralizedNewtypeDeriving
     ImportQualifiedPost
     InstanceSigs
     KindSignatures
@@ -80,7 +81,7 @@ library
     Data.Bytes.Class.Conversion
     Data.Bytes.Class.Normalize
     Data.Bytes.Class.Parser
-    Data.Bytes.Class.Wrapper
+    Data.Bytes.Class.RawNumeric
     Data.Bytes.Formatting
     Data.Bytes.Formatting.Base
     Data.Bytes.Formatting.Direction

@@ -10,7 +10,7 @@ module Unit.Specs.Verify.Normalize
   )
 where
 
-import Data.Bytes.Class.Normalize (Normalize (..))
+import Data.Bytes.Class.Normalize (Normalize (Norm, normalize))
 #if MIN_VERSION_base(4, 16, 0)
 #endif
 import Test.Tasty (TestTree)
