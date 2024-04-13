@@ -25,14 +25,25 @@ module Data.Bytes
     -- ** Unknown Size
     -- $size1
     SomeSize,
+
+    -- *** Sized
     -- $size2
     Sized (..),
+
+    -- *** Optics
     -- $size3
 
     -- ** Elimination
+
+    -- *** RawNumeric
     -- $elimination1
     RawNumeric (..),
+
+    -- *** HasField
     -- $elimination2
+
+    -- *** Optics
+    -- $elimination3
 
     -- * Transformations
 
@@ -133,6 +144,9 @@ import Numeric.Literal.Rational
 --     >>> import Optics.Core (review)
 --     >>> (review _MkBytes 70) :: Bytes G Int
 --     MkBytes 70
+--
+--     >>> (review #unBytes 70) :: Bytes G Int
+--     MkBytes 70
 
 -- $size1
 -- We sometimes have to deal with unknown sizes at runtime, which presents
@@ -155,8 +169,20 @@ import Numeric.Literal.Rational
 -- to the underlying numeric value.
 
 -- $elimination2
--- Optics can also be used, though they only unwrap one level at a time,
--- since we can freely compose them.
+-- We can use 'GHC.Records.HasField' for this too.
+--
+-- >>> -- {-# LANGUAGE OverloadedRecordDot #-}
+-- >>> let x = MkBytes 7 :: Bytes G Int
+-- >>> x.unBytes
+-- 7
+--
+-- >>> let y = hideSize x :: SomeSize Int
+-- >>> y.unSomeSize
+-- 7
+
+-- $elimination3
+-- Optics are another option. The underscore-prefixed optics unwrap one level
+-- at a time, since we can freely compose them.
 --
 -- >>> import Optics.Core (view, (%))
 -- >>> let x = MkBytes 7 :: Bytes G Int
@@ -171,6 +197,15 @@ import Numeric.Literal.Rational
 --
 -- >>> view (_MkSomeSize % (_MkBytes @M)) y
 -- 7000
+--
+-- The @-XOverloadedLabel@ instances unwrap all the way to the underlying numeric
+-- value.
+--
+-- >>> view #unBytes x
+-- 7
+--
+-- >>> view #unSomeSize y
+-- 7
 
 -- $pretty
 -- We provide several formatters for pretty-printing different byte types.

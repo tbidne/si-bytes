@@ -49,6 +49,9 @@ import Data.Hashable as X (Hashable (hashWithSalt))
 import Data.Kind (Type)
 import Data.Proxy (Proxy (Proxy))
 import GHC.Generics (Generic)
+#if MIN_VERSION_base(4, 16, 0)
+import GHC.Records (HasField (getField))
+#endif
 import Numeric.Algebra
   ( AGroup ((.-.)),
     AMonoid (zero),
@@ -69,7 +72,7 @@ import Numeric.Algebra
   )
 import Numeric.Literal.Integer (FromInteger (afromInteger))
 import Numeric.Literal.Rational (FromRational (afromRational))
-import Optics.Core (Iso', iso)
+import Optics.Core (A_Getter, An_Iso, Iso', LabelOptic (labelOptic), iso, to)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
 
@@ -159,6 +162,25 @@ bytesToSSize _ = singSize
 _MkBytes :: forall s n. Iso' (Bytes s n) n
 _MkBytes = iso toRaw MkBytes
 {-# INLINE _MkBytes #-}
+
+#if MIN_VERSION_base(4, 16, 0)
+
+-- | @since 0.1
+instance HasField "unBytes" (Bytes s n) n where
+  getField (MkBytes x) = x
+
+#endif
+
+-- | @since 0.1
+instance
+  ( k ~ An_Iso,
+    a ~ n,
+    b ~ n
+  ) =>
+  LabelOptic "unBytes" k (Bytes s n) (Bytes s n) a b
+  where
+  labelOptic = iso (\(MkBytes x) -> x) MkBytes
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 instance Applicative (Bytes s) where
@@ -358,6 +380,25 @@ deriving stock instance (Show n) => Show (SomeSize n)
 
 -- | @since 0.1
 deriving stock instance Functor SomeSize
+
+#if MIN_VERSION_base(4, 16, 0)
+
+-- | @since 0.1
+instance HasField "unSomeSize" (SomeSize n) n where
+  getField (MkSomeSize _ (MkBytes x)) = x
+
+#endif
+
+-- | @since 0.1
+instance
+  ( k ~ A_Getter,
+    a ~ n,
+    b ~ n
+  ) =>
+  LabelOptic "unSomeSize" k (SomeSize n) (SomeSize n) a b
+  where
+  labelOptic = to (\(MkSomeSize _ (MkBytes x)) -> x)
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeSize n) where

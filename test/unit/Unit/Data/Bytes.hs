@@ -1,6 +1,13 @@
+{-# LANGUAGE CPP #-}
+
+#if MIN_VERSION_base(4, 16, 0)
+{-# LANGUAGE OverloadedRecordDot #-}
+#endif
+
 -- | Property tests for 'Bytes'.
 module Unit.Data.Bytes (tests) where
 
+import Data.Bytes qualified as Bytes
 import Data.Bytes.Class.Conversion (Conversion (convert))
 import Data.Bytes.Class.Normalize (Normalize (normalize))
 import Data.Bytes.Class.RawNumeric (RawNumeric (toRaw))
@@ -14,6 +21,7 @@ import Data.Bytes.Size qualified as Size
 import Data.Proxy (Proxy (Proxy))
 import Hedgehog ((===))
 import Hedgehog qualified as H
+import Optics.Core (review, view)
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Unit.Props.Generators.Bytes qualified as Gens
@@ -47,6 +55,7 @@ bytesTests =
   T.testGroup
     "Bytes"
     [ unBytesProps,
+      bytesAccessorsProps,
       convertTests,
       normalizeTests,
       algebraTests,
@@ -104,6 +113,23 @@ unBytesProps =
     H.property $ do
       (MkSomeSize _ bytes) <- H.forAll Gens.genSomeBytes
       bytes === MkBytes (toRaw bytes)
+
+{- ORMOLU_DISABLE -}
+
+bytesAccessorsProps :: TestTree
+bytesAccessorsProps =
+  U.testPropertyCompat "Bytes accessors" "bytesAccessorsProps" $
+    H.property $ do
+      bytes@(MkBytes x) <- H.forAll Gens.genBytes
+#if MIN_VERSION_base(4, 16, 0)
+      x === bytes.unBytes
+#endif
+      x === view #unBytes bytes
+      bytes === review #unBytes x
+      x === view Bytes._MkBytes bytes
+      bytes === review Bytes._MkBytes x
+
+{- ORMOLU_ENABLE -}
 
 convertTests :: TestTree
 convertTests =
@@ -283,12 +309,31 @@ someSizeTests :: TestTree
 someSizeTests =
   T.testGroup
     "SomeSize"
-    [ someConvertTests,
+    [ someAccessorsProps,
+      someConvertTests,
       someNormalizeTests,
       someAlgebraTests,
       someFormattingTests,
       someParsingTests
     ]
+
+{- ORMOLU_DISABLE -}
+
+someAccessorsProps :: TestTree
+someAccessorsProps =
+  U.testPropertyCompat "SomeSize accessors" "someAccessorsProps" $
+    H.property $ do
+      someSize@(MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genSomeBytes
+      let bytesB = Size.withSingSize sz $ convert @_ @B Proxy bytes
+
+#if MIN_VERSION_base(4, 16, 0)
+      x === someSize.unSomeSize
+#endif
+      x === view #unSomeSize someSize
+      bytesB === view Bytes._MkSomeSize someSize
+      someSize === review Bytes._MkSomeSize bytesB
+
+{- ORMOLU_ENABLE -}
 
 someConvertTests :: TestTree
 someConvertTests =

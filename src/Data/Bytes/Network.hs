@@ -28,8 +28,12 @@ module Data.Bytes.Network
     -- ** Unknown Size
     -- $size1
     SomeNetSize,
+
+    -- *** Sized
     -- $size2
     Sized (..),
+
+    -- *** Optics
     -- $size3
 
     -- ** Unknown Direction
@@ -41,9 +45,16 @@ module Data.Bytes.Network
     -- $direction3
 
     -- ** Elimination
+
+    -- *** RawNumeric
     -- $elimination1
     RawNumeric (..),
+
+    -- *** HasField
     -- $elimination2
+
+    -- *** Optics
+    -- $elimination3
 
     -- * Transformations
 
@@ -164,12 +175,19 @@ import Numeric.Literal.Rational
 --
 -- 3. Optics (@optics-core@)
 --
+--     >>> -- 1. Using _MkNetBytes to construct a NetBytes from a Bytes
 --     >>> import Optics.Core (review, (%))
 --     >>> import Data.Bytes (_MkBytes)
 --     >>> (review _MkNetBytes (MkBytes 80)) :: NetBytes Up G Int -- Bytes -> NetBytes
 --     MkNetBytes (MkBytes 80)
 --
+--     >>> -- 2. Using _MkNetBytes and _MkBytes to construct a NetBytes from a
+--     >>> --    numeric value.
 --     >>> (review (_MkNetBytes % _MkBytes) 70) :: NetBytes Up G Int -- n -> NetBytes
+--     MkNetBytes (MkBytes 70)
+--
+--     >>> -- 3. Using #unNetBytes to construct a NetBytes from a numeric value.
+--     >>> (review #unNetBytes 70) :: NetBytes Up G Int -- n -> NetBytes
 --     MkNetBytes (MkBytes 70)
 
 -- $size1
@@ -212,23 +230,60 @@ import Numeric.Literal.Rational
 -- to the underlying numeric value.
 
 -- $elimination2
--- Optics can also be used, though they only unwrap one level at a time,
--- since we can freely compose them.
+-- We can use 'GHC.Records.HasField' for this too.
+--
+-- >>> -- {-# LANGUAGE OverloadedRecordDot #-}
+-- >>> let x1 = MkNetBytesP 7 :: NetBytes Up G Int
+-- >>> x1.unNetBytes
+-- 7
+--
+-- >>> let x2 = hideSize x1 :: SomeNetSize Up Int
+-- >>> x2.unSomeNetSize
+-- 7
+--
+-- >>> let x3 = (hideDirection x1) :: SomeNetDir G Int
+-- >>> x3.unSomeNetDir
+-- 7
+--
+-- >>> let x4 = (hideDirection x2) :: SomeNet Int
+-- >>> x4.unSomeNet
+-- 7
+
+-- $elimination3
+-- Optics are another option. The underscore-prefixed optics unwrap one level
+-- at a time, since we can freely compose them.
 --
 -- >>> import Optics.Core (view, (%))
 -- >>> import Data.Bytes (_MkBytes)
--- >>> let x = MkNetBytesP 7 :: NetBytes Up G Int
--- >>> view (_MkNetBytes % _MkBytes) x
+-- >>> let x1 = MkNetBytesP 7 :: NetBytes Up G Int
+-- >>> view (_MkNetBytes % _MkBytes) x1
 -- 7
 --
 -- >>> -- notice we have to convert the numeric value since the requested
 -- >>> -- return type ('M') differs from the original ('G')
--- >>> let y = hideSize x :: SomeNetSize Up Int
--- >>> (view _MkSomeNetSize y) :: NetBytes Up M Int
+-- >>> let x2 = hideSize x1 :: SomeNetSize Up Int
+-- >>> (view _MkSomeNetSize x2) :: NetBytes Up M Int
 -- MkNetBytes (MkBytes 7000)
 --
--- >>> view (_MkSomeNetSize % (_MkNetBytes @M) % _MkBytes) y
+-- >>> view (_MkSomeNetSize % (_MkNetBytes @M) % _MkBytes) x2
 -- 7000
+--
+-- The @-XOverloadedLabel@ instances unwrap all the way to the underlying numeric
+-- value.
+--
+-- >>> view #unNetBytes x1
+-- 7
+--
+-- >>> view #unSomeNetSize x2
+-- 7
+--
+-- >>> let x3 = hideDirection x1 :: SomeNetDir G Int
+-- >>> view #unSomeNetDir x3
+-- 7
+--
+-- >>> let x4 = hideSize x3 :: SomeNet Int
+-- >>> view #unSomeNet x4
+-- 7
 
 -- $pretty
 -- We provide several formatters for pretty-printing different byte types.

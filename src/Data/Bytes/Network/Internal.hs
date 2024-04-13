@@ -64,6 +64,9 @@ import Data.Hashable (Hashable (hashWithSalt))
 import Data.Kind (Type)
 import Data.Proxy (Proxy (Proxy))
 import GHC.Generics (Generic)
+#if MIN_VERSION_base(4, 16, 0)
+import GHC.Records (HasField (getField))
+#endif
 import Numeric.Algebra
   ( AGroup ((.-.)),
     AMonoid (zero),
@@ -84,7 +87,16 @@ import Numeric.Algebra
   )
 import Numeric.Literal.Integer (FromInteger (afromInteger))
 import Numeric.Literal.Rational (FromRational (afromRational))
-import Optics.Core (Iso', Review, iso, unto)
+import Optics.Core
+  ( A_Getter,
+    An_Iso,
+    Iso',
+    LabelOptic (labelOptic),
+    Review,
+    iso,
+    to,
+    unto,
+  )
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
 
@@ -93,7 +105,7 @@ import Text.Megaparsec.Char qualified as MPC
 -- >>> import Data.Bytes.Size (Size (..), Sized (..))
 -- >>> import Data.Bytes.Internal (Bytes (..))
 -- >>> getUpTrafficRaw = pure (40, "K")
--- >>> getMaxTrafficKRaw = pure (40, "Up")
+-- >>> getMaxTraffickRaw = pure (40, "Up")
 -- >>> getMaxTrafficNetRaw = pure (40, "Up", "K")
 
 -- | Wrapper around the 'Bytes' type that adds the 'Direction' tag.
@@ -186,6 +198,25 @@ netToSSize _ = singSize
 _MkNetBytes :: forall s d n. Iso' (NetBytes d s n) (Bytes s n)
 _MkNetBytes = iso (\(MkNetBytes x) -> x) MkNetBytes
 {-# INLINE _MkNetBytes #-}
+
+#if MIN_VERSION_base(4, 16, 0)
+
+-- | @since 0.1
+instance HasField "unNetBytes" (NetBytes d s n) n where
+  getField (MkNetBytesP x) = x
+
+#endif
+
+-- | @since 0.1
+instance
+  ( k ~ An_Iso,
+    a ~ n,
+    b ~ n
+  ) =>
+  LabelOptic "unNetBytes" k (NetBytes d s n) (NetBytes d s n) a b
+  where
+  labelOptic = iso (\(MkNetBytesP x) -> x) MkNetBytesP
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 instance Applicative (NetBytes d s) where
@@ -351,6 +382,25 @@ _MkSomeNetSize = iso (convert Proxy) hideSize
 -- | @since 0.1
 deriving stock instance (Show n) => Show (SomeNetSize d n)
 
+#if MIN_VERSION_base(4, 16, 0)
+
+-- | @since 0.1
+instance HasField "unSomeNetSize" (SomeNetSize d n) n where
+  getField (MkSomeNetSize _ (MkNetBytesP x)) = x
+
+#endif
+
+-- | @since 0.1
+instance
+  ( k ~ A_Getter,
+    a ~ n,
+    b ~ n
+  ) =>
+  LabelOptic "unSomeNetSize" k (SomeNetSize d n) (SomeNetSize d n) a b
+  where
+  labelOptic = to (\(MkSomeNetSize _ (MkNetBytesP x)) -> x)
+  {-# INLINE labelOptic #-}
+
 -- | @since 0.1
 instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNetSize d n) where
   hashWithSalt i (MkSomeNetSize sz x) =
@@ -487,8 +537,8 @@ unNetBytes (MkNetBytes x) = x
 -- >>> :{
 --   getMaxTraffic :: IO (SomeNetDir K Double)
 --   getMaxTraffic = do
---     -- getMaxTrafficKRaw :: IO (Double, String)
---     (bytes, direction) <- getMaxTrafficKRaw
+--     -- getMaxTraffickRaw :: IO (Double, String)
+--     (bytes, direction) <- getMaxTraffickRaw
 --     pure $ case direction of
 --       "down" -> hideDirection $ MkNetBytesP @Down bytes
 --       "up" -> hideDirection $ MkNetBytesP @Up bytes
@@ -545,6 +595,25 @@ _MkSomeNetDir = unto (\b -> MkSomeNetDir (netToSDirection b) b)
 
 -- | @since 0.1
 deriving stock instance (Show n) => Show (SomeNetDir s n)
+
+#if MIN_VERSION_base(4, 16, 0)
+
+-- | @since 0.1
+instance HasField "unSomeNetDir" (SomeNetDir s n) n where
+  getField (MkSomeNetDir _ (MkNetBytesP x)) = x
+
+#endif
+
+-- | @since 0.1
+instance
+  ( k ~ A_Getter,
+    a ~ n,
+    b ~ n
+  ) =>
+  LabelOptic "unSomeNetDir" k (SomeNetDir s n) (SomeNetDir s n) a b
+  where
+  labelOptic = to (\(MkSomeNetDir _ (MkNetBytesP x)) -> x)
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 instance
@@ -694,6 +763,25 @@ _MkSomeNet = unto (\b -> MkSomeNet (netToSDirection b) (netToSSize b) b)
 
 -- | @since 0.1
 deriving stock instance (Show n) => Show (SomeNet n)
+
+#if MIN_VERSION_base(4, 16, 0)
+
+-- | @since 0.1
+instance HasField "unSomeNet" (SomeNet n) n where
+  getField (MkSomeNet _ _ (MkNetBytesP x)) = x
+
+#endif
+
+-- | @since 0.1
+instance
+  ( k ~ A_Getter,
+    a ~ n,
+    b ~ n
+  ) =>
+  LabelOptic "unSomeNet" k (SomeNet n) (SomeNet n) a b
+  where
+  labelOptic = to (\(MkSomeNet _ _ (MkNetBytesP x)) -> x)
+  {-# INLINE labelOptic #-}
 
 -- | @since 0.1
 instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNet n) where

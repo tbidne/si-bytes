@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Main (main) where
 
 import System.Environment.Guard (ExpectEnv (ExpectEnvSet), guardOrElse')
@@ -31,6 +33,8 @@ files =
     "src/Data/Bytes/Size.hs"
   ]
 
+{- ORMOLU_DISABLE -}
+
 exts :: [String]
 exts =
   [ "-XApplicativeDo",
@@ -55,6 +59,9 @@ exts =
     "-XNamedFieldPuns",
     "-XNumericUnderscores",
     "-XOverloadedLabels",
+#if MIN_VERSION_base(4, 16, 0)
+    "-XOverloadedRecordDot",
+#endif
     "-XOverloadedStrings",
     "-XPatternSynonyms",
     "-XPolyKinds",
@@ -67,3 +74,5 @@ exts =
     "-XTypeFamilyDependencies",
     "-XTypeOperators"
   ]
+
+{- ORMOLU_ENABLE -}

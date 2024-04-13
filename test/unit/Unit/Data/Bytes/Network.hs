@@ -1,10 +1,19 @@
+{-# LANGUAGE CPP #-}
+
+#if MIN_VERSION_base(4, 16, 0)
+{-# LANGUAGE OverloadedRecordDot #-}
+#endif
+
 -- | Property tests for Network.
 module Unit.Data.Bytes.Network (tests) where
 
+import Data.Bytes (Bytes (MkBytes))
 import Data.Bytes.Class.Conversion (Conversion (convert))
 import Data.Bytes.Class.Normalize (Normalize (normalize))
 import Data.Bytes.Class.RawNumeric (RawNumeric (toRaw))
 import Data.Bytes.Formatting qualified as Formatting
+import Data.Bytes.Network (NetBytes (MkNetBytes))
+import Data.Bytes.Network qualified as NetBytes
 import Data.Bytes.Network.Direction
   ( Direction (Down, Up),
     SDirection (SDown, SUp),
@@ -24,6 +33,7 @@ import Data.Bytes.Size qualified as Size
 import Data.Proxy (Proxy (Proxy))
 import Hedgehog ((===))
 import Hedgehog qualified as H
+import Optics.Core (review, view)
 import Test.Tasty (TestTree)
 import Test.Tasty qualified as T
 import Unit.Props.Generators.Formatting qualified as FGens
@@ -59,6 +69,7 @@ netBytesProps =
   T.testGroup
     "NetBytes"
     [ unNetBytesProps,
+      netAccessorsProps,
       convertTests,
       normalizeTests,
       algebraTests,
@@ -147,6 +158,23 @@ unNetBytesProps =
     H.property $ do
       (MkSomeNetSize _ bytes) <- H.forAll NGens.genSomeNetSizeUp
       bytes === MkNetBytesP (toRaw bytes)
+
+{- ORMOLU_DISABLE -}
+
+netAccessorsProps :: TestTree
+netAccessorsProps =
+  U.testPropertyCompat "NetBytes accessors" "netAccessorsProps" $
+    H.property $ do
+      netBytes@(MkNetBytes bytes@(MkBytes x)) <- H.forAll NGens.genNet
+#if MIN_VERSION_base(4, 16, 0)
+      x === netBytes.unNetBytes
+#endif
+      x === view #unNetBytes netBytes
+      netBytes === review #unNetBytes x
+      bytes === view NetBytes._MkNetBytes netBytes
+      netBytes === review NetBytes._MkNetBytes bytes
+
+{- ORMOLU_ENABLE -}
 
 convertProps :: TestTree
 convertProps =
@@ -298,12 +326,33 @@ someNetSizeProps :: TestTree
 someNetSizeProps =
   T.testGroup
     "SomeNetSize"
-    [ someNetSizeConvertTests,
+    [ someNetSizeAccessorsProps,
+      someNetSizeConvertTests,
       someNetSizeNormalizeTests,
       someNetSizeAlgebraProps,
       someNetSizeFormattingTests,
       someNetSizeParsingTests
     ]
+
+{- ORMOLU_DISABLE -}
+
+someNetSizeAccessorsProps :: TestTree
+someNetSizeAccessorsProps =
+  U.testPropertyCompat "SomeNetSize accessors" "someNetSizeAccessorsProps" $
+    H.property $ do
+      someNetSize@(MkSomeNetSize sz netBytes@(MkNetBytes (MkBytes x))) <-
+        H.forAll NGens.genSomeNetSizeDown
+
+      let netBytesB = Size.withSingSize sz $ convert @_ @B Proxy netBytes
+
+#if MIN_VERSION_base(4, 16, 0)
+      x === someNetSize.unSomeNetSize
+#endif
+      x === view #unSomeNetSize someNetSize
+      netBytesB === view NetBytes._MkSomeNetSize someNetSize
+      someNetSize === review NetBytes._MkSomeNetSize netBytesB
+
+{- ORMOLU_ENABLE -}
 
 someNetSizeConvertTests :: TestTree
 someNetSizeConvertTests =
@@ -547,12 +596,30 @@ someNetDirProps :: TestTree
 someNetDirProps =
   T.testGroup
     "SomeNetDir"
-    [ someNetDirConvertTests,
+    [ someNetDirAccessorsProps,
+      someNetDirConvertTests,
       someNetDirNormalizeTests,
       someNetDirAlgebraProps,
       someNetDirFormattingTests,
       someNetDirParsingTests
     ]
+
+{- ORMOLU_DISABLE -}
+
+someNetDirAccessorsProps :: TestTree
+someNetDirAccessorsProps =
+  U.testPropertyCompat "SomeNetDir accessors" "someNetDirAccessorsProps" $
+    H.property $ do
+      someNetDir@(MkSomeNetDir d netBytes@(MkNetBytes (MkBytes x))) <-
+        H.forAll (NGens.genSomeNetDirUp @K)
+
+#if MIN_VERSION_base(4, 16, 0)
+      x === someNetDir.unSomeNetDir
+#endif
+      x === view #unSomeNetDir someNetDir
+      someNetDir === Direction.withSingDirection d (review NetBytes._MkSomeNetDir netBytes)
+
+{- ORMOLU_ENABLE -}
 
 someNetDirConvertTests :: TestTree
 someNetDirConvertTests =
@@ -772,12 +839,33 @@ someNetProps :: TestTree
 someNetProps =
   T.testGroup
     "SomeNet"
-    [ someNetConvertTests,
+    [ someNetAccessorsProps,
+      someNetConvertTests,
       someNetNormalizeTests,
       someNetAlgebraProps,
       someNetFormattingTests,
       someNetParsingTests
     ]
+
+{- ORMOLU_DISABLE -}
+
+someNetAccessorsProps :: TestTree
+someNetAccessorsProps =
+  U.testPropertyCompat "SomeNet accessors" "someNetAccessorsProps" $
+    H.property $ do
+      someNet@(MkSomeNet d sz netBytes@(MkNetBytes (MkBytes x))) <-
+        H.forAll NGens.genSomeNet
+
+#if MIN_VERSION_base(4, 16, 0)
+      x === someNet.unSomeNet
+#endif
+      x === view #unSomeNet someNet
+      someNet
+        === Size.withSingSize
+          sz
+          (Direction.withSingDirection d (review NetBytes._MkSomeNet netBytes))
+
+{- ORMOLU_ENABLE -}
 
 someNetConvertTests :: TestTree
 someNetConvertTests =
