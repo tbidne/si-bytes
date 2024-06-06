@@ -231,6 +231,19 @@ instance Monad (NetBytes d s) where
   {-# INLINE (>>=) #-}
 
 -- | @since 0.1
+instance Foldable (NetBytes d s) where
+  foldr f e (MkNetBytesP x) = f x e
+  {-# INLINE foldr #-}
+
+-- | @since 0.1
+instance Traversable (NetBytes d s) where
+  traverse f (MkNetBytesP x) = MkNetBytesP <$> f x
+  {-# INLINE traverse #-}
+
+  sequenceA (MkNetBytesP x) = MkNetBytesP <$> x
+  {-# INLINE sequenceA #-}
+
+-- | @since 0.1
 instance (FromInteger n) => FromInteger (NetBytes d s n) where
   afromInteger = MkNetBytes . afromInteger
   {-# INLINE afromInteger #-}
@@ -412,6 +425,19 @@ instance (NFData n) => NFData (SomeNetSize d n) where
 
 -- | @since 0.1
 deriving stock instance Functor (SomeNetSize d)
+
+-- | @since 0.1
+instance Foldable (SomeNetSize d) where
+  foldr f e (MkSomeNetSize _ (MkNetBytesP x)) = f x e
+  {-# INLINE foldr #-}
+
+-- | @since 0.1
+instance Traversable (SomeNetSize d) where
+  traverse f (MkSomeNetSize sz (MkNetBytesP x)) = MkSomeNetSize sz . MkNetBytesP <$> f x
+  {-# INLINE traverse #-}
+
+  sequenceA (MkSomeNetSize sz (MkNetBytesP x)) = MkSomeNetSize sz . MkNetBytesP <$> x
+  {-# INLINE sequenceA #-}
 
 -- | @since 0.1
 instance (Eq n, FromInteger n, MGroup n) => Eq (SomeNetSize d n) where
@@ -631,6 +657,19 @@ instance (NFData n) => NFData (SomeNetDir s n) where
 deriving stock instance Functor (SomeNetDir s)
 
 -- | @since 0.1
+instance Foldable (SomeNetDir s) where
+  foldr f e (MkSomeNetDir _ (MkNetBytesP x)) = f x e
+  {-# INLINE foldr #-}
+
+-- | @since 0.1
+instance Traversable (SomeNetDir d) where
+  traverse f (MkSomeNetDir d (MkNetBytesP x)) = MkSomeNetDir d . MkNetBytesP <$> f x
+  {-# INLINE traverse #-}
+
+  sequenceA (MkSomeNetDir d (MkNetBytesP x)) = MkSomeNetDir d . MkNetBytesP <$> x
+  {-# INLINE sequenceA #-}
+
+-- | @since 0.1
 instance (Eq n, FromInteger n, SingSize s) => Eq (SomeNetDir s n) where
   MkSomeNetDir dx x == MkSomeNetDir dy y =
     case (dx, dy) of
@@ -797,6 +836,19 @@ instance (NFData n) => NFData (SomeNet n) where
 
 -- | @since 0.1
 deriving stock instance Functor SomeNet
+
+-- | @since 0.1
+instance Foldable SomeNet where
+  foldr f e (MkSomeNet _ _ (MkNetBytesP x)) = f x e
+  {-# INLINE foldr #-}
+
+-- | @since 0.1
+instance Traversable SomeNet where
+  traverse f (MkSomeNet d sz (MkNetBytesP x)) = MkSomeNet d sz . MkNetBytesP <$> f x
+  {-# INLINE traverse #-}
+
+  sequenceA (MkSomeNet d sz (MkNetBytesP x)) = MkSomeNet d sz . MkNetBytesP <$> x
+  {-# INLINE sequenceA #-}
 
 -- | @since 0.1
 instance (Eq n, FromInteger n, MGroup n) => Eq (SomeNet n) where

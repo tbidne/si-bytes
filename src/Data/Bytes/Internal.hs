@@ -195,6 +195,19 @@ instance Monad (Bytes s) where
   {-# INLINE (>>=) #-}
 
 -- | @since 0.1
+instance Foldable (Bytes s) where
+  foldr f e (MkBytes x) = f x e
+  {-# INLINE foldr #-}
+
+-- | @since 0.1
+instance Traversable (Bytes s) where
+  traverse f (MkBytes x) = MkBytes <$> f x
+  {-# INLINE traverse #-}
+
+  sequenceA (MkBytes x) = MkBytes <$> x
+  {-# INLINE sequenceA #-}
+
+-- | @since 0.1
 instance (FromInteger n) => FromInteger (Bytes s n) where
   afromInteger = MkBytes . afromInteger
   {-# INLINE afromInteger #-}
@@ -380,6 +393,19 @@ deriving stock instance (Show n) => Show (SomeSize n)
 
 -- | @since 0.1
 deriving stock instance Functor SomeSize
+
+-- | @since 0.1
+instance Foldable SomeSize where
+  foldr f e (MkSomeSize _ (MkBytes x)) = f x e
+  {-# INLINE foldr #-}
+
+-- | @since 0.1
+instance Traversable SomeSize where
+  traverse f (MkSomeSize sz (MkBytes x)) = MkSomeSize sz . MkBytes <$> f x
+  {-# INLINE traverse #-}
+
+  sequenceA (MkSomeSize sz (MkBytes x)) = MkSomeSize sz . MkBytes <$> x
+  {-# INLINE sequenceA #-}
 
 #if MIN_VERSION_base(4, 16, 0)
 
