@@ -8,7 +8,7 @@
 module Unit.Data.Bytes (tests) where
 
 import Data.Bytes qualified as Bytes
-import Data.Bytes.Class.Conversion (Conversion (convert))
+import Data.Bytes.Class.Conversion (Conversion (convert_))
 import Data.Bytes.Class.Normalize (Normalize (normalize))
 import Data.Bytes.Class.RawNumeric (RawNumeric (toRaw))
 import Data.Bytes.Formatting qualified as Formatting
@@ -324,7 +324,7 @@ someAccessorsProps =
   U.testPropertyCompat "SomeSize accessors" "someAccessorsProps" $
     H.property $ do
       someSize@(MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genSomeBytes
-      let bytesB = Size.withSingSize sz $ convert @_ @B Proxy bytes
+      let bytesB = Size.withSingSize sz $ convert_ @_ @B Proxy bytes
 
 #if MIN_VERSION_base(4, 16, 0)
       x === someSize.unSomeSize
@@ -485,15 +485,15 @@ someConvertProps =
     H.property $ do
       someSize@(MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
 
-      U.annEquals (convert (Proxy @B) someSize) (Size.withSingSize sz (convert (Proxy @B) bytes))
-      U.annEquals (convert (Proxy @K) someSize) (Size.withSingSize sz (convert (Proxy @K) bytes))
-      U.annEquals (convert (Proxy @M) someSize) (Size.withSingSize sz (convert (Proxy @M) bytes))
-      U.annEquals (convert (Proxy @G) someSize) (Size.withSingSize sz (convert (Proxy @G) bytes))
-      U.annEquals (convert (Proxy @T) someSize) (Size.withSingSize sz (convert (Proxy @T) bytes))
-      U.annEquals (convert (Proxy @P) someSize) (Size.withSingSize sz (convert (Proxy @P) bytes))
-      U.annEquals (convert (Proxy @E) someSize) (Size.withSingSize sz (convert (Proxy @E) bytes))
-      U.annEquals (convert (Proxy @Z) someSize) (Size.withSingSize sz (convert (Proxy @Z) bytes))
-      U.annEquals (convert (Proxy @Y) someSize) (Size.withSingSize sz (convert (Proxy @Y) bytes))
+      U.annEquals (convert_ (Proxy @B) someSize) (Size.withSingSize sz (convert_ (Proxy @B) bytes))
+      U.annEquals (convert_ (Proxy @K) someSize) (Size.withSingSize sz (convert_ (Proxy @K) bytes))
+      U.annEquals (convert_ (Proxy @M) someSize) (Size.withSingSize sz (convert_ (Proxy @M) bytes))
+      U.annEquals (convert_ (Proxy @G) someSize) (Size.withSingSize sz (convert_ (Proxy @G) bytes))
+      U.annEquals (convert_ (Proxy @T) someSize) (Size.withSingSize sz (convert_ (Proxy @T) bytes))
+      U.annEquals (convert_ (Proxy @P) someSize) (Size.withSingSize sz (convert_ (Proxy @P) bytes))
+      U.annEquals (convert_ (Proxy @E) someSize) (Size.withSingSize sz (convert_ (Proxy @E) bytes))
+      U.annEquals (convert_ (Proxy @Z) someSize) (Size.withSingSize sz (convert_ (Proxy @Z) bytes))
+      U.annEquals (convert_ (Proxy @Y) someSize) (Size.withSingSize sz (convert_ (Proxy @Y) bytes))
 
 someSizeToLabel :: SomeSize n -> Size
 someSizeToLabel (MkSomeSize sz _) = case sz of

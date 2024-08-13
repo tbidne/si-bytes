@@ -1,4 +1,7 @@
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
+
+{- ORMOLU_DISABLE -}
 
 -- | This module serves as the main entry point for the library. It provides
 -- the types and operations for typical usage and is usually the only import
@@ -50,6 +53,10 @@ module Data.Bytes
     -- ** Converting Units
     Conversion (..),
 
+#if MIN_VERSION_base(4, 20, 0)
+    Conv.convert,
+#endif
+
     -- ** Normalization
     Normalize (..),
 
@@ -91,7 +98,12 @@ module Data.Bytes
   )
 where
 
-import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
+{- ORMOLU_ENABLE -}
+
+import Data.Bytes.Class.Conversion (Conversion (Converted, convert_))
+#if MIN_VERSION_base(4, 20, 0)
+import Data.Bytes.Class.Conversion qualified as Conv
+#endif
 import Data.Bytes.Class.Normalize (Normalize (Norm, normalize))
 import Data.Bytes.Class.Parser (Parser, parse)
 import Data.Bytes.Class.RawNumeric (RawNumeric (Raw, toRaw))

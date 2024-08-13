@@ -11,7 +11,7 @@ module Unit.Specs.Verify.Conversion
   )
 where
 
-import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
+import Data.Bytes.Class.Conversion (Conversion (Converted, convert_))
 import Data.Bytes.Class.RawNumeric (RawNumeric (Raw, toRaw))
 import Data.Bytes.Size (Size (B, E, G, K, M, P, T, Y, Z))
 #if MIN_VERSION_base(4, 16, 0)
@@ -101,24 +101,24 @@ convSpecs ::
   (Integer -> b) ->
   TestTree
 convSpecs MkExpectedConvs{..} minSizeCons maxSizeCons = testCase "Conversions" $ do
-  bExp @=? toRaw (convert (Proxy @B) (minSizeCons 1_000_000_000_000_000_000_000_000))
-  kExp @=? toRaw (convert (Proxy @K) (minSizeCons 1_000_000_000_000_000_000_000_000))
-  mExp @=? toRaw (convert (Proxy @M) (minSizeCons 1_000_000_000_000_000_000_000_000))
-  gExp @=? toRaw (convert (Proxy @G) (minSizeCons 1_000_000_000_000_000_000_000_000))
-  tExp @=? toRaw (convert (Proxy @T) (minSizeCons 1_000_000_000_000_000_000_000_000))
-  pExp @=? toRaw (convert (Proxy @P) (minSizeCons 1_000_000_000_000_000_000_000_000))
-  eExp @=? toRaw (convert (Proxy @E) (minSizeCons 1_000_000_000_000_000_000_000_000))
-  zExp @=? toRaw (convert (Proxy @Z) (minSizeCons 1_000_000_000_000_000_000_000_000))
-  yExp @=? toRaw (convert (Proxy @Y) (minSizeCons 1_000_000_000_000_000_000_000_000))
+  bExp @=? toRaw (convert_ (Proxy @B) (minSizeCons 1_000_000_000_000_000_000_000_000))
+  kExp @=? toRaw (convert_ (Proxy @K) (minSizeCons 1_000_000_000_000_000_000_000_000))
+  mExp @=? toRaw (convert_ (Proxy @M) (minSizeCons 1_000_000_000_000_000_000_000_000))
+  gExp @=? toRaw (convert_ (Proxy @G) (minSizeCons 1_000_000_000_000_000_000_000_000))
+  tExp @=? toRaw (convert_ (Proxy @T) (minSizeCons 1_000_000_000_000_000_000_000_000))
+  pExp @=? toRaw (convert_ (Proxy @P) (minSizeCons 1_000_000_000_000_000_000_000_000))
+  eExp @=? toRaw (convert_ (Proxy @E) (minSizeCons 1_000_000_000_000_000_000_000_000))
+  zExp @=? toRaw (convert_ (Proxy @Z) (minSizeCons 1_000_000_000_000_000_000_000_000))
+  yExp @=? toRaw (convert_ (Proxy @Y) (minSizeCons 1_000_000_000_000_000_000_000_000))
 
-  bExp @=? toRaw (convert (Proxy @B) (maxSizeCons 1))
-  kExp @=? toRaw (convert (Proxy @K) (maxSizeCons 1))
-  mExp @=? toRaw (convert (Proxy @M) (maxSizeCons 1))
-  gExp @=? toRaw (convert (Proxy @G) (maxSizeCons 1))
-  tExp @=? toRaw (convert (Proxy @T) (maxSizeCons 1))
-  pExp @=? toRaw (convert (Proxy @P) (maxSizeCons 1))
-  eExp @=? toRaw (convert (Proxy @E) (maxSizeCons 1))
-  zExp @=? toRaw (convert (Proxy @Z) (maxSizeCons 1))
-  yExp @=? toRaw (convert (Proxy @Y) (maxSizeCons 1))
+  bExp @=? toRaw (convert_ (Proxy @B) (maxSizeCons 1))
+  kExp @=? toRaw (convert_ (Proxy @K) (maxSizeCons 1))
+  mExp @=? toRaw (convert_ (Proxy @M) (maxSizeCons 1))
+  gExp @=? toRaw (convert_ (Proxy @G) (maxSizeCons 1))
+  tExp @=? toRaw (convert_ (Proxy @T) (maxSizeCons 1))
+  pExp @=? toRaw (convert_ (Proxy @P) (maxSizeCons 1))
+  eExp @=? toRaw (convert_ (Proxy @E) (maxSizeCons 1))
+  zExp @=? toRaw (convert_ (Proxy @Z) (maxSizeCons 1))
+  yExp @=? toRaw (convert_ (Proxy @Y) (maxSizeCons 1))
 
 {- ORMOLU_ENABLE -}

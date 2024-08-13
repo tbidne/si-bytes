@@ -21,7 +21,7 @@ convertProps =
     H.property $ do
       (s1, s2, n) <- H.forAll genConvertInput
       let expected = n * sizesToMult s1 s2
-          result = Conv.convert' s1 s2 n
+          result = Conv.convertSize s1 s2 n
       H.footnote $ "expected: " <> show expected
       H.footnote $ "result: " <> show result
       result === expected

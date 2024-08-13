@@ -8,7 +8,7 @@
 module Unit.Data.Bytes.Network (tests) where
 
 import Data.Bytes (Bytes (MkBytes))
-import Data.Bytes.Class.Conversion (Conversion (convert))
+import Data.Bytes.Class.Conversion (Conversion (convert_))
 import Data.Bytes.Class.Normalize (Normalize (normalize))
 import Data.Bytes.Class.RawNumeric (RawNumeric (toRaw))
 import Data.Bytes.Formatting qualified as Formatting
@@ -343,7 +343,7 @@ someNetSizeAccessorsProps =
       someNetSize@(MkSomeNetSize sz netBytes@(MkNetBytes (MkBytes x))) <-
         H.forAll NGens.genSomeNetSizeDown
 
-      let netBytesB = Size.withSingSize sz $ convert @_ @B Proxy netBytes
+      let netBytesB = Size.withSingSize sz $ convert_ @_ @B Proxy netBytes
 
 #if MIN_VERSION_base(4, 16, 0)
       x === someNetSize.unSomeNetSize
@@ -438,15 +438,15 @@ someNetSizeConvertProps =
     H.property $ do
       someNetSize@(MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeDown
 
-      U.annEquals (convert (Proxy @B) someNetSize) (Size.withSingSize sz (convert (Proxy @B) bytes))
-      U.annEquals (convert (Proxy @K) someNetSize) (Size.withSingSize sz (convert (Proxy @K) bytes))
-      U.annEquals (convert (Proxy @M) someNetSize) (Size.withSingSize sz (convert (Proxy @M) bytes))
-      U.annEquals (convert (Proxy @G) someNetSize) (Size.withSingSize sz (convert (Proxy @G) bytes))
-      U.annEquals (convert (Proxy @T) someNetSize) (Size.withSingSize sz (convert (Proxy @T) bytes))
-      U.annEquals (convert (Proxy @P) someNetSize) (Size.withSingSize sz (convert (Proxy @P) bytes))
-      U.annEquals (convert (Proxy @E) someNetSize) (Size.withSingSize sz (convert (Proxy @E) bytes))
-      U.annEquals (convert (Proxy @Z) someNetSize) (Size.withSingSize sz (convert (Proxy @Z) bytes))
-      U.annEquals (convert (Proxy @Y) someNetSize) (Size.withSingSize sz (convert (Proxy @Y) bytes))
+      U.annEquals (convert_ (Proxy @B) someNetSize) (Size.withSingSize sz (convert_ (Proxy @B) bytes))
+      U.annEquals (convert_ (Proxy @K) someNetSize) (Size.withSingSize sz (convert_ (Proxy @K) bytes))
+      U.annEquals (convert_ (Proxy @M) someNetSize) (Size.withSingSize sz (convert_ (Proxy @M) bytes))
+      U.annEquals (convert_ (Proxy @G) someNetSize) (Size.withSingSize sz (convert_ (Proxy @G) bytes))
+      U.annEquals (convert_ (Proxy @T) someNetSize) (Size.withSingSize sz (convert_ (Proxy @T) bytes))
+      U.annEquals (convert_ (Proxy @P) someNetSize) (Size.withSingSize sz (convert_ (Proxy @P) bytes))
+      U.annEquals (convert_ (Proxy @E) someNetSize) (Size.withSingSize sz (convert_ (Proxy @E) bytes))
+      U.annEquals (convert_ (Proxy @Z) someNetSize) (Size.withSingSize sz (convert_ (Proxy @Z) bytes))
+      U.annEquals (convert_ (Proxy @Y) someNetSize) (Size.withSingSize sz (convert_ (Proxy @Y) bytes))
 
 someNetSizeEqProps :: TestTree
 someNetSizeEqProps =
@@ -703,32 +703,32 @@ someNetDirConvertProps =
       someNetDir@(MkSomeNetDir d bytes) :: SomeNetDir G Rational <- H.forAll NGens.genSomeNetDirDown
 
       U.annEquals
-        (convert (Proxy @B) someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @B) bytes))
+        (convert_ (Proxy @B) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert_ (Proxy @B) bytes))
       U.annEquals
-        (convert (Proxy @K) someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @K) bytes))
+        (convert_ (Proxy @K) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert_ (Proxy @K) bytes))
       U.annEquals
-        (convert (Proxy @M) someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @M) bytes))
+        (convert_ (Proxy @M) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert_ (Proxy @M) bytes))
       U.annEquals
-        (convert (Proxy @G) someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @G) bytes))
+        (convert_ (Proxy @G) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert_ (Proxy @G) bytes))
       U.annEquals
-        (convert (Proxy @T) someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @T) bytes))
+        (convert_ (Proxy @T) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert_ (Proxy @T) bytes))
       U.annEquals
-        (convert (Proxy @P) someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @P) bytes))
+        (convert_ (Proxy @P) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert_ (Proxy @P) bytes))
       U.annEquals
-        (convert (Proxy @E) someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @E) bytes))
+        (convert_ (Proxy @E) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert_ (Proxy @E) bytes))
       U.annEquals
-        (convert (Proxy @Z) someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @Z) bytes))
+        (convert_ (Proxy @Z) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert_ (Proxy @Z) bytes))
       U.annEquals
-        (convert (Proxy @Y) someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert (Proxy @Y) bytes))
+        (convert_ (Proxy @Y) someNetDir)
+        (Direction.withSingDirection d $ Direction.hideDirection (convert_ (Proxy @Y) bytes))
 
 someNetDirNormalizeSpecs :: TestTree
 someNetDirNormalizeSpecs = T.testGroup "Specs" tests'
@@ -927,74 +927,74 @@ someNetConvertProps =
       someNet@(MkSomeNet d sz bytes) <- H.forAll NGens.genSomeNet
 
       U.annEquals
-        (convert (Proxy @B) someNet)
+        (convert_ (Proxy @B) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @B) bytes
+                convert_ (Proxy @B) bytes
         )
       U.annEquals
-        (convert (Proxy @K) someNet)
+        (convert_ (Proxy @K) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @K) bytes
+                convert_ (Proxy @K) bytes
         )
       U.annEquals
-        (convert (Proxy @M) someNet)
+        (convert_ (Proxy @M) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @M) bytes
+                convert_ (Proxy @M) bytes
         )
       U.annEquals
-        (convert (Proxy @G) someNet)
+        (convert_ (Proxy @G) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @G) bytes
+                convert_ (Proxy @G) bytes
         )
       U.annEquals
-        (convert (Proxy @T) someNet)
+        (convert_ (Proxy @T) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @T) bytes
+                convert_ (Proxy @T) bytes
         )
       U.annEquals
-        (convert (Proxy @P) someNet)
+        (convert_ (Proxy @P) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @P) bytes
+                convert_ (Proxy @P) bytes
         )
       U.annEquals
-        (convert (Proxy @E) someNet)
+        (convert_ (Proxy @E) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @E) bytes
+                convert_ (Proxy @E) bytes
         )
       U.annEquals
-        (convert (Proxy @Z) someNet)
+        (convert_ (Proxy @Z) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @Z) bytes
+                convert_ (Proxy @Z) bytes
         )
       U.annEquals
-        (convert (Proxy @Y) someNet)
+        (convert_ (Proxy @Y) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @Y) bytes
+                convert_ (Proxy @Y) bytes
         )
       U.annEquals
-        (convert (Proxy @B) someNet)
+        (convert_ (Proxy @B) someNet)
         ( Direction.withSingDirection d $
             Direction.hideDirection $
               Size.withSingSize sz $
-                convert (Proxy @B) bytes
+                convert_ (Proxy @B) bytes
         )
 
 someNetNormalizeSpecs :: TestTree

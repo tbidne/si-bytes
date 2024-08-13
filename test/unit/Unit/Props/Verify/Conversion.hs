@@ -18,7 +18,7 @@ module Unit.Props.Verify.Conversion
   )
 where
 
-import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
+import Data.Bytes.Class.Conversion (Conversion (Converted, convert_))
 import Data.Bytes.Class.RawNumeric (RawNumeric (Raw, toRaw))
 import Data.Bytes.Size (Size (B, E, G, K, M, P, T, Y, Z))
 #if MIN_VERSION_base(4, 16, 0)
@@ -253,12 +253,12 @@ testConvertToAll gen expects desc =
     H.property $ do
       x <- H.forAll gen
       let x' = toRaw x
-      bExp expects x' === toRaw (convert @_ @B Proxy x)
-      kExp expects x' === toRaw (convert @_ @K Proxy x)
-      mExp expects x' === toRaw (convert @_ @M Proxy x)
-      gExp expects x' === toRaw (convert @_ @G Proxy x)
-      tExp expects x' === toRaw (convert @_ @T Proxy x)
-      pExp expects x' === toRaw (convert @_ @P Proxy x)
-      eExp expects x' === toRaw (convert @_ @E Proxy x)
-      zExp expects x' === toRaw (convert @_ @Z Proxy x)
-      yExp expects x' === toRaw (convert @_ @Y Proxy x)
+      bExp expects x' === toRaw (convert_ @_ @B Proxy x)
+      kExp expects x' === toRaw (convert_ @_ @K Proxy x)
+      mExp expects x' === toRaw (convert_ @_ @M Proxy x)
+      gExp expects x' === toRaw (convert_ @_ @G Proxy x)
+      tExp expects x' === toRaw (convert_ @_ @T Proxy x)
+      pExp expects x' === toRaw (convert_ @_ @P Proxy x)
+      eExp expects x' === toRaw (convert_ @_ @E Proxy x)
+      zExp expects x' === toRaw (convert_ @_ @Z Proxy x)
+      yExp expects x' === toRaw (convert_ @_ @Y Proxy x)

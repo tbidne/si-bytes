@@ -40,7 +40,7 @@ import Data.Bounds
     UpperBounded,
     UpperBoundless,
   )
-import Data.Bytes.Class.Conversion (Conversion (Converted, convert))
+import Data.Bytes.Class.Conversion (Conversion (Converted, convert_))
 import Data.Bytes.Class.Normalize (Normalize (Norm, normalize))
 import Data.Bytes.Class.Parser (Parser (parser))
 import Data.Bytes.Class.Parser qualified as Parser
@@ -299,8 +299,8 @@ instance (Field n) => VectorSpace (NetBytes d s n) n
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (NetBytes d s n) where
   type Converted t (NetBytes d s n) = NetBytes d t n
 
-  convert :: forall t. (SingSize t) => Proxy t -> NetBytes d s n -> NetBytes d t n
-  convert proxy (MkNetBytes x) = MkNetBytes $ convert proxy x
+  convert_ :: forall t. (SingSize t) => Proxy t -> NetBytes d s n -> NetBytes d t n
+  convert_ proxy (MkNetBytes x) = MkNetBytes $ convert_ proxy x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (NetBytes d s n) where
@@ -389,7 +389,7 @@ data SomeNetSize (d :: Direction) (n :: Type) where
 --
 -- @since 0.1
 _MkSomeNetSize :: forall s d n. (FromInteger n, MGroup n, SingSize s) => Iso' (SomeNetSize d n) (NetBytes d s n)
-_MkSomeNetSize = iso (convert Proxy) hideSize
+_MkSomeNetSize = iso (convert_ Proxy) hideSize
 {-# INLINE _MkSomeNetSize #-}
 
 -- | @since 0.1
@@ -441,12 +441,12 @@ instance Traversable (SomeNetSize d) where
 
 -- | @since 0.1
 instance (Eq n, FromInteger n, MGroup n) => Eq (SomeNetSize d n) where
-  x == y = convert @_ @B Proxy x == convert Proxy y
+  x == y = convert_ @_ @B Proxy x == convert_ Proxy y
   {-# INLINE (==) #-}
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Ord n) => Ord (SomeNetSize d n) where
-  x <= y = convert @_ @B Proxy x <= convert Proxy y
+  x <= y = convert_ @_ @B Proxy x <= convert_ Proxy y
   {-# INLINE (<=) #-}
 
 -- | Fixed size 'B'.
@@ -465,7 +465,7 @@ instance (FromRational n) => FromRational (SomeNetSize d n) where
 
 -- | @since 0.1
 instance (ASemigroup n, FromInteger n, MGroup n) => ASemigroup (SomeNetSize d n) where
-  x .+. y = MkSomeNetSize SB $ convert Proxy x .+. convert Proxy y
+  x .+. y = MkSomeNetSize SB $ convert_ Proxy x .+. convert_ Proxy y
   {-# INLINE (.+.) #-}
 
 -- | @since 0.1
@@ -475,7 +475,7 @@ instance (FromInteger n, Semifield n) => AMonoid (SomeNetSize d n) where
 
 -- | @since 0.1
 instance (Field n, FromInteger n) => AGroup (SomeNetSize d n) where
-  x .-. y = MkSomeNetSize SB $ convert Proxy x .-. convert Proxy y
+  x .-. y = MkSomeNetSize SB $ convert_ Proxy x .-. convert_ Proxy y
   {-# INLINE (.-.) #-}
 
 -- | @since 0.1
@@ -504,8 +504,8 @@ instance (FromInteger n, Field n) => VectorSpace (SomeNetSize d n) n
 instance (FromInteger n, MGroup n) => Conversion (SomeNetSize d n) where
   type Converted t (SomeNetSize d n) = NetBytes d t n
 
-  convert :: forall t. (SingSize t) => Proxy t -> SomeNetSize d n -> NetBytes d t n
-  convert proxy (MkSomeNetSize sz x) = Size.withSingSize sz $ convert proxy x
+  convert_ :: forall t. (SingSize t) => Proxy t -> SomeNetSize d n -> NetBytes d t n
+  convert_ proxy (MkSomeNetSize sz x) = Size.withSingSize sz $ convert_ proxy x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNetSize d n) where
@@ -697,8 +697,8 @@ instance (Normed n) => Normed (SomeNetDir s n) where
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (SomeNetDir s n) where
   type Converted t (SomeNetDir s n) = SomeNetDir t n
 
-  convert :: forall t. (SingSize t) => Proxy t -> SomeNetDir s n -> SomeNetDir t n
-  convert proxy (MkSomeNetDir dir x) = MkSomeNetDir dir $ convert proxy x
+  convert_ :: forall t. (SingSize t) => Proxy t -> SomeNetDir s n -> SomeNetDir t n
+  convert_ proxy (MkSomeNetDir dir x) = MkSomeNetDir dir $ convert_ proxy x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
@@ -856,8 +856,8 @@ instance (Eq n, FromInteger n, MGroup n) => Eq (SomeNet n) where
     Size.withSingSize szx $
       Size.withSingSize szy $
         case (dx, dy) of
-          (SDown, SDown) -> convert @_ @B Proxy x == convert Proxy y
-          (SUp, SUp) -> convert @_ @B Proxy x == convert Proxy y
+          (SDown, SDown) -> convert_ @_ @B Proxy x == convert_ Proxy y
+          (SUp, SUp) -> convert_ @_ @B Proxy x == convert_ Proxy y
           _ -> False
   {-# INLINEABLE (==) #-}
 
@@ -880,8 +880,8 @@ instance (Normed n) => Normed (SomeNet n) where
 instance (FromInteger n, MGroup n) => Conversion (SomeNet n) where
   type Converted t (SomeNet n) = SomeNetDir t n
 
-  convert :: forall t. (SingSize t) => Proxy t -> SomeNet n -> SomeNetDir t n
-  convert proxy (MkSomeNet dir sz x) = Size.withSingSize sz $ MkSomeNetDir dir $ convert proxy x
+  convert_ :: forall t. (SingSize t) => Proxy t -> SomeNet n -> SomeNetDir t n
+  convert_ proxy (MkSomeNet dir sz x) = Size.withSingSize sz $ MkSomeNetDir dir $ convert_ proxy x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNet n) where
