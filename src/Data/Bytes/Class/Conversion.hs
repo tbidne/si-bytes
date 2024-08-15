@@ -37,7 +37,6 @@ import Numeric.Literal.Integer (FromInteger (afromInteger))
 -- $setup
 -- >>> import Data.Bytes.Internal (Bytes (..))
 -- >>> import Data.Bytes.Size (Size (..), Sized (..))
--- >>> import Data.Proxy (Proxy (Proxy))
 
 -- | This class allows one to transform a bytes type to any 'Size'. For types
 -- with existentially quantified 'Size' (e.g. 'Data.Bytes.SomeSize',
@@ -48,7 +47,7 @@ class Conversion a where
   -- | @since 0.1
   type Converted (t :: Size) a = r | r -> t
 
-  -- | @convert (Proxy :: Proxy t) x@ converts @x@ to size @t@.
+  -- | @convert_ \@_ \@t x@ converts @x@ to size @t@.
   --
   -- ==== __Examples__
   --
@@ -71,7 +70,8 @@ class Conversion a where
 
 #if MIN_VERSION_base(4, 20, 0)
 
--- | Alternative to passing around Proxy, using -XRequiredTypeArguments.
+-- | Alternative to 'convert_' with -XTypeApplications, using
+-- -XRequiredTypeArguments.
 --
 -- ==== __Examples__
 --
