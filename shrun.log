@@ -1,0 +1,148 @@
+[2024-08-15 13:39:01][Command][haddock_push] Starting...
+[2024-08-15 13:39:01][Command][haddock_push] Your branch and 'origin/main' have diverged,
+[2024-08-15 13:39:01][Command][haddock_push] and have 1 and 1 different commits each, respectively.
+[2024-08-15 13:39:01][Command][haddock_push]   (use "git pull" if you want to integrate the remote branch with yours)
+[2024-08-15 13:39:01][Command][haddock_push] Already on 'main'
+[2024-08-15 13:39:01][Command][haddock_push] Deleted branch gh-pages (was 116c59e).
+[2024-08-15 13:39:01][Command][haddock_push] Switched to a new branch 'gh-pages'
+[2024-08-15 13:39:01][Command][haddock_push] Build profile: -w ghc-9.10.1 -O1
+[2024-08-15 13:39:01][Command][haddock_push] In order, the following will be built (use -v for more details):
+[2024-08-15 13:39:01][Command][haddock_push]  - si-bytes-0.1 (lib) (file src/Data/Bytes/Class/Conversion.hs changed)
+[2024-08-15 13:39:02][Command][haddock_push] Preprocessing library for si-bytes-0.1...
+[2024-08-15 13:39:02][Command][haddock_push] Running Haddock on library for si-bytes-0.1...
+[2024-08-15 13:39:03][Command][haddock_push] [ 1 of 14] Compiling Data.Bytes.Class.Normalize ( src/Data/Bytes/Class/Normalize.hs, nothing )
+[2024-08-15 13:39:03][Command][haddock_push] [ 2 of 14] Compiling Data.Bytes.Class.Parser ( src/Data/Bytes/Class/Parser.hs, nothing )
+[2024-08-15 13:39:03][Command][haddock_push] [ 3 of 14] Compiling Data.Bytes.Class.RawNumeric ( src/Data/Bytes/Class/RawNumeric.hs, nothing )
+[2024-08-15 13:39:03][Command][haddock_push] [ 4 of 14] Compiling Data.Bytes.Formatting.Base ( src/Data/Bytes/Formatting/Base.hs, nothing )
+[2024-08-15 13:39:03][Command][haddock_push] [ 5 of 14] Compiling Data.Bytes.Network.Direction ( src/Data/Bytes/Network/Direction.hs, nothing )
+[2024-08-15 13:39:04][Command][haddock_push] [ 6 of 14] Compiling Data.Bytes.Formatting.Direction ( src/Data/Bytes/Formatting/Direction.hs, nothing )
+[2024-08-15 13:39:04][Command][haddock_push] [ 7 of 14] Compiling Data.Bytes.Size  ( src/Data/Bytes/Size.hs, nothing )
+[2024-08-15 13:39:04][Command][haddock_push] [ 8 of 14] Compiling Data.Bytes.Formatting.Size ( src/Data/Bytes/Formatting/Size.hs, nothing )
+[2024-08-15 13:39:04][Command][haddock_push] [ 9 of 14] Compiling Data.Bytes.Formatting ( src/Data/Bytes/Formatting.hs, nothing )
+[2024-08-15 13:39:04][Command][haddock_push] [10 of 14] Compiling Data.Bytes.Class.Conversion ( src/Data/Bytes/Class/Conversion.hs, nothing )
+[2024-08-15 13:39:04][Command][haddock_push] [11 of 14] Compiling Data.Bytes.Internal ( src/Data/Bytes/Internal.hs, nothing )
+[2024-08-15 13:39:05][Command][haddock_push] [12 of 14] Compiling Data.Bytes.Network.Internal ( src/Data/Bytes/Network/Internal.hs, nothing )
+[2024-08-15 13:39:06][Command][haddock_push] [13 of 14] Compiling Data.Bytes.Network ( src/Data/Bytes/Network.hs, nothing )
+[2024-08-15 13:39:06][Command][haddock_push] [14 of 14] Compiling Data.Bytes       ( src/Data/Bytes.hs, nothing )
+[2024-08-15 13:39:21][Command][haddock_push] Haddock coverage:
+[2024-08-15 13:39:21][Command][haddock_push]  100% (  2 /  2) in 'Data.Bytes.Class.Normalize'
+[2024-08-15 13:39:21][Command][haddock_push]  100% (  4 /  4) in 'Data.Bytes.Class.Parser'
+[2024-08-15 13:39:21][Command][haddock_push]  100% (  2 /  2) in 'Data.Bytes.Class.RawNumeric'
+[2024-08-15 13:39:21][Command][haddock_push]  100% ( 13 / 13) in 'Data.Bytes.Formatting.Base'
+[2024-08-15 13:39:21][Command][haddock_push]  100% ( 11 / 11) in 'Data.Bytes.Network.Direction'
+[2024-08-15 13:39:21][Command][haddock_push]  100% (  8 /  8) in 'Data.Bytes.Formatting.Direction'
+[2024-08-15 13:39:21][Command][haddock_push]  100% ( 22 / 22) in 'Data.Bytes.Size'
+[2024-08-15 13:39:21][Command][haddock_push]  100% ( 10 / 10) in 'Data.Bytes.Formatting.Size'
+[2024-08-15 13:39:21][Command][haddock_push]  100% ( 22 / 22) in 'Data.Bytes.Formatting'
+[2024-08-15 13:39:21][Command][haddock_push]  100% (  7 /  7) in 'Data.Bytes.Class.Conversion'
+[2024-08-15 13:39:21][Command][haddock_push]  100% (  8 /  8) in 'Data.Bytes.Internal'
+[2024-08-15 13:39:21][Command][haddock_push]  100% ( 17 / 17) in 'Data.Bytes.Network.Internal'
+[2024-08-15 13:39:21][Command][haddock_push]  100% ( 71 / 71) in 'Data.Bytes.Network'
+[2024-08-15 13:39:21][Command][haddock_push]  100% ( 58 / 58) in 'Data.Bytes'
+[2024-08-15 13:39:21][Command][haddock_push] Warning: Data.Bytes.Class.Normalize: could not find link destinations for: 
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:NormSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:NormBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] Warning: Data.Bytes.Class.RawNumeric: could not find link destinations for: 
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:RawBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:RawSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] Warning: Data.Bytes.Network.Direction: could not find link destinations for: 
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Direction.Rep_Direction
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] Warning: Data.Bytes.Size: could not find link destinations for: 
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Size.Rep_Size
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:HideSizeSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:HideSizeBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] Warning: Data.Bytes.Formatting: could not find link destinations for: 
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Default.Class.GDefault
+[2024-08-15 13:39:21][Command][haddock_push] Warning: Data.Bytes.Internal: could not find link destinations for: 
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:RawBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:RawSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:HideSizeSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:NormSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:HideSizeBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:NormBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.Rep_Bytes
+[2024-08-15 13:39:21][Command][haddock_push] Warning: Data.Bytes.Network.Internal: could not find link destinations for: 
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.Rep_NetBytes
+[2024-08-15 13:39:21][Command][haddock_push] Warning: Data.Bytes.Network: could not find link destinations for: 
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Direction.Rep_Direction
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Default.Class.GDefault
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Size.Rep_Size
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:RawBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:RawSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:HideSizeSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:NormSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:HideSizeBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:NormBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideDirectionSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.Rep_NetBytes
+[2024-08-15 13:39:21][Command][haddock_push] Warning: Data.Bytes: could not find link destinations for: 
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Default.Class.GDefault
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Size.Rep_Size
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:RawBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:RawSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:HideSizeSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:NormSomeSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:HideSizeBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.D:R:NormBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Internal.Rep_Bytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNetSize
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormNetBytes
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:RawSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNet
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:HideSizeSomeNetDir
+[2024-08-15 13:39:21][Command][haddock_push] - Data.Bytes.Network.Internal.D:R:NormSomeNetDir
+[2024-08-15 13:39:22][Command][haddock_push] Documentation created:
+[2024-08-15 13:39:22][Command][haddock_push] /home/tommy/Dev/tommy/github/si-bytes/dist-newstyle/build/x86_64-linux/ghc-9.10.1/si-bytes-0.1/doc/html/si-bytes/
