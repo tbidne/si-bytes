@@ -49,12 +49,12 @@ jobs:
       - name: Compile
         run: cabal build lib:si-bytes
 
-      # Only run doctests on ghc >= 9.6 changing how DataKinds are printed
-      # (i.e. no ticks). Trying to make this work across multiple
+      # Only run select doctests due to ghc >= 9.6 changing how DataKinds are
+      # printed (i.e. no ticks). Trying to make this work across all
       # versions would be too much work.
 
       - name: Doc Tests
-        if: ${{ matrix.ghc == '9.6.3' || matrix.ghc == '9.8.1' }}
+        if: ${{ !contains(fromJson('["8.10.7", "9.0.2", "9.2.8", "9.4.8"]'), matrix.ghc) }}
         run : |
           cabal configure --enable-tests --write-ghc-environment-files always
           cabal build
