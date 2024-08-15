@@ -31,11 +31,6 @@ import Data.Bytes.Size
     SingSize (singSize),
     Size (B, E, G, K, M, P, T, Y, Z),
   )
-#if MIN_VERSION_base(4, 20, 0)
-import Data.Proxy (Proxy (Proxy))
-#else
-import Data.Proxy (Proxy)
-#endif
 import Numeric.Algebra (MGroup ((.%.)), MSemigroup ((.*.)))
 import Numeric.Literal.Integer (FromInteger (afromInteger))
 
@@ -58,21 +53,21 @@ class Conversion a where
   -- ==== __Examples__
   --
   -- >>> let bytes = MkBytes 50_000 :: Bytes 'M Int
-  -- >>> let gBytes = convert_ @_ @G Proxy bytes
+  -- >>> let gBytes = convert_ @_ @G bytes
   -- >>> :type gBytes
   -- gBytes :: Bytes G Int
   -- >>> gBytes
   -- MkBytes 50
   --
   -- >>> let bytes = hideSize (MkBytes 0.2 :: Bytes 'T Float)
-  -- >>> let mBytes = convert_ @_ @M Proxy bytes
+  -- >>> let mBytes = convert_ @_ @M bytes
   -- >>> :type mBytes
   -- mBytes :: Bytes M Float
   -- >>> mBytes
   -- MkBytes 200000.0
   --
   -- @since 0.1
-  convert_ :: (SingSize t) => Proxy t -> a -> Converted t a
+  convert_ :: (SingSize t) => a -> Converted t a
 
 #if MIN_VERSION_base(4, 20, 0)
 
@@ -95,7 +90,7 @@ convert ::
   (Conversion a) =>
   a ->
   Converted t a
-convert _ = convert_ Proxy
+convert _ = convert_
 
 #endif
 

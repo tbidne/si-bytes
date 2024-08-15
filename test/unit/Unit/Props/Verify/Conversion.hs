@@ -24,7 +24,6 @@ import Data.Bytes.Size (Size (B, E, G, K, M, P, T, Y, Z))
 #if MIN_VERSION_base(4, 16, 0)
 import Data.Kind (Constraint, Type)
 #endif
-import Data.Proxy (Proxy (Proxy))
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
 import Numeric.Algebra (MGroup ((.%.)), MSemigroup ((.*.)), Semifield)
@@ -253,12 +252,12 @@ testConvertToAll gen expects desc =
     H.property $ do
       x <- H.forAll gen
       let x' = toRaw x
-      bExp expects x' === toRaw (convert_ @_ @B Proxy x)
-      kExp expects x' === toRaw (convert_ @_ @K Proxy x)
-      mExp expects x' === toRaw (convert_ @_ @M Proxy x)
-      gExp expects x' === toRaw (convert_ @_ @G Proxy x)
-      tExp expects x' === toRaw (convert_ @_ @T Proxy x)
-      pExp expects x' === toRaw (convert_ @_ @P Proxy x)
-      eExp expects x' === toRaw (convert_ @_ @E Proxy x)
-      zExp expects x' === toRaw (convert_ @_ @Z Proxy x)
-      yExp expects x' === toRaw (convert_ @_ @Y Proxy x)
+      bExp expects x' === toRaw (convert_ @_ @B x)
+      kExp expects x' === toRaw (convert_ @_ @K x)
+      mExp expects x' === toRaw (convert_ @_ @M x)
+      gExp expects x' === toRaw (convert_ @_ @G x)
+      tExp expects x' === toRaw (convert_ @_ @T x)
+      pExp expects x' === toRaw (convert_ @_ @P x)
+      eExp expects x' === toRaw (convert_ @_ @E x)
+      zExp expects x' === toRaw (convert_ @_ @Z x)
+      yExp expects x' === toRaw (convert_ @_ @Y x)

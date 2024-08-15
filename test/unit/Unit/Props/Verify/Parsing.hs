@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+
 -- | Parsing verifiers
 --
 -- @since 0.1
@@ -8,7 +10,6 @@ module Unit.Props.Verify.Parsing
 where
 
 import Data.Bytes.Class.Parser (Parser, parse)
-import Data.Proxy (Proxy)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Hedgehog (Gen, (===))
@@ -56,10 +57,8 @@ parsesText ::
   String ->
   -- | Text generator.
   Gen Text ->
-  -- | The expected type.
-  Proxy a ->
   TestTree
-parsesText desc gen _ =
+parsesText desc gen =
   U.testPropertyCompat desc "parsesText" $
     H.property $ do
       txt <- H.forAll gen

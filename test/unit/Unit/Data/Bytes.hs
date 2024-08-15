@@ -18,7 +18,6 @@ import Data.Bytes.Size
     Size (B, E, G, K, M, P, T, Y, Z),
   )
 import Data.Bytes.Size qualified as Size
-import Data.Proxy (Proxy (Proxy))
 import Hedgehog ((===))
 import Hedgehog qualified as H
 import Optics.Core (review, view)
@@ -103,8 +102,8 @@ parsingTests :: TestTree
 parsingTests =
   T.testGroup
     "Parsing"
-    [ VParsing.parsesText "Integrals" PGens.genIntBytesText (Proxy @(Bytes B Integer)),
-      VParsing.parsesText "Floats" PGens.genFloatBytesText (Proxy @(Bytes B Double))
+    [ VParsing.parsesText @(Bytes B Integer) "Integrals" PGens.genIntBytesText,
+      VParsing.parsesText @(Bytes B Double) "Floats" PGens.genFloatBytesText
     ]
 
 unBytesProps :: TestTree
@@ -324,7 +323,7 @@ someAccessorsProps =
   U.testPropertyCompat "SomeSize accessors" "someAccessorsProps" $
     H.property $ do
       someSize@(MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genSomeBytes
-      let bytesB = Size.withSingSize sz $ convert_ @_ @B Proxy bytes
+      let bytesB = Size.withSingSize sz $ convert_ @_ @B bytes
 
 #if MIN_VERSION_base(4, 16, 0)
       x === someSize.unSomeSize
@@ -361,8 +360,8 @@ someParsingTests =
   T.testGroup
     "Parsing"
     [ VParsing.parsingRoundTrip genBytes genFmt mkFmt,
-      VParsing.parsesText "Integrals" PGens.genIntSizedBytesText (Proxy @(SomeSize Integer)),
-      VParsing.parsesText "Floats" PGens.genFloatSizedBytesText (Proxy @(SomeSize Double))
+      VParsing.parsesText @(SomeSize Integer) "Integrals" PGens.genIntSizedBytesText,
+      VParsing.parsesText @(SomeSize Double) "Floats" PGens.genFloatSizedBytesText
     ]
   where
     mkFmt = Formatting.formatSized baseFmt
@@ -485,15 +484,15 @@ someConvertProps =
     H.property $ do
       someSize@(MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
 
-      U.annEquals (convert_ (Proxy @B) someSize) (Size.withSingSize sz (convert_ (Proxy @B) bytes))
-      U.annEquals (convert_ (Proxy @K) someSize) (Size.withSingSize sz (convert_ (Proxy @K) bytes))
-      U.annEquals (convert_ (Proxy @M) someSize) (Size.withSingSize sz (convert_ (Proxy @M) bytes))
-      U.annEquals (convert_ (Proxy @G) someSize) (Size.withSingSize sz (convert_ (Proxy @G) bytes))
-      U.annEquals (convert_ (Proxy @T) someSize) (Size.withSingSize sz (convert_ (Proxy @T) bytes))
-      U.annEquals (convert_ (Proxy @P) someSize) (Size.withSingSize sz (convert_ (Proxy @P) bytes))
-      U.annEquals (convert_ (Proxy @E) someSize) (Size.withSingSize sz (convert_ (Proxy @E) bytes))
-      U.annEquals (convert_ (Proxy @Z) someSize) (Size.withSingSize sz (convert_ (Proxy @Z) bytes))
-      U.annEquals (convert_ (Proxy @Y) someSize) (Size.withSingSize sz (convert_ (Proxy @Y) bytes))
+      U.annEquals (convert_ @_ @B someSize) (Size.withSingSize sz (convert_ @_ @B bytes))
+      U.annEquals (convert_ @_ @K someSize) (Size.withSingSize sz (convert_ @_ @K bytes))
+      U.annEquals (convert_ @_ @M someSize) (Size.withSingSize sz (convert_ @_ @M bytes))
+      U.annEquals (convert_ @_ @G someSize) (Size.withSingSize sz (convert_ @_ @G bytes))
+      U.annEquals (convert_ @_ @T someSize) (Size.withSingSize sz (convert_ @_ @T bytes))
+      U.annEquals (convert_ @_ @P someSize) (Size.withSingSize sz (convert_ @_ @P bytes))
+      U.annEquals (convert_ @_ @E someSize) (Size.withSingSize sz (convert_ @_ @E bytes))
+      U.annEquals (convert_ @_ @Z someSize) (Size.withSingSize sz (convert_ @_ @Z bytes))
+      U.annEquals (convert_ @_ @Y someSize) (Size.withSingSize sz (convert_ @_ @Y bytes))
 
 someSizeToLabel :: SomeSize n -> Size
 someSizeToLabel (MkSomeSize sz _) = case sz of

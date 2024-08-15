@@ -47,7 +47,6 @@ import Data.Bytes.Size
 import Data.Bytes.Size qualified as Size
 import Data.Hashable as X (Hashable (hashWithSalt))
 import Data.Kind (Type)
-import Data.Proxy (Proxy (Proxy))
 import GHC.Generics (Generic)
 #if MIN_VERSION_base(4, 16, 0)
 import GHC.Records (HasField (getField))
@@ -263,8 +262,8 @@ instance (Field n) => VectorSpace (Bytes s n) n
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (Bytes s n) where
   type Converted t (Bytes s n) = Bytes t n
 
-  convert_ :: forall t. (SingSize t) => Proxy t -> Bytes s n -> Bytes t n
-  convert_ _ (MkBytes x) = MkBytes $ Conv.convertWitness @s (Size.ssizeToSize $ singSize @t) x
+  convert_ :: forall t. (SingSize t) => Bytes s n -> Bytes t n
+  convert_ (MkBytes x) = MkBytes $ Conv.convertWitness @s (Size.ssizeToSize $ singSize @t) x
 
 -- | @since 0.1
 instance
@@ -385,7 +384,7 @@ data SomeSize (n :: Type) where
 --
 -- @since 0.1
 _MkSomeSize :: forall s n. (FromInteger n, MGroup n, SingSize s) => Iso' (SomeSize n) (Bytes s n)
-_MkSomeSize = iso (convert_ Proxy) hideSize
+_MkSomeSize = iso convert_ hideSize
 {-# INLINE _MkSomeSize #-}
 
 -- | @since 0.1
@@ -437,12 +436,12 @@ instance (NFData n) => NFData (SomeSize n) where
 
 -- | @since 0.1
 instance (Eq n, FromInteger n, MGroup n) => Eq (SomeSize n) where
-  x == y = convert_ @_ @B Proxy x == convert_ Proxy y
+  x == y = convert_ @_ @B x == convert_ y
   {-# INLINE (==) #-}
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Ord n) => Ord (SomeSize n) where
-  x <= y = convert_ @_ @B Proxy x <= convert_ Proxy y
+  x <= y = convert_ @_ @B x <= convert_ y
   {-# INLINE (<=) #-}
 
 -- | Fixed size 'B'.
@@ -461,7 +460,7 @@ instance (FromRational n) => FromRational (SomeSize n) where
 
 -- | @since 0.1
 instance (ASemigroup n, FromInteger n, MGroup n) => ASemigroup (SomeSize n) where
-  x .+. y = MkSomeSize SB $ convert_ Proxy x .+. convert_ Proxy y
+  x .+. y = MkSomeSize SB $ convert_ x .+. convert_ y
   {-# INLINE (.+.) #-}
 
 -- | @since 0.1
@@ -471,7 +470,7 @@ instance (FromInteger n, Semifield n) => AMonoid (SomeSize n) where
 
 -- | @since 0.1
 instance (Field n, FromInteger n) => AGroup (SomeSize n) where
-  x .-. y = MkSomeSize SB $ convert_ Proxy x .-. convert_ Proxy y
+  x .-. y = MkSomeSize SB $ convert_ x .-. convert_ y
   {-# INLINE (.-.) #-}
 
 -- | @since 0.1
@@ -505,8 +504,8 @@ instance (Field n, FromInteger n) => VectorSpace (SomeSize n) n
 instance (FromInteger n, MGroup n) => Conversion (SomeSize n) where
   type Converted t (SomeSize n) = Bytes t n
 
-  convert_ :: forall t. (SingSize t) => Proxy t -> SomeSize n -> Bytes t n
-  convert_ proxy (MkSomeSize sz x) = Size.withSingSize sz $ convert_ proxy x
+  convert_ :: forall t. (SingSize t) => SomeSize n -> Bytes t n
+  convert_ (MkSomeSize sz x) = Size.withSingSize sz $ convert_ x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeSize n) where
