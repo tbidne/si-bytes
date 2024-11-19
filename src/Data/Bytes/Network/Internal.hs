@@ -33,10 +33,10 @@ import Control.Applicative (liftA2)
 #endif
 import Control.DeepSeq (NFData (rnf), deepseq)
 import Data.Bounds
-  ( AnyLowerBounded,
-    AnyUpperBounded,
-    LowerBounded,
+  ( LowerBounded,
     LowerBoundless,
+    MaybeLowerBounded,
+    MaybeUpperBounded,
     UpperBounded,
     UpperBoundless,
   )
@@ -133,16 +133,16 @@ newtype NetBytes (d :: Direction) (s :: Size) (n :: Type) = MkNetBytes (Bytes s 
       NFData
     )
   deriving
-    ( -- | @since 0.1
-      AnyLowerBounded,
-      -- | @since 0.1
-      AnyUpperBounded,
-      -- | @since 0.1,
+    ( -- | @since 0.1,
       Hashable,
       -- | @since 0.1
       LowerBounded,
       -- | @since 0.1
       LowerBoundless,
+      -- | @since 0.1
+      MaybeLowerBounded,
+      -- | @since 0.1
+      MaybeUpperBounded,
       -- | @since 0.1
       UpperBounded,
       -- | @since 0.1
