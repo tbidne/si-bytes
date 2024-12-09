@@ -75,6 +75,7 @@ import Numeric.Algebra
     MSemiSpace ((.*)),
     MSemigroup,
     MSpace ((.%)),
+    MetricSpace (diff),
     Module,
     Normed (norm),
     Ring,
@@ -84,8 +85,8 @@ import Numeric.Algebra
     SemivectorSpace,
     VectorSpace,
   )
-import Numeric.Literal.Integer (FromInteger (afromInteger))
-import Numeric.Literal.Rational (FromRational (afromRational))
+import Numeric.Literal.Integer (FromInteger (fromZ))
+import Numeric.Literal.Rational (FromRational (fromQ))
 import Optics.Core
   ( A_Getter,
     An_Iso,
@@ -244,13 +245,13 @@ instance Traversable (NetBytes d s) where
 
 -- | @since 0.1
 instance (FromInteger n) => FromInteger (NetBytes d s n) where
-  afromInteger = MkNetBytes . afromInteger
-  {-# INLINE afromInteger #-}
+  fromZ = MkNetBytes . fromZ
+  {-# INLINE fromZ #-}
 
 -- | @since 0.1
 instance (FromRational n) => FromRational (NetBytes d s n) where
-  afromRational = MkNetBytes . afromRational
-  {-# INLINE afromRational #-}
+  fromQ = MkNetBytes . fromQ
+  {-# INLINE fromQ #-}
 
 -- | @since 0.1
 instance (ASemigroup n) => ASemigroup (NetBytes d s n) where
@@ -293,6 +294,10 @@ instance (Semifield n) => SemivectorSpace (NetBytes d s n) n
 
 -- | @since 0.1
 instance (Field n) => VectorSpace (NetBytes d s n) n
+
+-- | @since 0.1
+instance (MetricSpace n) => MetricSpace (NetBytes d s n) where
+  diff (MkNetBytes x) (MkNetBytes y) = x `diff` y
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (NetBytes d s n) where
@@ -452,15 +457,15 @@ instance (FromInteger n, MGroup n, Ord n) => Ord (SomeNetSize d n) where
 --
 -- @since 0.1
 instance (FromInteger n) => FromInteger (SomeNetSize d n) where
-  afromInteger = MkSomeNetSize SB . afromInteger
-  {-# INLINE afromInteger #-}
+  fromZ = MkSomeNetSize SB . fromZ
+  {-# INLINE fromZ #-}
 
 -- | Fixed size 'B'.
 --
 -- @since 0.1
 instance (FromRational n) => FromRational (SomeNetSize d n) where
-  afromRational = MkSomeNetSize SB . afromRational
-  {-# INLINE afromRational #-}
+  fromQ = MkSomeNetSize SB . fromQ
+  {-# INLINE fromQ #-}
 
 -- | @since 0.1
 instance (ASemigroup n, FromInteger n, MGroup n) => ASemigroup (SomeNetSize d n) where
@@ -498,6 +503,10 @@ instance (FromInteger n, Semifield n) => SemivectorSpace (SomeNetSize d n) n
 
 -- | @since 0.1
 instance (FromInteger n, Field n) => VectorSpace (SomeNetSize d n) n
+
+-- | @since 0.1
+instance (FromInteger n, MetricSpace n, MGroup n) => MetricSpace (SomeNetSize d n) where
+  diff x y = convert_ @_ @B x `diff` convert_ @_ @B y
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n) => Conversion (SomeNetSize d n) where

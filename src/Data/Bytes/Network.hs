@@ -172,7 +172,7 @@ import Numeric.Literal.Rational
 --
 -- 1. 'FromInteger'
 --
---     >>> afromInteger 80 :: NetBytes Up M Int
+--     >>> fromZ 80 :: NetBytes Up M Int
 --     MkNetBytes (MkBytes 80)
 --
 -- 2. Directly

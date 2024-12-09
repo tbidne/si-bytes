@@ -27,7 +27,7 @@ import Data.Kind (Constraint, Type)
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
 import Numeric.Algebra (MGroup ((.%.)), MSemigroup ((.*.)), Semifield)
-import Numeric.Literal.Integer (FromInteger (afromInteger))
+import Numeric.Literal.Integer (FromInteger (fromZ))
 import Test.Tasty (TestTree)
 import Unit.Utils qualified as U
 
@@ -47,125 +47,125 @@ expectedB :: (FromInteger n, Semifield n) => ExpectedConvs n
 expectedB =
   MkExpectedConvs
     { bExp = id,
-      kExp = (.%. afromInteger 1_000),
-      mExp = (.%. afromInteger 1_000_000),
-      gExp = (.%. afromInteger 1_000_000_000),
-      tExp = (.%. afromInteger 1_000_000_000_000),
-      pExp = (.%. afromInteger 1_000_000_000_000_000),
-      eExp = (.%. afromInteger 1_000_000_000_000_000_000),
-      zExp = (.%. afromInteger 1_000_000_000_000_000_000_000),
-      yExp = (.%. afromInteger 1_000_000_000_000_000_000_000_000)
+      kExp = (.%. fromZ 1_000),
+      mExp = (.%. fromZ 1_000_000),
+      gExp = (.%. fromZ 1_000_000_000),
+      tExp = (.%. fromZ 1_000_000_000_000),
+      pExp = (.%. fromZ 1_000_000_000_000_000),
+      eExp = (.%. fromZ 1_000_000_000_000_000_000),
+      zExp = (.%. fromZ 1_000_000_000_000_000_000_000),
+      yExp = (.%. fromZ 1_000_000_000_000_000_000_000_000)
     }
 
 expectedK :: (FromInteger n, Semifield n) => ExpectedConvs n
 expectedK =
   MkExpectedConvs
-    { bExp = (.*. afromInteger 1_000),
+    { bExp = (.*. fromZ 1_000),
       kExp = id,
-      mExp = (.%. afromInteger 1_000),
-      gExp = (.%. afromInteger 1_000_000),
-      tExp = (.%. afromInteger 1_000_000_000),
-      pExp = (.%. afromInteger 1_000_000_000_000),
-      eExp = (.%. afromInteger 1_000_000_000_000_000),
-      zExp = (.%. afromInteger 1_000_000_000_000_000_000),
-      yExp = (.%. afromInteger 1_000_000_000_000_000_000_000)
+      mExp = (.%. fromZ 1_000),
+      gExp = (.%. fromZ 1_000_000),
+      tExp = (.%. fromZ 1_000_000_000),
+      pExp = (.%. fromZ 1_000_000_000_000),
+      eExp = (.%. fromZ 1_000_000_000_000_000),
+      zExp = (.%. fromZ 1_000_000_000_000_000_000),
+      yExp = (.%. fromZ 1_000_000_000_000_000_000_000)
     }
 
 expectedM :: (FromInteger n, Semifield n) => ExpectedConvs n
 expectedM =
   MkExpectedConvs
-    { bExp = (.*. afromInteger 1_000_000),
-      kExp = (.*. afromInteger 1_000),
+    { bExp = (.*. fromZ 1_000_000),
+      kExp = (.*. fromZ 1_000),
       mExp = id,
-      gExp = (.%. afromInteger 1_000),
-      tExp = (.%. afromInteger 1_000_000),
-      pExp = (.%. afromInteger 1_000_000_000),
-      eExp = (.%. afromInteger 1_000_000_000_000),
-      zExp = (.%. afromInteger 1_000_000_000_000_000),
-      yExp = (.%. afromInteger 1_000_000_000_000_000_000)
+      gExp = (.%. fromZ 1_000),
+      tExp = (.%. fromZ 1_000_000),
+      pExp = (.%. fromZ 1_000_000_000),
+      eExp = (.%. fromZ 1_000_000_000_000),
+      zExp = (.%. fromZ 1_000_000_000_000_000),
+      yExp = (.%. fromZ 1_000_000_000_000_000_000)
     }
 
 expectedG :: (FromInteger n, Semifield n) => ExpectedConvs n
 expectedG =
   MkExpectedConvs
-    { bExp = (.*. afromInteger 1_000_000_000),
-      kExp = (.*. afromInteger 1_000_000),
-      mExp = (.*. afromInteger 1_000),
+    { bExp = (.*. fromZ 1_000_000_000),
+      kExp = (.*. fromZ 1_000_000),
+      mExp = (.*. fromZ 1_000),
       gExp = id,
-      tExp = (.%. afromInteger 1_000),
-      pExp = (.%. afromInteger 1_000_000),
-      eExp = (.%. afromInteger 1_000_000_000),
-      zExp = (.%. afromInteger 1_000_000_000_000),
-      yExp = (.%. afromInteger 1_000_000_000_000_000)
+      tExp = (.%. fromZ 1_000),
+      pExp = (.%. fromZ 1_000_000),
+      eExp = (.%. fromZ 1_000_000_000),
+      zExp = (.%. fromZ 1_000_000_000_000),
+      yExp = (.%. fromZ 1_000_000_000_000_000)
     }
 
 expectedT :: (FromInteger n, Semifield n) => ExpectedConvs n
 expectedT =
   MkExpectedConvs
-    { bExp = (.*. afromInteger 1_000_000_000_000),
-      kExp = (.*. afromInteger 1_000_000_000),
-      mExp = (.*. afromInteger 1_000_000),
-      gExp = (.*. afromInteger 1_000),
+    { bExp = (.*. fromZ 1_000_000_000_000),
+      kExp = (.*. fromZ 1_000_000_000),
+      mExp = (.*. fromZ 1_000_000),
+      gExp = (.*. fromZ 1_000),
       tExp = id,
-      pExp = (.%. afromInteger 1_000),
-      eExp = (.%. afromInteger 1_000_000),
-      zExp = (.%. afromInteger 1_000_000_000),
-      yExp = (.%. afromInteger 1_000_000_000_000)
+      pExp = (.%. fromZ 1_000),
+      eExp = (.%. fromZ 1_000_000),
+      zExp = (.%. fromZ 1_000_000_000),
+      yExp = (.%. fromZ 1_000_000_000_000)
     }
 
 expectedP :: (FromInteger n, Semifield n) => ExpectedConvs n
 expectedP =
   MkExpectedConvs
-    { bExp = (.*. afromInteger 1_000_000_000_000_000),
-      kExp = (.*. afromInteger 1_000_000_000_000),
-      mExp = (.*. afromInteger 1_000_000_000),
-      gExp = (.*. afromInteger 1_000_000),
-      tExp = (.*. afromInteger 1_000),
+    { bExp = (.*. fromZ 1_000_000_000_000_000),
+      kExp = (.*. fromZ 1_000_000_000_000),
+      mExp = (.*. fromZ 1_000_000_000),
+      gExp = (.*. fromZ 1_000_000),
+      tExp = (.*. fromZ 1_000),
       pExp = id,
-      eExp = (.%. afromInteger 1_000),
-      zExp = (.%. afromInteger 1_000_000),
-      yExp = (.%. afromInteger 1_000_000_000)
+      eExp = (.%. fromZ 1_000),
+      zExp = (.%. fromZ 1_000_000),
+      yExp = (.%. fromZ 1_000_000_000)
     }
 
 expectedE :: (FromInteger n, Semifield n) => ExpectedConvs n
 expectedE =
   MkExpectedConvs
-    { bExp = (.*. afromInteger 1_000_000_000_000_000_000),
-      kExp = (.*. afromInteger 1_000_000_000_000_000),
-      mExp = (.*. afromInteger 1_000_000_000_000),
-      gExp = (.*. afromInteger 1_000_000_000),
-      tExp = (.*. afromInteger 1_000_000),
-      pExp = (.*. afromInteger 1_000),
+    { bExp = (.*. fromZ 1_000_000_000_000_000_000),
+      kExp = (.*. fromZ 1_000_000_000_000_000),
+      mExp = (.*. fromZ 1_000_000_000_000),
+      gExp = (.*. fromZ 1_000_000_000),
+      tExp = (.*. fromZ 1_000_000),
+      pExp = (.*. fromZ 1_000),
       eExp = id,
-      zExp = (.%. afromInteger 1_000),
-      yExp = (.%. afromInteger 1_000_000)
+      zExp = (.%. fromZ 1_000),
+      yExp = (.%. fromZ 1_000_000)
     }
 
 expectedZ :: (FromInteger n, Semifield n) => ExpectedConvs n
 expectedZ =
   MkExpectedConvs
-    { bExp = (.*. afromInteger 1_000_000_000_000_000_000_000),
-      kExp = (.*. afromInteger 1_000_000_000_000_000_000),
-      mExp = (.*. afromInteger 1_000_000_000_000_000),
-      gExp = (.*. afromInteger 1_000_000_000_000),
-      tExp = (.*. afromInteger 1_000_000_000),
-      pExp = (.*. afromInteger 1_000_000),
-      eExp = (.*. afromInteger 1_000),
+    { bExp = (.*. fromZ 1_000_000_000_000_000_000_000),
+      kExp = (.*. fromZ 1_000_000_000_000_000_000),
+      mExp = (.*. fromZ 1_000_000_000_000_000),
+      gExp = (.*. fromZ 1_000_000_000_000),
+      tExp = (.*. fromZ 1_000_000_000),
+      pExp = (.*. fromZ 1_000_000),
+      eExp = (.*. fromZ 1_000),
       zExp = id,
-      yExp = (.%. afromInteger 1_000)
+      yExp = (.%. fromZ 1_000)
     }
 
 expectedY :: (FromInteger n, MSemigroup n) => ExpectedConvs n
 expectedY =
   MkExpectedConvs
-    { bExp = (.*. afromInteger 1_000_000_000_000_000_000_000_000),
-      kExp = (.*. afromInteger 1_000_000_000_000_000_000_000),
-      mExp = (.*. afromInteger 1_000_000_000_000_000_000),
-      gExp = (.*. afromInteger 1_000_000_000_000_000),
-      tExp = (.*. afromInteger 1_000_000_000_000),
-      pExp = (.*. afromInteger 1_000_000_000),
-      eExp = (.*. afromInteger 1_000_000),
-      zExp = (.*. afromInteger 1_000),
+    { bExp = (.*. fromZ 1_000_000_000_000_000_000_000_000),
+      kExp = (.*. fromZ 1_000_000_000_000_000_000_000),
+      mExp = (.*. fromZ 1_000_000_000_000_000_000),
+      gExp = (.*. fromZ 1_000_000_000_000_000),
+      tExp = (.*. fromZ 1_000_000_000_000),
+      pExp = (.*. fromZ 1_000_000_000),
+      eExp = (.*. fromZ 1_000_000),
+      zExp = (.*. fromZ 1_000),
       yExp = id
     }
 

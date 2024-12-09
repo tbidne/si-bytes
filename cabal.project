@@ -22,7 +22,7 @@ package si-bytes
 source-repository-package
     type: git
     location: https://github.com/tbidne/algebra-simple.git
-    tag: f8590486ec0fc66acf7db20308e1ed6993a52151
+    tag: 1d75fbd4de719abcd1321d90735d9b54fa78e357
 
 source-repository-package
     type: git

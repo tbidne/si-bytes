@@ -143,7 +143,7 @@ import Numeric.Literal.Rational
 --
 -- 1. 'FromInteger'
 --
---     >>> afromInteger 80 :: Bytes M Int
+--     >>> fromZ 80 :: Bytes M Int
 --     MkBytes 80
 --
 -- 2. Directly

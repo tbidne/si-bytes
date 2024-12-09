@@ -60,6 +60,7 @@ import Numeric.Algebra
     MSemiSpace ((.*)),
     MSemigroup ((.*.)),
     MSpace ((.%)),
+    MetricSpace (diff),
     Module,
     Normed (norm),
     Ring,
@@ -69,8 +70,8 @@ import Numeric.Algebra
     SemivectorSpace,
     VectorSpace,
   )
-import Numeric.Literal.Integer (FromInteger (afromInteger))
-import Numeric.Literal.Rational (FromRational (afromRational))
+import Numeric.Literal.Integer (FromInteger (fromZ))
+import Numeric.Literal.Rational (FromRational (fromQ))
 import Optics.Core (A_Getter, An_Iso, Iso', LabelOptic (labelOptic), iso, to)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
@@ -208,13 +209,13 @@ instance Traversable (Bytes s) where
 
 -- | @since 0.1
 instance (FromInteger n) => FromInteger (Bytes s n) where
-  afromInteger = MkBytes . afromInteger
-  {-# INLINE afromInteger #-}
+  fromZ = MkBytes . fromZ
+  {-# INLINE fromZ #-}
 
 -- | @since 0.1
 instance (FromRational n) => FromRational (Bytes s n) where
-  afromRational = MkBytes . afromRational
-  {-# INLINE afromRational #-}
+  fromQ = MkBytes . fromQ
+  {-# INLINE fromQ #-}
 
 -- | @since 0.1
 instance (ASemigroup n) => ASemigroup (Bytes s n) where
@@ -257,6 +258,10 @@ instance (Semifield n) => SemivectorSpace (Bytes s n) n
 
 -- | @since 0.1
 instance (Field n) => VectorSpace (Bytes s n) n
+
+-- | @since 0.1
+instance (MetricSpace n) => MetricSpace (Bytes s n) where
+  diff (MkBytes x) (MkBytes y) = x `diff` y
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (Bytes s n) where
@@ -311,8 +316,8 @@ instance
         | otherwise -> MkSomeSize sz bytes
     where
       absBytes = norm x
-      tooSmall = absBytes < afromInteger 1
-      tooLarge = absBytes >= afromInteger 1_000
+      tooSmall = absBytes < fromZ 1
+      tooLarge = absBytes >= fromZ 1_000
       sz = bytesToSSize bytes
   {-# INLINEABLE normalize #-}
 
@@ -448,15 +453,15 @@ instance (FromInteger n, MGroup n, Ord n) => Ord (SomeSize n) where
 --
 -- @since 0.1
 instance (FromInteger n) => FromInteger (SomeSize n) where
-  afromInteger = MkSomeSize SB . afromInteger
-  {-# INLINE afromInteger #-}
+  fromZ = MkSomeSize SB . fromZ
+  {-# INLINE fromZ #-}
 
 -- | Fixed size 'B'.
 --
 -- @since 0.1
 instance (FromRational n) => FromRational (SomeSize n) where
-  afromRational = MkSomeSize SB . afromRational
-  {-# INLINE afromRational #-}
+  fromQ = MkSomeSize SB . fromQ
+  {-# INLINE fromQ #-}
 
 -- | @since 0.1
 instance (ASemigroup n, FromInteger n, MGroup n) => ASemigroup (SomeSize n) where
@@ -499,6 +504,10 @@ instance (FromInteger n, Semifield n) => SemivectorSpace (SomeSize n) n
 
 -- | @since 0.1
 instance (Field n, FromInteger n) => VectorSpace (SomeSize n) n
+
+-- | @since 0.1
+instance (FromInteger n, MetricSpace n, MGroup n) => MetricSpace (SomeSize n) where
+  diff x y = convert_ @_ @B x `diff` convert_ @_ @B y
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n) => Conversion (SomeSize n) where
@@ -563,7 +572,7 @@ instance (Read n) => Parser (SomeSize n) where
 incSize :: forall s n. (FromInteger n, MGroup n) => Bytes s n -> Bytes (NextSize s) n
 incSize = resizeBytes . MkBytes . (.%. nz1000) . toRaw
   where
-    nz1000 = afromInteger 1_000
+    nz1000 = fromZ 1_000
 {-# INLINE incSize #-}
 
 -- | Decreases 'Bytes' to the previous size.
@@ -578,5 +587,5 @@ incSize = resizeBytes . MkBytes . (.%. nz1000) . toRaw
 --
 -- @since 0.1
 decSize :: forall s n. (FromInteger n, MSemigroup n) => Bytes s n -> Bytes (PrevSize s) n
-decSize = resizeBytes . MkBytes . (.*. afromInteger @n 1_000) . toRaw
+decSize = resizeBytes . MkBytes . (.*. fromZ @n 1_000) . toRaw
 {-# INLINE decSize #-}
