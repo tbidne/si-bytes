@@ -60,7 +60,7 @@ import Numeric.Algebra
     MSemiSpace ((.*)),
     MSemigroup ((.*.)),
     MSpace ((.%)),
-    MetricSpace (diff),
+    MetricSpace (diffR),
     Module,
     Normed (norm),
     Ring,
@@ -70,8 +70,9 @@ import Numeric.Algebra
     SemivectorSpace,
     VectorSpace,
   )
-import Numeric.Literal.Integer (FromInteger (fromZ))
-import Numeric.Literal.Rational (FromRational (fromQ))
+import Numeric.Literal.Integer (FromInteger (fromZ), ToInteger (toZ))
+import Numeric.Literal.Rational (FromRational (fromQ), ToRational (toQ))
+import Numeric.Literal.Real (FromReal (fromR), ToReal (toR))
 import Optics.Core (A_Getter, An_Iso, Iso', LabelOptic (labelOptic), iso, to)
 import Text.Megaparsec qualified as MP
 import Text.Megaparsec.Char qualified as MPC
@@ -213,9 +214,29 @@ instance (FromInteger n) => FromInteger (Bytes s n) where
   {-# INLINE fromZ #-}
 
 -- | @since 0.1
+instance (ToInteger n) => ToInteger (Bytes s n) where
+  toZ (MkBytes x) = toZ x
+  {-# INLINE toZ #-}
+
+-- | @since 0.1
 instance (FromRational n) => FromRational (Bytes s n) where
   fromQ = MkBytes . fromQ
   {-# INLINE fromQ #-}
+
+-- | @since 0.1
+instance (ToRational n) => ToRational (Bytes s n) where
+  toQ (MkBytes x) = toQ x
+  {-# INLINE toQ #-}
+
+-- | @since 0.1
+instance (FromReal n) => FromReal (Bytes s n) where
+  fromR = MkBytes . fromR
+  {-# INLINE fromR #-}
+
+-- | @since 0.1
+instance (ToReal n) => ToReal (Bytes s n) where
+  toR (MkBytes x) = toR x
+  {-# INLINE toR #-}
 
 -- | @since 0.1
 instance (ASemigroup n) => ASemigroup (Bytes s n) where
@@ -261,7 +282,7 @@ instance (Field n) => VectorSpace (Bytes s n) n
 
 -- | @since 0.1
 instance (MetricSpace n) => MetricSpace (Bytes s n) where
-  diff (MkBytes x) (MkBytes y) = x `diff` y
+  diffR (MkBytes x) (MkBytes y) = x `diffR` y
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (Bytes s n) where
@@ -456,12 +477,32 @@ instance (FromInteger n) => FromInteger (SomeSize n) where
   fromZ = MkSomeSize SB . fromZ
   {-# INLINE fromZ #-}
 
+-- | @since 0.1
+instance (FromInteger n, MGroup n, ToInteger n) => ToInteger (SomeSize n) where
+  toZ = toZ . convert_ @_ @B
+  {-# INLINE toZ #-}
+
 -- | Fixed size 'B'.
 --
 -- @since 0.1
 instance (FromRational n) => FromRational (SomeSize n) where
   fromQ = MkSomeSize SB . fromQ
   {-# INLINE fromQ #-}
+
+-- | @since 0.1
+instance (FromInteger n, MGroup n, ToRational n) => ToRational (SomeSize n) where
+  toQ = toQ . convert_ @_ @B
+  {-# INLINE toQ #-}
+
+-- | @since 0.1
+instance (FromReal n) => FromReal (SomeSize n) where
+  fromR = MkSomeSize SB . fromR
+  {-# INLINE fromR #-}
+
+-- | @since 0.1
+instance (FromInteger n, MGroup n, ToReal n) => ToReal (SomeSize n) where
+  toR = toR . convert_ @_ @B
+  {-# INLINE toR #-}
 
 -- | @since 0.1
 instance (ASemigroup n, FromInteger n, MGroup n) => ASemigroup (SomeSize n) where
@@ -507,7 +548,7 @@ instance (Field n, FromInteger n) => VectorSpace (SomeSize n) n
 
 -- | @since 0.1
 instance (FromInteger n, MetricSpace n, MGroup n) => MetricSpace (SomeSize n) where
-  diff x y = convert_ @_ @B x `diff` convert_ @_ @B y
+  diffR x y = convert_ @_ @B x `diffR` convert_ @_ @B y
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n) => Conversion (SomeSize n) where
