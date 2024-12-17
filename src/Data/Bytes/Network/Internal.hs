@@ -85,9 +85,9 @@ import Numeric.Algebra
     SemivectorSpace,
     VectorSpace,
   )
-import Numeric.Literal.Integer (FromInteger (fromZ), ToInteger (toZ))
-import Numeric.Literal.Rational (FromRational (fromQ), ToRational (toQ))
-import Numeric.Literal.Real (FromReal (fromR), ToReal (toR))
+import Numeric.Convert.Integer (FromInteger (fromZ), ToInteger (toZ))
+import Numeric.Convert.Rational (FromRational (fromQ), ToRational (toQ))
+import Numeric.Convert.Real (FromReal (fromR), ToReal (toR))
 import Optics.Core
   ( A_Getter,
     An_Iso,

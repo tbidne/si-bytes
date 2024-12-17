@@ -32,7 +32,7 @@ import Data.Bytes.Size
     Size (B, E, G, K, M, P, T, Y, Z),
   )
 import Numeric.Algebra (MGroup ((.%.)), MSemigroup ((.*.)))
-import Numeric.Literal.Integer (FromInteger (fromZ))
+import Numeric.Convert.Integer (FromInteger (fromZ))
 
 -- $setup
 -- >>> import Data.Bytes.Internal (Bytes (..))

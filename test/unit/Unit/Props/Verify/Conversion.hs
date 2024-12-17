@@ -27,7 +27,7 @@ import Data.Kind (Constraint, Type)
 import Hedgehog (Gen, (===))
 import Hedgehog qualified as H
 import Numeric.Algebra (MGroup ((.%.)), MSemigroup ((.*.)), Semifield)
-import Numeric.Literal.Integer (FromInteger (fromZ))
+import Numeric.Convert.Integer (FromInteger (fromZ))
 import Test.Tasty (TestTree)
 import Unit.Utils qualified as U
 

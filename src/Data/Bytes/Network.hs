@@ -74,8 +74,9 @@ module Data.Bytes.Network
     -- * Algebra
     -- $algebra
     module Numeric.Algebra,
-    module Numeric.Literal.Integer,
-    module Numeric.Literal.Rational,
+    module Numeric.Convert.Integer,
+    module Numeric.Convert.Rational,
+    module Numeric.Convert.Real,
 
     -- * Text
 
@@ -155,8 +156,9 @@ import Data.Bytes.Size
     _Z,
   )
 import Numeric.Algebra
-import Numeric.Literal.Integer
-import Numeric.Literal.Rational
+import Numeric.Convert.Integer
+import Numeric.Convert.Rational
+import Numeric.Convert.Real
 
 -- $intro
 -- The main idea is to attach phantom labels to the numeric bytes, so we
