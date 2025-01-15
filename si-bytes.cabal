@@ -35,11 +35,12 @@ description:
   to import one module at a time, unless there is a desire to explicitly use
   network and non-network byte types in the same module.
 
-category:
+category:           Type-safety
 extra-source-files:
-  CHANGELOG.md
   LICENSE
   README.md
+
+extra-doc-files:    CHANGELOG.md
 
 source-repository head
   type:     git
