@@ -77,7 +77,7 @@ import Numeric.Algebra
     MSpace ((.%)),
     MetricSpace (diffR),
     Module,
-    Normed (norm),
+    Normed (norm, sgn),
     Ring,
     Semifield,
     Semimodule,
@@ -293,6 +293,9 @@ instance (AGroup n) => AGroup (NetBytes d s n) where
 instance (Normed n) => Normed (NetBytes d s n) where
   norm (MkNetBytes b) = MkNetBytes (norm b)
   {-# INLINE norm #-}
+
+  sgn (MkNetBytes b) = MkNetBytes (sgn b)
+  {-# INLINE sgn #-}
 
 -- | @since 0.1
 instance (MSemigroup n) => MSemiSpace (NetBytes d s n) n where
@@ -534,6 +537,14 @@ instance (MGroup n) => MSpace (SomeNetSize d n) n where
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
+instance (Normed n) => Normed (SomeNetSize d n) where
+  norm (MkSomeNetSize sz x) = MkSomeNetSize sz (norm x)
+  {-# INLINE norm #-}
+
+  sgn (MkSomeNetSize sz x) = MkSomeNetSize sz (sgn x)
+  {-# INLINE sgn #-}
+
+-- | @since 0.1
 instance (FromInteger n, Semifield n) => Semimodule (SomeNetSize d n) n
 
 -- | @since 0.1
@@ -742,6 +753,9 @@ instance (Normed n) => Normed (SomeNetDir s n) where
   norm (MkSomeNetDir dx x) = MkSomeNetDir dx (norm x)
   {-# INLINE norm #-}
 
+  sgn (MkSomeNetDir dx x) = MkSomeNetDir dx (sgn x)
+  {-# INLINE sgn #-}
+
 -- | @since 0.1
 instance (FromInteger n, MGroup n, SingSize s) => Conversion (SomeNetDir s n) where
   type Converted t (SomeNetDir s n) = SomeNetDir t n
@@ -924,6 +938,9 @@ instance (MGroup n) => MSpace (SomeNet n) n where
 instance (Normed n) => Normed (SomeNet n) where
   norm (MkSomeNet d s x) = MkSomeNet d s (norm x)
   {-# INLINE norm #-}
+
+  sgn (MkSomeNet d s x) = MkSomeNet d s (sgn x)
+  {-# INLINE sgn #-}
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n) => Conversion (SomeNet n) where

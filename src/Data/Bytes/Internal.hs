@@ -62,7 +62,7 @@ import Numeric.Algebra
     MSpace ((.%)),
     MetricSpace (diffR),
     Module,
-    Normed (norm),
+    Normed (norm, sgn),
     Ring,
     Semifield,
     Semimodule,
@@ -267,6 +267,9 @@ instance (MGroup n) => MSpace (Bytes s n) n where
 instance (Normed n) => Normed (Bytes s n) where
   norm (MkBytes x) = MkBytes (norm x)
   {-# INLINE norm #-}
+
+  sgn (MkBytes x) = MkBytes (sgn x)
+  {-# INLINE sgn #-}
 
 -- | @since 0.1
 instance (Semiring n) => Semimodule (Bytes s n) n
@@ -533,6 +536,9 @@ instance (MGroup n) => MSpace (SomeSize n) n where
 instance (Normed n) => Normed (SomeSize n) where
   norm (MkSomeSize sz x) = MkSomeSize sz (norm x)
   {-# INLINE norm #-}
+
+  sgn (MkSomeSize sz x) = MkSomeSize sz (sgn x)
+  {-# INLINE sgn #-}
 
 -- | @since 0.1
 instance (FromInteger n, Semifield n) => Semimodule (SomeSize n) n
