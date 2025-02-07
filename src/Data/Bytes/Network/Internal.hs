@@ -50,18 +50,18 @@ import Data.Bytes.Network.Direction
   ( Directed,
     Direction (Down, Up),
     SDirection (SDown, SUp),
-    SingDirection (singDirection),
   )
 import Data.Bytes.Network.Direction qualified as Direction
 import Data.Bytes.Size
   ( SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
-    SingSize (singSize),
     Size (B, E, G, K, M, P, T, Y, Z),
     Sized (hideSize),
   )
 import Data.Bytes.Size qualified as Size
 import Data.Hashable (Hashable (hashWithSalt))
 import Data.Kind (Type)
+import Data.Singletons (SingI)
+import Data.Singletons qualified as Sing
 import GHC.Generics (Generic)
 #if MIN_VERSION_base(4, 16, 0)
 import GHC.Records (HasField (getField))
@@ -170,18 +170,18 @@ pattern MkNetBytesP x <-
 -- SUp
 --
 -- @since 0.1
-netToSDirection :: (SingDirection d) => NetBytes d s n -> SDirection d
-netToSDirection _ = singDirection
+netToSDirection :: (SingI d) => NetBytes d s n -> SDirection d
+netToSDirection _ = Sing.sing
 {-# INLINE netToSDirection #-}
 
--- | Retrieves the 'SingSize' witness. Can be used to recover the 'Size'.
+-- | Retrieves the 'SingI' witness. Can be used to recover the 'Size'.
 --
 -- >>> netToSSize (MkNetBytesP @Down @K @Int 7)
 -- SK
 --
 -- @since 0.1
-netToSSize :: (SingSize s) => NetBytes d s n -> SSize s
-netToSSize _ = singSize
+netToSSize :: (SingI s) => NetBytes d s n -> SSize s
+netToSSize _ = Sing.sing
 {-# INLINE netToSSize #-}
 
 -- | 'Iso'' between 'NetBytes' and underlying 'Bytes'.
@@ -324,14 +324,14 @@ instance (MetricSpace n) => MetricSpace (NetBytes d s n) where
   diffR (MkNetBytes x) (MkNetBytes y) = x `diffR` y
 
 -- | @since 0.1
-instance (FromInteger n, MGroup n, SingSize s) => Conversion (NetBytes d s n) where
+instance (FromInteger n, MGroup n, SingI s) => Conversion (NetBytes d s n) where
   type Converted t (NetBytes d s n) = NetBytes d t n
 
-  convert_ :: forall t. (SingSize t) => NetBytes d s n -> NetBytes d t n
+  convert_ :: forall t. (SingI t) => NetBytes d s n -> NetBytes d t n
   convert_ (MkNetBytes x) = MkNetBytes $ convert_ x
 
 -- | @since 0.1
-instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (NetBytes d s n) where
+instance (FromInteger n, MGroup n, Normed n, Ord n, SingI s) => Normalize (NetBytes d s n) where
   type Norm (NetBytes d s n) = SomeNetSize d n
 
   normalize (MkNetBytes bytes) = case normalize bytes of
@@ -339,23 +339,23 @@ instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (Ne
   {-# INLINE normalize #-}
 
 -- | @since 0.1
-instance (SingSize s) => Sized (NetBytes d s n) where
+instance (SingI s) => Sized (NetBytes d s n) where
   type HideSize (NetBytes d s n) = SomeNetSize d n
 
-  sizeOf = Size.ssizeToSize . netToSSize
+  sizeOf = Sing.fromSing . netToSSize
   {-# INLINE sizeOf #-}
 
-  hideSize b@(MkNetBytes _) = MkSomeNetSize (singSize @s) b
+  hideSize b@(MkNetBytes _) = MkSomeNetSize (Sing.sing @s) b
   {-# INLINE hideSize #-}
 
 -- | @since 0.1
-instance (SingDirection d) => Directed (NetBytes d s n) where
+instance (SingI d) => Directed (NetBytes d s n) where
   type HideDirection (NetBytes d s n) = SomeNetDir s n
 
-  directionOf = Direction.sdirectionToDirection . netToSDirection
+  directionOf = Sing.fromSing . netToSDirection
   {-# INLINE directionOf #-}
 
-  hideDirection b@(MkNetBytes _) = MkSomeNetDir (singDirection @d) b
+  hideDirection b@(MkNetBytes _) = MkSomeNetDir (Sing.sing @d) b
   {-# INLINE hideDirection #-}
 
 -- | @since 0.1
@@ -416,7 +416,7 @@ data SomeNetSize (d :: Direction) (n :: Type) where
 -- MkNetBytes (MkBytes 70000)
 --
 -- @since 0.1
-_MkSomeNetSize :: forall s d n. (FromInteger n, MGroup n, SingSize s) => Iso' (SomeNetSize d n) (NetBytes d s n)
+_MkSomeNetSize :: forall s d n. (FromInteger n, MGroup n, SingI s) => Iso' (SomeNetSize d n) (NetBytes d s n)
 _MkSomeNetSize = iso convert_ hideSize
 {-# INLINE _MkSomeNetSize #-}
 
@@ -445,7 +445,7 @@ instance
 -- | @since 0.1
 instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNetSize d n) where
   hashWithSalt i (MkSomeNetSize sz x) =
-    i `hashWithSalt` Size.ssizeToSize sz `hashWithSalt` x
+    i `hashWithSalt` Sing.fromSing sz `hashWithSalt` x
 
 -- | @since 0.1
 instance (NFData n) => NFData (SomeNetSize d n) where
@@ -564,33 +564,33 @@ instance (FromInteger n, MetricSpace n, MGroup n) => MetricSpace (SomeNetSize d 
 instance (FromInteger n, MGroup n) => Conversion (SomeNetSize d n) where
   type Converted t (SomeNetSize d n) = NetBytes d t n
 
-  convert_ :: forall t. (SingSize t) => SomeNetSize d n -> NetBytes d t n
-  convert_ (MkSomeNetSize sz x) = Size.withSingSize sz $ convert_ x
+  convert_ :: forall t. (SingI t) => SomeNetSize d n -> NetBytes d t n
+  convert_ (MkSomeNetSize sz x) = Sing.withSingI sz $ convert_ x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNetSize d n) where
   type Norm (SomeNetSize d n) = SomeNetSize d n
-  normalize (MkSomeNetSize sz x) = Size.withSingSize sz $ normalize x
+  normalize (MkSomeNetSize sz x) = Sing.withSingI sz $ normalize x
   {-# INLINE normalize #-}
 
 -- | @since 0.1
 instance Sized (SomeNetSize d n) where
   type HideSize (SomeNetSize d n) = SomeNetSize d n
 
-  sizeOf (MkSomeNetSize sz _) = Size.ssizeToSize sz
+  sizeOf (MkSomeNetSize sz _) = Sing.fromSing sz
   {-# INLINE sizeOf #-}
 
   hideSize = id
   {-# INLINE hideSize #-}
 
 -- | @since 0.1
-instance (SingDirection d) => Directed (SomeNetSize d n) where
+instance (SingI d) => Directed (SomeNetSize d n) where
   type HideDirection (SomeNetSize d n) = SomeNet n
 
-  directionOf = Direction.sdirectionToDirection . someNetSizeToSDirection
+  directionOf = Sing.fromSing . someNetSizeToSDirection
   {-# INLINE directionOf #-}
 
-  hideDirection (MkSomeNetSize sz b) = MkSomeNet (singDirection @d) sz b
+  hideDirection (MkSomeNetSize sz b) = MkSomeNet (Sing.sing @d) sz b
   {-# INLINE hideDirection #-}
 
 -- | @since 0.1
@@ -605,12 +605,12 @@ instance (Read n) => Parser (SomeNetSize d n) where
     MkSomeSize sz bytes <- parser
     pure $ MkSomeNetSize sz (MkNetBytes bytes)
 
--- | Retrieves the 'SingDirection' witness. Can be used to recover the
+-- | Retrieves the 'SingI' witness. Can be used to recover the
 -- 'Direction'.
 --
 -- @since 0.1
-someNetSizeToSDirection :: (SingDirection d) => SomeNetSize d n -> SDirection d
-someNetSizeToSDirection _ = singDirection
+someNetSizeToSDirection :: (SingI d) => SomeNetSize d n -> SDirection d
+someNetSizeToSDirection _ = Sing.sing
 {-# INLINE someNetSizeToSDirection #-}
 
 unNetBytes :: NetBytes d s n -> Bytes s n
@@ -655,12 +655,12 @@ data SomeNetDir (s :: Size) (n :: Type) where
   -- | @since 0.1
   MkSomeNetDir :: SDirection d -> NetBytes d s n -> SomeNetDir s n
 
--- | Retrieves the 'SingSize' witness. Can be used to recover the
+-- | Retrieves the 'SingI' witness. Can be used to recover the
 -- 'Size'.
 --
 -- @since 0.1
-someNetDirToSSize :: (SingSize s) => SomeNetDir s n -> SSize s
-someNetDirToSSize _ = singSize
+someNetDirToSSize :: (SingI s) => SomeNetDir s n -> SSize s
+someNetDirToSSize _ = Sing.sing
 {-# INLINE someNetDirToSSize #-}
 
 -- | 'Review' between 'SomeNetDir' and underlying 'NetBytes'. This is not an
@@ -675,7 +675,7 @@ someNetDirToSSize _ = singSize
 -- MkSomeNetDir SUp (MkNetBytes (MkBytes 70))
 --
 -- @since 0.1
-_MkSomeNetDir :: forall s d n. (SingDirection d) => Review (SomeNetDir s n) (NetBytes d s n)
+_MkSomeNetDir :: forall s d n. (SingI d) => Review (SomeNetDir s n) (NetBytes d s n)
 _MkSomeNetDir = unto (\b -> MkSomeNetDir (netToSDirection b) b)
 {-# INLINE _MkSomeNetDir #-}
 
@@ -703,11 +703,11 @@ instance
 
 -- | @since 0.1
 instance
-  (FromInteger n, Hashable n, MGroup n, SingSize s) =>
+  (FromInteger n, Hashable n, MGroup n, SingI s) =>
   Hashable (SomeNetDir s n)
   where
   hashWithSalt i (MkSomeNetDir d x) =
-    i `hashWithSalt` Direction.sdirectionToDirection d `hashWithSalt` x
+    i `hashWithSalt` Sing.fromSing d `hashWithSalt` x
 
 -- | @since 0.1
 instance (NFData n) => NFData (SomeNetDir s n) where
@@ -730,7 +730,7 @@ instance Traversable (SomeNetDir d) where
   {-# INLINE sequenceA #-}
 
 -- | @since 0.1
-instance (Eq n, FromInteger n, SingSize s) => Eq (SomeNetDir s n) where
+instance (Eq n, FromInteger n, SingI s) => Eq (SomeNetDir s n) where
   MkSomeNetDir dx x == MkSomeNetDir dy y =
     case (dx, dy) of
       (SDown, SDown) -> x == y
@@ -757,14 +757,14 @@ instance (Normed n) => Normed (SomeNetDir s n) where
   {-# INLINE sgn #-}
 
 -- | @since 0.1
-instance (FromInteger n, MGroup n, SingSize s) => Conversion (SomeNetDir s n) where
+instance (FromInteger n, MGroup n, SingI s) => Conversion (SomeNetDir s n) where
   type Converted t (SomeNetDir s n) = SomeNetDir t n
 
-  convert_ :: forall t. (SingSize t) => SomeNetDir s n -> SomeNetDir t n
+  convert_ :: forall t. (SingI t) => SomeNetDir s n -> SomeNetDir t n
   convert_ (MkSomeNetDir dir x) = MkSomeNetDir dir $ convert_ x
 
 -- | @since 0.1
-instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (SomeNetDir s n) where
+instance (FromInteger n, MGroup n, Normed n, Ord n, SingI s) => Normalize (SomeNetDir s n) where
   type Norm (SomeNetDir s n) = SomeNet n
   normalize (MkSomeNetDir dir x) =
     case normalize x of
@@ -772,19 +772,19 @@ instance (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) => Normalize (So
   {-# INLINEABLE normalize #-}
 
 -- | @since 0.1
-instance (SingSize s) => Sized (SomeNetDir s n) where
+instance (SingI s) => Sized (SomeNetDir s n) where
   type HideSize (SomeNetDir s n) = SomeNet n
-  sizeOf = Size.ssizeToSize . someNetDirToSSize
+  sizeOf = Sing.fromSing . someNetDirToSSize
   {-# INLINE sizeOf #-}
 
-  hideSize (MkSomeNetDir d b) = MkSomeNet d (singSize @s) b
+  hideSize (MkSomeNetDir d b) = MkSomeNet d (Sing.sing @s) b
   {-# INLINE hideSize #-}
 
 -- | @since 0.1
 instance Directed (SomeNetDir s n) where
   type HideDirection (SomeNetDir s n) = SomeNetDir s n
 
-  directionOf (MkSomeNetDir d _) = Direction.sdirectionToDirection d
+  directionOf (MkSomeNetDir d _) = Sing.fromSing d
   {-# INLINE directionOf #-}
 
   hideDirection = id
@@ -859,7 +859,7 @@ data SomeNet (n :: Type) where
 -- MkSomeNet SUp SK (MkNetBytes (MkBytes 70))
 --
 -- @since 0.1
-_MkSomeNet :: forall s d n. (SingDirection d, SingSize s) => Review (SomeNet n) (NetBytes d s n)
+_MkSomeNet :: forall s d n. (SingI d, SingI s) => Review (SomeNet n) (NetBytes d s n)
 _MkSomeNet = unto (\b -> MkSomeNet (netToSDirection b) (netToSSize b) b)
 {-# INLINE _MkSomeNet #-}
 
@@ -889,8 +889,8 @@ instance
 instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeNet n) where
   hashWithSalt i (MkSomeNet d s x) =
     i
-      `hashWithSalt` Direction.sdirectionToDirection d
-      `hashWithSalt` Size.ssizeToSize s
+      `hashWithSalt` Sing.fromSing d
+      `hashWithSalt` Sing.fromSing s
       `hashWithSalt` x
 
 -- | @since 0.1
@@ -916,8 +916,8 @@ instance Traversable SomeNet where
 -- | @since 0.1
 instance (Eq n, FromInteger n, MGroup n) => Eq (SomeNet n) where
   MkSomeNet dx szx x == MkSomeNet dy szy y =
-    Size.withSingSize szx $
-      Size.withSingSize szy $
+    Sing.withSingI szx $
+      Sing.withSingI szy $
         case (dx, dy) of
           (SDown, SDown) -> convert_ @_ @B x == convert_ y
           (SUp, SUp) -> convert_ @_ @B x == convert_ y
@@ -946,21 +946,21 @@ instance (Normed n) => Normed (SomeNet n) where
 instance (FromInteger n, MGroup n) => Conversion (SomeNet n) where
   type Converted t (SomeNet n) = SomeNetDir t n
 
-  convert_ :: forall t. (SingSize t) => SomeNet n -> SomeNetDir t n
-  convert_ (MkSomeNet dir sz x) = Size.withSingSize sz $ MkSomeNetDir dir $ convert_ x
+  convert_ :: forall t. (SingI t) => SomeNet n -> SomeNetDir t n
+  convert_ (MkSomeNet dir sz x) = Sing.withSingI sz $ MkSomeNetDir dir $ convert_ x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeNet n) where
   type Norm (SomeNet n) = SomeNet n
   normalize (MkSomeNet dir sz x) =
-    case Size.withSingSize sz normalize x of
+    case Sing.withSingI sz normalize x of
       MkSomeNetSize sz' x' -> MkSomeNet dir sz' x'
   {-# INLINEABLE normalize #-}
 
 -- | @since 0.1
 instance Sized (SomeNet n) where
   type HideSize (SomeNet n) = SomeNet n
-  sizeOf (MkSomeNet _ sz _) = Size.ssizeToSize sz
+  sizeOf (MkSomeNet _ sz _) = Sing.fromSing sz
   {-# INLINE sizeOf #-}
 
   hideSize = id
@@ -970,7 +970,7 @@ instance Sized (SomeNet n) where
 instance Directed (SomeNet n) where
   type HideDirection (SomeNet n) = SomeNet n
 
-  directionOf (MkSomeNet d _ _) = Direction.sdirectionToDirection d
+  directionOf (MkSomeNet d _ _) = Sing.fromSing d
   {-# INLINE directionOf #-}
 
   hideDirection = id

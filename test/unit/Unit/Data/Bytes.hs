@@ -17,7 +17,7 @@ import Data.Bytes.Size
   ( SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
     Size (B, E, G, K, M, P, T, Y, Z),
   )
-import Data.Bytes.Size qualified as Size
+import Data.Singletons qualified as Sing
 import Hedgehog ((===))
 import Hedgehog qualified as H
 import Optics.Core (review, view)
@@ -179,7 +179,7 @@ normalizeProps =
   U.testPropertyCompat "Value is normalized" "normalizeProps" $
     H.property $ do
       (MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
-      let normalized@(MkSomeSize _ (MkBytes x)) = Size.withSingSize sz $ normalize bytes
+      let normalized@(MkSomeSize _ (MkBytes x)) = Sing.withSingI sz $ normalize bytes
           label = someSizeToLabel normalized
       H.footnote $ "original: " <> show bytes
       H.footnote $ "normalized: " <> show normalized
@@ -323,7 +323,7 @@ someAccessorsProps =
   U.testPropertyCompat "SomeSize accessors" "someAccessorsProps" $
     H.property $ do
       someSize@(MkSomeSize sz bytes@(MkBytes x)) <- H.forAll Gens.genSomeBytes
-      let bytesB = Size.withSingSize sz $ convert_ @_ @B bytes
+      let bytesB = Sing.withSingI sz $ convert_ @_ @B bytes
 
 #if MIN_VERSION_base(4, 16, 0)
       x === someSize.unSomeSize
@@ -474,7 +474,7 @@ someNormalizeProps =
       k <- H.forAll SGens.genD
       nz <- H.forAll SGens.genNonZero
       -- matches underlying bytes
-      normalize x === Size.withSingSize szx (normalize bytes)
+      normalize x === Sing.withSingI szx (normalize bytes)
       -- laws
       VNormalize.normalizeLaws x y k nz
 
@@ -484,15 +484,15 @@ someConvertProps =
     H.property $ do
       someSize@(MkSomeSize sz bytes) <- H.forAll Gens.genSomeBytes
 
-      U.annEquals (convert_ @_ @B someSize) (Size.withSingSize sz (convert_ @_ @B bytes))
-      U.annEquals (convert_ @_ @K someSize) (Size.withSingSize sz (convert_ @_ @K bytes))
-      U.annEquals (convert_ @_ @M someSize) (Size.withSingSize sz (convert_ @_ @M bytes))
-      U.annEquals (convert_ @_ @G someSize) (Size.withSingSize sz (convert_ @_ @G bytes))
-      U.annEquals (convert_ @_ @T someSize) (Size.withSingSize sz (convert_ @_ @T bytes))
-      U.annEquals (convert_ @_ @P someSize) (Size.withSingSize sz (convert_ @_ @P bytes))
-      U.annEquals (convert_ @_ @E someSize) (Size.withSingSize sz (convert_ @_ @E bytes))
-      U.annEquals (convert_ @_ @Z someSize) (Size.withSingSize sz (convert_ @_ @Z bytes))
-      U.annEquals (convert_ @_ @Y someSize) (Size.withSingSize sz (convert_ @_ @Y bytes))
+      U.annEquals (convert_ @_ @B someSize) (Sing.withSingI sz (convert_ @_ @B bytes))
+      U.annEquals (convert_ @_ @K someSize) (Sing.withSingI sz (convert_ @_ @K bytes))
+      U.annEquals (convert_ @_ @M someSize) (Sing.withSingI sz (convert_ @_ @M bytes))
+      U.annEquals (convert_ @_ @G someSize) (Sing.withSingI sz (convert_ @_ @G bytes))
+      U.annEquals (convert_ @_ @T someSize) (Sing.withSingI sz (convert_ @_ @T bytes))
+      U.annEquals (convert_ @_ @P someSize) (Sing.withSingI sz (convert_ @_ @P bytes))
+      U.annEquals (convert_ @_ @E someSize) (Sing.withSingI sz (convert_ @_ @E bytes))
+      U.annEquals (convert_ @_ @Z someSize) (Sing.withSingI sz (convert_ @_ @Z bytes))
+      U.annEquals (convert_ @_ @Y someSize) (Sing.withSingI sz (convert_ @_ @Y bytes))
 
 someSizeToLabel :: SomeSize n -> Size
 someSizeToLabel (MkSomeSize sz _) = case sz of

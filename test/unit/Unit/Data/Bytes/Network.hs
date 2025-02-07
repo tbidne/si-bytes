@@ -30,6 +30,7 @@ import Data.Bytes.Size
     Size (B, E, G, K, M, P, T, Y, Z),
   )
 import Data.Bytes.Size qualified as Size
+import Data.Singletons qualified as Sing
 import Hedgehog ((===))
 import Hedgehog qualified as H
 import Optics.Core (review, view)
@@ -196,7 +197,7 @@ normalizeProps =
     H.property $ do
       (MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeUp
       let normalized@(MkSomeNetSize _ (MkNetBytesP x)) =
-            Size.withSingSize sz $ normalize bytes
+            Sing.withSingI sz $ normalize bytes
           label = someSizeToLabel normalized
       H.footnote $ "original: " <> show bytes
       H.footnote $ "normalized: " <> show normalized
@@ -342,7 +343,7 @@ someNetSizeAccessorsProps =
       someNetSize@(MkSomeNetSize sz netBytes@(MkNetBytes (MkBytes x))) <-
         H.forAll NGens.genSomeNetSizeDown
 
-      let netBytesB = Size.withSingSize sz $ convert_ @_ @B netBytes
+      let netBytesB = Sing.withSingI sz $ convert_ @_ @B netBytes
 
 #if MIN_VERSION_base(4, 16, 0)
       x === someNetSize.unSomeNetSize
@@ -437,15 +438,15 @@ someNetSizeConvertProps =
     H.property $ do
       someNetSize@(MkSomeNetSize sz bytes) <- H.forAll NGens.genSomeNetSizeDown
 
-      U.annEquals (convert_ @_ @B someNetSize) (Size.withSingSize sz (convert_ @_ @B bytes))
-      U.annEquals (convert_ @_ @K someNetSize) (Size.withSingSize sz (convert_ @_ @K bytes))
-      U.annEquals (convert_ @_ @M someNetSize) (Size.withSingSize sz (convert_ @_ @M bytes))
-      U.annEquals (convert_ @_ @G someNetSize) (Size.withSingSize sz (convert_ @_ @G bytes))
-      U.annEquals (convert_ @_ @T someNetSize) (Size.withSingSize sz (convert_ @_ @T bytes))
-      U.annEquals (convert_ @_ @P someNetSize) (Size.withSingSize sz (convert_ @_ @P bytes))
-      U.annEquals (convert_ @_ @E someNetSize) (Size.withSingSize sz (convert_ @_ @E bytes))
-      U.annEquals (convert_ @_ @Z someNetSize) (Size.withSingSize sz (convert_ @_ @Z bytes))
-      U.annEquals (convert_ @_ @Y someNetSize) (Size.withSingSize sz (convert_ @_ @Y bytes))
+      U.annEquals (convert_ @_ @B someNetSize) (Sing.withSingI sz (convert_ @_ @B bytes))
+      U.annEquals (convert_ @_ @K someNetSize) (Sing.withSingI sz (convert_ @_ @K bytes))
+      U.annEquals (convert_ @_ @M someNetSize) (Sing.withSingI sz (convert_ @_ @M bytes))
+      U.annEquals (convert_ @_ @G someNetSize) (Sing.withSingI sz (convert_ @_ @G bytes))
+      U.annEquals (convert_ @_ @T someNetSize) (Sing.withSingI sz (convert_ @_ @T bytes))
+      U.annEquals (convert_ @_ @P someNetSize) (Sing.withSingI sz (convert_ @_ @P bytes))
+      U.annEquals (convert_ @_ @E someNetSize) (Sing.withSingI sz (convert_ @_ @E bytes))
+      U.annEquals (convert_ @_ @Z someNetSize) (Sing.withSingI sz (convert_ @_ @Z bytes))
+      U.annEquals (convert_ @_ @Y someNetSize) (Sing.withSingI sz (convert_ @_ @Y bytes))
 
 someNetSizeEqProps :: TestTree
 someNetSizeEqProps =
@@ -571,7 +572,7 @@ someNetSizeNormalizeProps =
       k <- H.forAll SGens.genD
       nz <- H.forAll SGens.genNonZero
       -- matches underlying bytes
-      normalize x === Size.withSingSize szx (normalize bytes)
+      normalize x === Sing.withSingI szx (normalize bytes)
       -- laws
       VNormalize.normalizeLaws x y k nz
 
@@ -616,7 +617,7 @@ someNetDirAccessorsProps =
       x === someNetDir.unSomeNetDir
 #endif
       x === view #unSomeNetDir someNetDir
-      someNetDir === Direction.withSingDirection d (review NetBytes._MkSomeNetDir netBytes)
+      someNetDir === Sing.withSingI d (review NetBytes._MkSomeNetDir netBytes)
 
 {- ORMOLU_ENABLE -}
 
@@ -703,31 +704,31 @@ someNetDirConvertProps =
 
       U.annEquals
         (convert_ @_ @B someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert_ @_ @B bytes))
+        (Sing.withSingI d $ Direction.hideDirection (convert_ @_ @B bytes))
       U.annEquals
         (convert_ @_ @K someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert_ @_ @K bytes))
+        (Sing.withSingI d $ Direction.hideDirection (convert_ @_ @K bytes))
       U.annEquals
         (convert_ @_ @M someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert_ @_ @M bytes))
+        (Sing.withSingI d $ Direction.hideDirection (convert_ @_ @M bytes))
       U.annEquals
         (convert_ @_ @G someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert_ @_ @G bytes))
+        (Sing.withSingI d $ Direction.hideDirection (convert_ @_ @G bytes))
       U.annEquals
         (convert_ @_ @T someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert_ @_ @T bytes))
+        (Sing.withSingI d $ Direction.hideDirection (convert_ @_ @T bytes))
       U.annEquals
         (convert_ @_ @P someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert_ @_ @P bytes))
+        (Sing.withSingI d $ Direction.hideDirection (convert_ @_ @P bytes))
       U.annEquals
         (convert_ @_ @E someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert_ @_ @E bytes))
+        (Sing.withSingI d $ Direction.hideDirection (convert_ @_ @E bytes))
       U.annEquals
         (convert_ @_ @Z someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert_ @_ @Z bytes))
+        (Sing.withSingI d $ Direction.hideDirection (convert_ @_ @Z bytes))
       U.annEquals
         (convert_ @_ @Y someNetDir)
-        (Direction.withSingDirection d $ Direction.hideDirection (convert_ @_ @Y bytes))
+        (Sing.withSingI d $ Direction.hideDirection (convert_ @_ @Y bytes))
 
 someNetDirNormalizeSpecs :: TestTree
 someNetDirNormalizeSpecs = T.testGroup "Specs" tests'
@@ -815,7 +816,7 @@ someNetDirNormalizeProps =
       let normalizedBytes =
             normalize bytes
           hidden =
-            Direction.withSingDirection
+            Sing.withSingI
               d
               (Direction.hideDirection (Size.hideSize normalizedBytes))
       -- matches underlying bytes
@@ -860,9 +861,9 @@ someNetAccessorsProps =
 #endif
       x === view #unSomeNet someNet
       someNet
-        === Size.withSingSize
+        === Sing.withSingI
           sz
-          (Direction.withSingDirection d (review NetBytes._MkSomeNet netBytes))
+          (Sing.withSingI d (review NetBytes._MkSomeNet netBytes))
 
 {- ORMOLU_ENABLE -}
 
@@ -927,72 +928,72 @@ someNetConvertProps =
 
       U.annEquals
         (convert_ @_ @B someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @B bytes
         )
       U.annEquals
         (convert_ @_ @K someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @K bytes
         )
       U.annEquals
         (convert_ @_ @M someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @M bytes
         )
       U.annEquals
         (convert_ @_ @G someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @G bytes
         )
       U.annEquals
         (convert_ @_ @T someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @T bytes
         )
       U.annEquals
         (convert_ @_ @P someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @P bytes
         )
       U.annEquals
         (convert_ @_ @E someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @E bytes
         )
       U.annEquals
         (convert_ @_ @Z someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @Z bytes
         )
       U.annEquals
         (convert_ @_ @Y someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @Y bytes
         )
       U.annEquals
         (convert_ @_ @B someNet)
-        ( Direction.withSingDirection d $
+        ( Sing.withSingI d $
             Direction.hideDirection $
-              Size.withSingSize sz $
+              Sing.withSingI sz $
                 convert_ @_ @B bytes
         )
 
@@ -1079,9 +1080,9 @@ someNetNormalizeProps =
   U.testPropertyCompat "SomeNet matches underlying NetBytes" "someNetSizeNormalizeProps" $
     H.property $ do
       x@(MkSomeNet d sz bytes) :: SomeNet Rational <- H.forAll NGens.genSomeNet
-      let normalizedBytes = Size.withSingSize sz $ normalize bytes
+      let normalizedBytes = Sing.withSingI sz $ normalize bytes
           hidden =
-            Direction.withSingDirection
+            Sing.withSingI
               d
               (Direction.hideDirection (Size.hideSize normalizedBytes))
       -- matches underlying bytes

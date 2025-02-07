@@ -40,13 +40,14 @@ import Data.Bytes.Size
   ( NextSize,
     PrevSize,
     SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
-    SingSize (singSize),
     Size (B, E, G, K, M, P, T, Y, Z),
     Sized (hideSize),
   )
 import Data.Bytes.Size qualified as Size
 import Data.Hashable as X (Hashable (hashWithSalt))
 import Data.Kind (Type)
+import Data.Singletons (SingI)
+import Data.Singletons qualified as Sing
 import GHC.Generics (Generic)
 #if MIN_VERSION_base(4, 16, 0)
 import GHC.Records (HasField (getField))
@@ -144,8 +145,8 @@ resizeBytes (MkBytes x) = MkBytes x
 -- SK
 --
 -- @since 0.1
-bytesToSSize :: (SingSize s) => Bytes s n -> SSize s
-bytesToSSize _ = singSize
+bytesToSSize :: (SingI s) => Bytes s n -> SSize s
+bytesToSSize _ = Sing.sing
 {-# INLINE bytesToSSize #-}
 
 -- | 'Iso'' between 'Bytes' and underlying value.
@@ -288,16 +289,16 @@ instance (MetricSpace n) => MetricSpace (Bytes s n) where
   diffR (MkBytes x) (MkBytes y) = x `diffR` y
 
 -- | @since 0.1
-instance (FromInteger n, MGroup n, SingSize s) => Conversion (Bytes s n) where
+instance (FromInteger n, MGroup n, SingI s) => Conversion (Bytes s n) where
   type Converted t (Bytes s n) = Bytes t n
 
-  convert_ :: forall t. (SingSize t) => Bytes s n -> Bytes t n
-  convert_ (MkBytes x) = MkBytes $ Conv.convertWitness @s (Size.ssizeToSize $ singSize @t) x
+  convert_ :: forall t. (SingI t) => Bytes s n -> Bytes t n
+  convert_ (MkBytes x) = MkBytes $ Conv.convertWitness @s (Sing.fromSing $ Sing.sing @t) x
 
 -- | @since 0.1
 instance
   forall n s.
-  (FromInteger n, MGroup n, Normed n, Ord n, SingSize s) =>
+  (FromInteger n, MGroup n, Normed n, Ord n, SingI s) =>
   Normalize (Bytes s n)
   where
   type Norm (Bytes s n) = SomeSize n
@@ -346,13 +347,13 @@ instance
   {-# INLINEABLE normalize #-}
 
 -- | @since 0.1
-instance (SingSize s) => Sized (Bytes s n) where
+instance (SingI s) => Sized (Bytes s n) where
   type HideSize (Bytes s n) = SomeSize n
 
-  sizeOf = Size.ssizeToSize . bytesToSSize
+  sizeOf = Sing.fromSing . bytesToSSize
   {-# INLINE sizeOf #-}
 
-  hideSize b@(MkBytes _) = MkSomeSize (singSize @s) b
+  hideSize b@(MkBytes _) = MkSomeSize (Sing.sing @s) b
   {-# INLINE hideSize #-}
 
 -- | @since 0.1
@@ -412,7 +413,7 @@ data SomeSize (n :: Type) where
 -- MkBytes 70000
 --
 -- @since 0.1
-_MkSomeSize :: forall s n. (FromInteger n, MGroup n, SingSize s) => Iso' (SomeSize n) (Bytes s n)
+_MkSomeSize :: forall s n. (FromInteger n, MGroup n, SingI s) => Iso' (SomeSize n) (Bytes s n)
 _MkSomeSize = iso convert_ hideSize
 {-# INLINE _MkSomeSize #-}
 
@@ -457,7 +458,7 @@ instance
 -- | @since 0.1
 instance (FromInteger n, Hashable n, MGroup n) => Hashable (SomeSize n) where
   hashWithSalt i (MkSomeSize sz x) =
-    i `hashWithSalt` Size.ssizeToSize sz `hashWithSalt` x
+    i `hashWithSalt` Sing.fromSing sz `hashWithSalt` x
 
 -- | @since 0.1
 instance (NFData n) => NFData (SomeSize n) where
@@ -560,20 +561,20 @@ instance (FromInteger n, MetricSpace n, MGroup n) => MetricSpace (SomeSize n) wh
 instance (FromInteger n, MGroup n) => Conversion (SomeSize n) where
   type Converted t (SomeSize n) = Bytes t n
 
-  convert_ :: forall t. (SingSize t) => SomeSize n -> Bytes t n
-  convert_ (MkSomeSize sz x) = Size.withSingSize sz $ convert_ x
+  convert_ :: forall t. (SingI t) => SomeSize n -> Bytes t n
+  convert_ (MkSomeSize sz x) = Sing.withSingI sz $ convert_ x
 
 -- | @since 0.1
 instance (FromInteger n, MGroup n, Normed n, Ord n) => Normalize (SomeSize n) where
   type Norm (SomeSize n) = SomeSize n
-  normalize (MkSomeSize sz x) = Size.withSingSize sz $ normalize x
+  normalize (MkSomeSize sz x) = Sing.withSingI sz $ normalize x
   {-# INLINE normalize #-}
 
 -- | @since 0.1
 instance Sized (SomeSize n) where
   type HideSize (SomeSize n) = SomeSize n
 
-  sizeOf (MkSomeSize sz _) = Size.ssizeToSize sz
+  sizeOf (MkSomeSize sz _) = Sing.fromSing sz
   {-# INLINE sizeOf #-}
 
   hideSize = id

@@ -28,9 +28,9 @@ where
 
 import Data.Bytes.Size
   ( SSize (SB, SE, SG, SK, SM, SP, ST, SY, SZ),
-    SingSize (singSize),
     Size (B, E, G, K, M, P, T, Y, Z),
   )
+import Data.Singletons (SingI (sing))
 import Numeric.Algebra (MGroup ((.%.)), MSemigroup ((.*.)))
 import Numeric.Convert.Integer (FromInteger (fromZ))
 
@@ -66,7 +66,7 @@ class Conversion a where
   -- MkBytes 200000.0
   --
   -- @since 0.1
-  convert_ :: (SingSize t) => a -> Converted t a
+  convert_ :: (SingI t) => a -> Converted t a
 
 #if MIN_VERSION_base(4, 20, 0)
 
@@ -85,7 +85,7 @@ class Conversion a where
 -- @since 0.1
 convert ::
   forall t ->
-  (SingSize t) =>
+  (SingI t) =>
   forall a.
   (Conversion a) =>
   a ->
@@ -95,7 +95,7 @@ convert _ = convert_
 #endif
 
 -- | Low level function for converting a numeric literal /from/ the inferred
--- 'SingSize' /to/ the parameter 'Size'. For instance,
+-- 'SingI' /to/ the parameter 'Size'. For instance,
 --
 -- >>> convertWitness @K M 5_000
 -- 5
@@ -106,15 +106,15 @@ convert _ = convert_
 --
 -- @since 0.1
 convertWitness ::
-  forall s n.
+  forall (s :: Size) n.
   ( FromInteger n,
     MGroup n,
-    SingSize s
+    SingI s
   ) =>
   Size ->
   n ->
   n
-convertWitness toUnits n = case singSize @s of
+convertWitness toUnits n = case sing @s of
   SB -> convertSize B toUnits n
   SK -> convertSize K toUnits n
   SM -> convertSize M toUnits n

@@ -8,9 +8,6 @@ module Data.Bytes.Size
   ( -- * Size Tags
     Size (..),
     SSize (..),
-    SingSize (..),
-    withSingSize,
-    ssizeToSize,
 
     -- * Sized Types
     Sized (..),
@@ -36,7 +33,13 @@ import Control.Applicative ((<|>))
 import Control.DeepSeq (NFData (rnf))
 import Data.Bytes.Class.Parser (Parser (parser))
 import Data.Hashable (Hashable)
-import Data.Kind (Constraint, Type)
+import Data.Kind (Type)
+import Data.Singletons as X
+  ( Sing,
+    SingI (sing),
+    SingKind (Demote, fromSing, toSing),
+    SomeSing (SomeSing),
+  )
 import Data.Type.Equality (TestEquality (testEquality), (:~:) (Refl))
 import GHC.Generics (Generic)
 import GHC.TypeLits (ErrorMessage (Text), TypeError)
@@ -240,19 +243,6 @@ instance NFData (SSize s) where
   rnf SY = ()
 
 -- | @since 0.1
-ssizeToSize :: SSize s -> Size
-ssizeToSize SB = B
-ssizeToSize SK = K
-ssizeToSize SM = M
-ssizeToSize SG = G
-ssizeToSize ST = T
-ssizeToSize SP = P
-ssizeToSize SE = E
-ssizeToSize SZ = Z
-ssizeToSize SY = Y
-{-# INLINEABLE ssizeToSize #-}
-
--- | @since 0.1
 instance TestEquality SSize where
   testEquality x y = case (x, y) of
     (SB, SB) -> Just Refl
@@ -270,76 +260,68 @@ instance TestEquality SSize where
 -- | @since 0.1
 deriving stock instance Show (SSize s)
 
--- | Typeclass for recovering the 'Size' at runtime.
---
--- @since 0.1
-type SingSize :: Size -> Constraint
-class SingSize (s :: Size) where
-  -- | @since 0.1
-  singSize :: SSize s
+-- | @since 0.1
+type instance Sing = SSize
 
 -- | @since 0.1
-instance SingSize B where
-  singSize = SB
-  {-# INLINE singSize #-}
+instance SingI B where
+  sing = SB
 
 -- | @since 0.1
-instance SingSize K where
-  singSize = SK
-  {-# INLINE singSize #-}
+instance SingI K where
+  sing = SK
 
 -- | @since 0.1
-instance SingSize M where
-  singSize = SM
-  {-# INLINE singSize #-}
+instance SingI M where
+  sing = SM
 
 -- | @since 0.1
-instance SingSize G where
-  singSize = SG
-  {-# INLINE singSize #-}
+instance SingI G where
+  sing = SG
 
 -- | @since 0.1
-instance SingSize T where
-  singSize = ST
-  {-# INLINE singSize #-}
+instance SingI T where
+  sing = ST
 
 -- | @since 0.1
-instance SingSize P where
-  singSize = SP
-  {-# INLINE singSize #-}
+instance SingI P where
+  sing = SP
 
 -- | @since 0.1
-instance SingSize E where
-  singSize = SE
-  {-# INLINE singSize #-}
+instance SingI E where
+  sing = SE
 
 -- | @since 0.1
-instance SingSize Z where
-  singSize = SZ
-  {-# INLINE singSize #-}
+instance SingI Z where
+  sing = SZ
 
 -- | @since 0.1
-instance SingSize Y where
-  singSize = SY
-  {-# INLINE singSize #-}
+instance SingI Y where
+  sing = SY
 
--- | Singleton \"with\"-style convenience function. Allows us to run a
--- computation @SingSize d => r@ without explicitly pattern-matching
--- every time.
---
--- @since 0.1
-withSingSize :: SSize s -> ((SingSize s) => r) -> r
-withSingSize s x = case s of
-  SB -> x
-  SK -> x
-  SM -> x
-  SG -> x
-  ST -> x
-  SP -> x
-  SE -> x
-  SZ -> x
-  SY -> x
-{-# INLINEABLE withSingSize #-}
+-- | @since 0.1
+instance SingKind Size where
+  type Demote Size = Size
+
+  fromSing SB = B
+  fromSing SK = K
+  fromSing SM = M
+  fromSing SG = G
+  fromSing ST = T
+  fromSing SP = P
+  fromSing SE = E
+  fromSing SZ = Z
+  fromSing SY = Y
+
+  toSing B = SomeSing SB
+  toSing K = SomeSing SK
+  toSing M = SomeSing SM
+  toSing G = SomeSing SG
+  toSing T = SomeSing ST
+  toSing P = SomeSing SP
+  toSing E = SomeSing SE
+  toSing Z = SomeSing SZ
+  toSing Y = SomeSing SY
 
 -- | Type family that relates units to the next larger one.
 --

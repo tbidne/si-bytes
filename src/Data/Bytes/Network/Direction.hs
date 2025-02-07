@@ -5,10 +5,7 @@ module Data.Bytes.Network.Direction
   ( -- * Direction Tags
     Direction (..),
     SDirection (..),
-    SingDirection (..),
     Directed (..),
-    withSingDirection,
-    sdirectionToDirection,
 
     -- * Optics
     _Down,
@@ -19,7 +16,13 @@ where
 import Control.DeepSeq (NFData (rnf))
 import Data.Bytes.Class.Parser (Parser (parser))
 import Data.Hashable (Hashable)
-import Data.Kind (Constraint, Type)
+import Data.Kind (Type)
+import Data.Singletons as X
+  ( Sing,
+    SingI (sing),
+    SingKind (Demote, fromSing, toSing),
+    SomeSing (SomeSing),
+  )
 import Data.Type.Equality (TestEquality (testEquality), (:~:) (Refl))
 import GHC.Generics (Generic)
 import Optics.Core (Prism', prism)
@@ -83,12 +86,6 @@ instance NFData (SDirection d) where
   rnf SUp = ()
 
 -- | @since 0.1
-sdirectionToDirection :: SDirection d -> Direction
-sdirectionToDirection SDown = Down
-sdirectionToDirection SUp = Up
-{-# INLINEABLE sdirectionToDirection #-}
-
--- | @since 0.1
 instance TestEquality SDirection where
   testEquality x y = case (x, y) of
     (SDown, SDown) -> Just Refl
@@ -96,34 +93,26 @@ instance TestEquality SDirection where
     _ -> Nothing
   {-# INLINEABLE testEquality #-}
 
--- | Typeclass for recovering the 'Direction' at runtime.
---
--- @since 0.1
-type SingDirection :: Direction -> Constraint
-class SingDirection (d :: Direction) where
-  -- | @since 0.1
-  singDirection :: SDirection d
+-- | @since 0.1
+type instance Sing = SDirection
 
 -- | @since 0.1
-instance SingDirection Down where
-  singDirection = SDown
-  {-# INLINE singDirection #-}
+instance SingI Down where
+  sing = SDown
 
 -- | @since 0.1
-instance SingDirection Up where
-  singDirection = SUp
-  {-# INLINE singDirection #-}
+instance SingI Up where
+  sing = SUp
 
--- | Singleton \"with\"-style convenience function. Allows us to run a
--- computation @SingDirection d => r@ without explicitly pattern-matching
--- every time.
---
--- @since 0.1
-withSingDirection :: SDirection d -> ((SingDirection d) => r) -> r
-withSingDirection s x = case s of
-  SDown -> x
-  SUp -> x
-{-# INLINEABLE withSingDirection #-}
+-- | @since 0.1
+instance SingKind Direction where
+  type Demote Direction = Direction
+
+  fromSing SDown = Down
+  fromSing SUp = Up
+
+  toSing Down = SomeSing SDown
+  toSing Up = SomeSing SUp
 
 -- | Types that have a direction.
 --
