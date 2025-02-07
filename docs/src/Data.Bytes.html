@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE CPP #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-missing-import-lists #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">{- ORMOLU_DISABLE -}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- | This module serves as the main entry point for the library. It provides</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- the types and operations for typical usage and is usually the only import</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- required. The core concept is:</span><span>
+</span><span id="line-9"></span><span class="hs-comment">--</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- 1. Wrapping a numeric value representing bytes in a new type.</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- 2. Attaching phantom labels representing the units (e.g. K, M, ...).</span><span>
+</span><span id="line-12"></span><span class="hs-comment">--</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- This prevents mistakes, such as adding two different byte sizes or</span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- converting between sizes incorrectly.</span><span>
+</span><span id="line-15"></span><span class="hs-comment">--</span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- @since 0.1</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Data.Bytes</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Introduction</span></span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><span class="hs-comment">-- $intro</span></span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="Data.Bytes.Internal.html#Bytes"><span class="hs-identifier">Bytes</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#Size"><span class="hs-identifier">Size</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Basic Usage</span></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Construction</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="annot"><span class="hs-comment">-- $construction</span></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Unknown Size</span></span><span>
+</span><span id="line-29"></span><span>    </span><span class="annot"><span class="hs-comment">-- $size1</span></span><span>
+</span><span id="line-30"></span><span>    </span><span class="annot"><a href="Data.Bytes.Internal.html#SomeSize"><span class="hs-identifier">SomeSize</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span>    </span><span class="annot"><span class="hs-comment">-- *** Sized</span></span><span>
+</span><span id="line-33"></span><span>    </span><span class="annot"><span class="hs-comment">-- $size2</span></span><span>
+</span><span id="line-34"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#Sized"><span class="hs-identifier">Sized</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span>    </span><span class="annot"><span class="hs-comment">-- *** Optics</span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="annot"><span class="hs-comment">-- $size3</span></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Elimination</span></span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span>    </span><span class="annot"><span class="hs-comment">-- *** RawNumeric</span></span><span>
+</span><span id="line-42"></span><span>    </span><span class="annot"><span class="hs-comment">-- $elimination1</span></span><span>
+</span><span id="line-43"></span><span>    </span><span class="annot"><a href="Data.Bytes.Class.RawNumeric.html#RawNumeric"><span class="hs-identifier">RawNumeric</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span>    </span><span class="annot"><span class="hs-comment">-- *** HasField</span></span><span>
+</span><span id="line-46"></span><span>    </span><span class="annot"><span class="hs-comment">-- $elimination2</span></span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><span class="hs-comment">-- *** Optics</span></span><span>
+</span><span id="line-49"></span><span>    </span><span class="annot"><span class="hs-comment">-- $elimination3</span></span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Transformations</span></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Converting Units</span></span><span>
+</span><span id="line-54"></span><span>    </span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#Conversion"><span class="hs-identifier">Conversion</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span class="hs-cpp">
+
+#if MIN_VERSION_base(4, 20, 0)
+</span><span>    </span><span class="hs-identifier">Conv.convert</span><span class="hs-special">,</span><span class="hs-cpp">
+#endif
+</span><span>
+</span><span id="line-60"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Normalization</span></span><span>
+</span><span id="line-61"></span><span>    </span><span class="annot"><a href="Data.Bytes.Class.Normalize.html#Normalize"><span class="hs-identifier">Normalize</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Algebra</span></span><span>
+</span><span id="line-64"></span><span>    </span><span class="annot"><span class="hs-comment">-- $algebra</span></span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/algebra-simple-0.1-cfd411acf9fe66a26d574384989a85b19f2c758f79309ff2168dd701caa13a3d/share/doc/html/src/Numeric.Algebra.html"><span class="hs-identifier">Numeric.Algebra</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-66"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/algebra-simple-0.1-cfd411acf9fe66a26d574384989a85b19f2c758f79309ff2168dd701caa13a3d/share/doc/html/src/Numeric.Convert.Integer.html"><span class="hs-identifier">Numeric.Convert.Integer</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-67"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/algebra-simple-0.1-cfd411acf9fe66a26d574384989a85b19f2c758f79309ff2168dd701caa13a3d/share/doc/html/src/Numeric.Convert.Rational.html"><span class="hs-identifier">Numeric.Convert.Rational</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-68"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/algebra-simple-0.1-cfd411acf9fe66a26d574384989a85b19f2c758f79309ff2168dd701caa13a3d/share/doc/html/src/Numeric.Convert.Real.html"><span class="hs-identifier">Numeric.Convert.Real</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Text</span></span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Pretty Printing</span></span><span>
+</span><span id="line-73"></span><span>    </span><span class="annot"><span class="hs-comment">-- $pretty</span></span><span>
+</span><span id="line-74"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Data.Bytes.Formatting.html"><span class="hs-identifier">Data.Bytes.Formatting</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Parsing</span></span><span>
+</span><span id="line-77"></span><span>    </span><span class="annot"><a href="Data.Bytes.Class.Parser.html#Parser"><span class="hs-identifier">Parser</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-78"></span><span>    </span><span class="annot"><a href="Data.Bytes.Class.Parser.html#parse"><span class="hs-identifier">parse</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Optics</span></span><span>
+</span><span id="line-81"></span><span>
+</span><span id="line-82"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Core</span></span><span>
+</span><span id="line-83"></span><span>    </span><span class="annot"><a href="Data.Bytes.Internal.html#_MkBytes"><span class="hs-identifier">_MkBytes</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-84"></span><span>    </span><span class="annot"><a href="Data.Bytes.Internal.html#_MkSomeSize"><span class="hs-identifier">_MkSomeSize</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Size</span></span><span>
+</span><span id="line-87"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_B"><span class="hs-identifier">_B</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-88"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_K"><span class="hs-identifier">_K</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-89"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_M"><span class="hs-identifier">_M</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-90"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_G"><span class="hs-identifier">_G</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-91"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_T"><span class="hs-identifier">_T</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-92"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_P"><span class="hs-identifier">_P</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-93"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_E"><span class="hs-identifier">_E</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-94"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_Z"><span class="hs-identifier">_Z</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-95"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_Y"><span class="hs-identifier">_Y</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Reexports</span></span><span>
+</span><span id="line-98"></span><span>    </span><span class="annot"><a href="file:///nix/store/cmr1dywr7kc4r47zskgkbl89pqark43p-data-default-class-0.1.2.0-doc/share/doc/data-default-class-0.1.2.0/html/src/Data.Default.Class.html#Default"><span class="hs-identifier">Default</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///nix/store/cmr1dywr7kc4r47zskgkbl89pqark43p-data-default-class-0.1.2.0-doc/share/doc/data-default-class-0.1.2.0/html/src/Data.Default.Class.html#def"><span class="hs-identifier">def</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span class="hs-comment">{- ORMOLU_ENABLE -}</span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Conversion.html"><span class="hs-identifier">Data.Bytes.Class.Conversion</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#Conversion"><span class="hs-identifier">Conversion</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#Converted"><span class="hs-identifier">Converted</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Conversion.html#convert_"><span class="hs-identifier">convert_</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-cpp">
+#if MIN_VERSION_base(4, 20, 0)
+</span><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data.Bytes.Class.Conversion</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="hs-identifier">Conv</span><span class="hs-cpp">
+#endif
+</span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Normalize.html"><span class="hs-identifier">Data.Bytes.Class.Normalize</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Class.Normalize.html#Normalize"><span class="hs-identifier">Normalize</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Class.Normalize.html#Norm"><span class="hs-identifier">Norm</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Normalize.html#normalize"><span class="hs-identifier">normalize</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-109"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Parser.html"><span class="hs-identifier">Data.Bytes.Class.Parser</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Class.Parser.html#Parser"><span class="hs-identifier">Parser</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Class.Parser.html#parse"><span class="hs-identifier">parse</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-110"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Bytes.Class.RawNumeric.html"><span class="hs-identifier">Data.Bytes.Class.RawNumeric</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Class.RawNumeric.html#RawNumeric"><span class="hs-identifier">RawNumeric</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Class.RawNumeric.html#Raw"><span class="hs-identifier">Raw</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Class.RawNumeric.html#toRaw"><span class="hs-identifier">toRaw</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-111"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Bytes.Formatting.html"><span class="hs-identifier">Data.Bytes.Formatting</span></a></span><span>
+</span><span id="line-112"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Bytes.Internal.html"><span class="hs-identifier">Data.Bytes.Internal</span></a></span><span>
+</span><span id="line-113"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Data.Bytes.Internal.html#Bytes"><span class="hs-identifier">Bytes</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Internal.html#MkBytes"><span class="hs-identifier">MkBytes</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-114"></span><span>    </span><span class="annot"><a href="Data.Bytes.Internal.html#SomeSize"><span class="hs-identifier">SomeSize</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-115"></span><span>    </span><span class="annot"><a href="Data.Bytes.Internal.html#_MkBytes"><span class="hs-identifier">_MkBytes</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-116"></span><span>    </span><span class="annot"><a href="Data.Bytes.Internal.html#_MkSomeSize"><span class="hs-identifier">_MkSomeSize</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-118"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html"><span class="hs-identifier">Data.Bytes.Size</span></a></span><span>
+</span><span id="line-119"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#Size"><span class="hs-identifier">Size</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Size.html#B"><span class="hs-identifier">B</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#E"><span class="hs-identifier">E</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#G"><span class="hs-identifier">G</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#K"><span class="hs-identifier">K</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#M"><span class="hs-identifier">M</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#P"><span class="hs-identifier">P</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#T"><span class="hs-identifier">T</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#Y"><span class="hs-identifier">Y</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#Z"><span class="hs-identifier">Z</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-120"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#Sized"><span class="hs-identifier">Sized</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Data.Bytes.Size.html#HideSize"><span class="hs-identifier">HideSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#hideSize"><span class="hs-identifier">hideSize</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Bytes.Size.html#sizeOf"><span class="hs-identifier">sizeOf</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-121"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_B"><span class="hs-identifier">_B</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-122"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_E"><span class="hs-identifier">_E</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-123"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_G"><span class="hs-identifier">_G</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-124"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_K"><span class="hs-identifier">_K</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-125"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_M"><span class="hs-identifier">_M</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-126"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_P"><span class="hs-identifier">_P</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-127"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_T"><span class="hs-identifier">_T</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-128"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_Y"><span class="hs-identifier">_Y</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-129"></span><span>    </span><span class="annot"><a href="Data.Bytes.Size.html#_Z"><span class="hs-identifier">_Z</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-130"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-131"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/algebra-simple-0.1-cfd411acf9fe66a26d574384989a85b19f2c758f79309ff2168dd701caa13a3d/share/doc/html/src/Numeric.Algebra.html"><span class="hs-identifier">Numeric.Algebra</span></a></span><span>
+</span><span id="line-132"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/algebra-simple-0.1-cfd411acf9fe66a26d574384989a85b19f2c758f79309ff2168dd701caa13a3d/share/doc/html/src/Numeric.Convert.Integer.html"><span class="hs-identifier">Numeric.Convert.Integer</span></a></span><span>
+</span><span id="line-133"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/algebra-simple-0.1-cfd411acf9fe66a26d574384989a85b19f2c758f79309ff2168dd701caa13a3d/share/doc/html/src/Numeric.Convert.Rational.html"><span class="hs-identifier">Numeric.Convert.Rational</span></a></span><span>
+</span><span id="line-134"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/tommy/.local/state/cabal/store/ghc-9.8.2/algebra-simple-0.1-cfd411acf9fe66a26d574384989a85b19f2c758f79309ff2168dd701caa13a3d/share/doc/html/src/Numeric.Convert.Real.html"><span class="hs-identifier">Numeric.Convert.Real</span></a></span><span>
+</span><span id="line-135"></span><span>
+</span><span id="line-136"></span><span class="hs-comment">-- $intro</span><span>
+</span><span id="line-137"></span><span class="hs-comment">-- The main idea is to attach phantom labels to the numeric bytes, so we</span><span>
+</span><span id="line-138"></span><span class="hs-comment">-- can track the size units. This allows us to safely manipulate byte values</span><span>
+</span><span id="line-139"></span><span class="hs-comment">-- without mixing up units, performing incorrect conversions, etc.</span><span>
+</span><span id="line-140"></span><span class="hs-comment">--</span><span>
+</span><span id="line-141"></span><span class="hs-comment">-- The core types are a newtype wrapper 'Bytes' and the 'Size' units:</span><span>
+</span><span id="line-142"></span><span>
+</span><span id="line-143"></span><span class="hs-comment">-- $construction</span><span>
+</span><span id="line-144"></span><span class="hs-comment">-- There are several ways to construct a 'Bytes' type.</span><span>
+</span><span id="line-145"></span><span class="hs-comment">--</span><span>
+</span><span id="line-146"></span><span class="hs-comment">-- 1. 'FromInteger'</span><span>
+</span><span id="line-147"></span><span class="hs-comment">--</span><span>
+</span><span id="line-148"></span><span class="hs-comment">--     &gt;&gt;&gt; fromZ 80 :: Bytes M Int</span><span>
+</span><span id="line-149"></span><span class="hs-comment">--     MkBytes 80</span><span>
+</span><span id="line-150"></span><span class="hs-comment">--</span><span>
+</span><span id="line-151"></span><span class="hs-comment">-- 2. Directly</span><span>
+</span><span id="line-152"></span><span class="hs-comment">--</span><span>
+</span><span id="line-153"></span><span class="hs-comment">--     &gt;&gt;&gt; MkBytes 80 :: Bytes M Int</span><span>
+</span><span id="line-154"></span><span class="hs-comment">--     MkBytes 80</span><span>
+</span><span id="line-155"></span><span class="hs-comment">--</span><span>
+</span><span id="line-156"></span><span class="hs-comment">-- 3. Optics (@optics-core@)</span><span>
+</span><span id="line-157"></span><span class="hs-comment">--</span><span>
+</span><span id="line-158"></span><span class="hs-comment">--     &gt;&gt;&gt; import Optics.Core (review)</span><span>
+</span><span id="line-159"></span><span class="hs-comment">--     &gt;&gt;&gt; (review _MkBytes 70) :: Bytes G Int</span><span>
+</span><span id="line-160"></span><span class="hs-comment">--     MkBytes 70</span><span>
+</span><span id="line-161"></span><span class="hs-comment">--</span><span>
+</span><span id="line-162"></span><span class="hs-comment">--     &gt;&gt;&gt; (review #unBytes 70) :: Bytes G Int</span><span>
+</span><span id="line-163"></span><span class="hs-comment">--     MkBytes 70</span><span>
+</span><span id="line-164"></span><span>
+</span><span id="line-165"></span><span class="hs-comment">-- $size1</span><span>
+</span><span id="line-166"></span><span class="hs-comment">-- We sometimes have to deal with unknown sizes at runtime, which presents</span><span>
+</span><span id="line-167"></span><span class="hs-comment">-- a problem. We handle this with the @'SomeSize'@ type, which existentially</span><span>
+</span><span id="line-168"></span><span class="hs-comment">-- quantifies the 'Size':</span><span>
+</span><span id="line-169"></span><span>
+</span><span id="line-170"></span><span class="hs-comment">-- $size2</span><span>
+</span><span id="line-171"></span><span class="hs-comment">-- Fortunately, we do not have to directly use the constructor or singletons.</span><span>
+</span><span id="line-172"></span><span class="hs-comment">-- We can instead use the 'Sized' class.</span><span>
+</span><span id="line-173"></span><span>
+</span><span id="line-174"></span><span class="hs-comment">-- $size3</span><span>
+</span><span id="line-175"></span><span class="hs-comment">-- Once again, we can use optics for this.</span><span>
+</span><span id="line-176"></span><span class="hs-comment">--</span><span>
+</span><span id="line-177"></span><span class="hs-comment">-- &gt;&gt;&gt; import Optics.Core (review)</span><span>
+</span><span id="line-178"></span><span class="hs-comment">-- &gt;&gt;&gt; review _MkSomeSize (MkBytes 70 :: Bytes G Int)</span><span>
+</span><span id="line-179"></span><span class="hs-comment">-- MkSomeSize SG (MkBytes 70)</span><span>
+</span><span id="line-180"></span><span>
+</span><span id="line-181"></span><span class="hs-comment">-- $elimination1</span><span>
+</span><span id="line-182"></span><span class="hs-comment">-- We provide the 'RawNumeric' class for conveniently unwrapping a type</span><span>
+</span><span id="line-183"></span><span class="hs-comment">-- to the underlying numeric value.</span><span>
+</span><span id="line-184"></span><span>
+</span><span id="line-185"></span><span class="hs-comment">-- $elimination2</span><span>
+</span><span id="line-186"></span><span class="hs-comment">-- We can use 'GHC.Records.HasField' for this too.</span><span>
+</span><span id="line-187"></span><span class="hs-comment">--</span><span>
+</span><span id="line-188"></span><span class="hs-comment">-- &gt;&gt;&gt; -- {-# LANGUAGE OverloadedRecordDot #-}</span><span>
+</span><span id="line-189"></span><span class="hs-comment">-- &gt;&gt;&gt; let x = MkBytes 7 :: Bytes G Int</span><span>
+</span><span id="line-190"></span><span class="hs-comment">-- &gt;&gt;&gt; x.unBytes</span><span>
+</span><span id="line-191"></span><span class="hs-comment">-- 7</span><span>
+</span><span id="line-192"></span><span class="hs-comment">--</span><span>
+</span><span id="line-193"></span><span class="hs-comment">-- &gt;&gt;&gt; let y = hideSize x :: SomeSize Int</span><span>
+</span><span id="line-194"></span><span class="hs-comment">-- &gt;&gt;&gt; y.unSomeSize</span><span>
+</span><span id="line-195"></span><span class="hs-comment">-- 7</span><span>
+</span><span id="line-196"></span><span>
+</span><span id="line-197"></span><span class="hs-comment">-- $elimination3</span><span>
+</span><span id="line-198"></span><span class="hs-comment">-- Optics are another option. The underscore-prefixed optics unwrap one level</span><span>
+</span><span id="line-199"></span><span class="hs-comment">-- at a time, since we can freely compose them.</span><span>
+</span><span id="line-200"></span><span class="hs-comment">--</span><span>
+</span><span id="line-201"></span><span class="hs-comment">-- &gt;&gt;&gt; import Optics.Core (view, (%))</span><span>
+</span><span id="line-202"></span><span class="hs-comment">-- &gt;&gt;&gt; let x = MkBytes 7 :: Bytes G Int</span><span>
+</span><span id="line-203"></span><span class="hs-comment">-- &gt;&gt;&gt; view _MkBytes x</span><span>
+</span><span id="line-204"></span><span class="hs-comment">-- 7</span><span>
+</span><span id="line-205"></span><span class="hs-comment">--</span><span>
+</span><span id="line-206"></span><span class="hs-comment">-- &gt;&gt;&gt; -- notice we have to convert the numeric value since the requested</span><span>
+</span><span id="line-207"></span><span class="hs-comment">-- &gt;&gt;&gt; -- return type ('M') differs from the original ('G')</span><span>
+</span><span id="line-208"></span><span class="hs-comment">-- &gt;&gt;&gt; let y = hideSize x :: SomeSize Int</span><span>
+</span><span id="line-209"></span><span class="hs-comment">-- &gt;&gt;&gt; (view _MkSomeSize y) :: Bytes M Int</span><span>
+</span><span id="line-210"></span><span class="hs-comment">-- MkBytes 7000</span><span>
+</span><span id="line-211"></span><span class="hs-comment">--</span><span>
+</span><span id="line-212"></span><span class="hs-comment">-- &gt;&gt;&gt; view (_MkSomeSize % (_MkBytes @M)) y</span><span>
+</span><span id="line-213"></span><span class="hs-comment">-- 7000</span><span>
+</span><span id="line-214"></span><span class="hs-comment">--</span><span>
+</span><span id="line-215"></span><span class="hs-comment">-- The @-XOverloadedLabel@ instances unwrap all the way to the underlying numeric</span><span>
+</span><span id="line-216"></span><span class="hs-comment">-- value.</span><span>
+</span><span id="line-217"></span><span class="hs-comment">--</span><span>
+</span><span id="line-218"></span><span class="hs-comment">-- &gt;&gt;&gt; view #unBytes x</span><span>
+</span><span id="line-219"></span><span class="hs-comment">-- 7</span><span>
+</span><span id="line-220"></span><span class="hs-comment">--</span><span>
+</span><span id="line-221"></span><span class="hs-comment">-- &gt;&gt;&gt; view #unSomeSize y</span><span>
+</span><span id="line-222"></span><span class="hs-comment">-- 7</span><span>
+</span><span id="line-223"></span><span>
+</span><span id="line-224"></span><span class="hs-comment">-- $pretty</span><span>
+</span><span id="line-225"></span><span class="hs-comment">-- We provide several formatters for pretty-printing different byte types.</span><span>
+</span><span id="line-226"></span><span class="hs-comment">--</span><span>
+</span><span id="line-227"></span><span class="hs-comment">-- &gt;&gt;&gt; import Data.Default (Default (def))</span><span>
+</span><span id="line-228"></span><span class="hs-comment">-- &gt;&gt;&gt; let bf = MkFloatingFormatter (Just 2)</span><span>
+</span><span id="line-229"></span><span class="hs-comment">-- &gt;&gt;&gt; let b = MkBytes @G @Float 20.248</span><span>
+</span><span id="line-230"></span><span class="hs-comment">-- &gt;&gt;&gt; formatSized bf def b</span><span>
+</span><span id="line-231"></span><span class="hs-comment">-- &quot;20.25 gb&quot;</span><span>
+</span><span id="line-232"></span><span>
+</span><span id="line-233"></span><span class="hs-comment">-- $algebra</span><span>
+</span><span id="line-234"></span><span class="hs-comment">--</span><span>
+</span><span id="line-235"></span><span class="hs-comment">-- The built-in 'Num' class is abandoned in favor of</span><span>
+</span><span id="line-236"></span><span class="hs-comment">-- [algebra-simple](https://github.com/tbidne/algebra-simple/)'s</span><span>
+</span><span id="line-237"></span><span class="hs-comment">-- algebraic hierarchy based on abstract algebra. This is motivated by a</span><span>
+</span><span id="line-238"></span><span class="hs-comment">-- desire to:</span><span>
+</span><span id="line-239"></span><span class="hs-comment">--</span><span>
+</span><span id="line-240"></span><span class="hs-comment">-- 1. Provide a consistent API.</span><span>
+</span><span id="line-241"></span><span class="hs-comment">-- 2. Avoid 'Num'\'s infelicities (e.g. nonsense multiplication,</span><span>
+</span><span id="line-242"></span><span class="hs-comment">--    dangerous 'fromInteger').</span><span>
+</span><span id="line-243"></span><span class="hs-comment">--</span><span>
+</span><span id="line-244"></span><span class="hs-comment">-- 'Bytes' and 'SomeSize' are both 'Numeric.Algebra.Additive.AGroup.AGroup's.</span><span>
+</span><span id="line-245"></span><span class="hs-comment">-- A 'Numeric.Algebra.Ring.Ring' instance is not provided because</span><span>
+</span><span id="line-246"></span><span class="hs-comment">-- multiplication is nonsensical:</span><span>
+</span><span id="line-247"></span><span class="hs-comment">--</span><span>
+</span><span id="line-248"></span><span class="hs-comment">-- \[</span><span>
+</span><span id="line-249"></span><span class="hs-comment">-- x \;\textrm{mb} \times y \;\textrm{mb} = xy \;\textrm{mb}^2.</span><span>
+</span><span id="line-250"></span><span class="hs-comment">-- \]</span><span>
+</span><span id="line-251"></span><span class="hs-comment">--</span><span>
+</span><span id="line-252"></span><span class="hs-comment">-- Fortunately, multiplying bytes by some kind of scalar is both useful /and/</span><span>
+</span><span id="line-253"></span><span class="hs-comment">-- has an easy interpretation: 'Bytes' forms a 'Numeric.Algebra.Module.Module'</span><span>
+</span><span id="line-254"></span><span class="hs-comment">-- over a 'Numeric.Algebra.Ring.Ring'</span><span>
+</span><span id="line-255"></span><span class="hs-comment">-- (resp. 'Numeric.Algebra.VectorSpace.VectorSpace' over a</span><span>
+</span><span id="line-256"></span><span class="hs-comment">-- 'Simple.Algebra.Field.Field'). This allows us to multiply a 'Bytes' or</span><span>
+</span><span id="line-257"></span><span class="hs-comment">-- 'SomeSize' by a scalar in a manner consistent with the above API.</span><span>
+</span><span id="line-258"></span><span class="hs-comment">--</span><span>
+</span><span id="line-259"></span><span class="hs-comment">-- == Examples</span><span>
+</span><span id="line-260"></span><span class="hs-comment">-- === Addition/Subtraction</span><span>
+</span><span id="line-261"></span><span class="hs-comment">-- &gt;&gt;&gt; import Numeric.Algebra (ASemigroup ((.+.)), AGroup ((.-.)))</span><span>
+</span><span id="line-262"></span><span class="hs-comment">-- &gt;&gt;&gt; let mb1 = MkBytes 20 :: Bytes 'M Int</span><span>
+</span><span id="line-263"></span><span class="hs-comment">-- &gt;&gt;&gt; let mb2 = MkBytes 50 :: Bytes 'M Int</span><span>
+</span><span id="line-264"></span><span class="hs-comment">-- &gt;&gt;&gt; mb1 .+. mb2</span><span>
+</span><span id="line-265"></span><span class="hs-comment">-- MkBytes 70</span><span>
+</span><span id="line-266"></span><span class="hs-comment">-- &gt;&gt;&gt; mb1 .-. mb2</span><span>
+</span><span id="line-267"></span><span class="hs-comment">-- MkBytes (-30)</span><span>
+</span><span id="line-268"></span><span class="hs-comment">--</span><span>
+</span><span id="line-269"></span><span class="hs-comment">-- &gt;&gt;&gt; let kb = MkBytes 50 :: Bytes 'K Int</span><span>
+</span><span id="line-270"></span><span class="hs-comment">-- &gt;&gt;&gt; -- mb1 .+. kb -- This would be a type error</span><span>
+</span><span id="line-271"></span><span class="hs-comment">--</span><span>
+</span><span id="line-272"></span><span class="hs-comment">-- === Multiplication</span><span>
+</span><span id="line-273"></span><span class="hs-comment">-- &gt;&gt;&gt; import Numeric.Algebra (MSemiSpace ((.*)))</span><span>
+</span><span id="line-274"></span><span class="hs-comment">-- &gt;&gt;&gt; mb1 .* 10</span><span>
+</span><span id="line-275"></span><span class="hs-comment">-- MkBytes 200</span><span>
+</span><span id="line-276"></span><span class="hs-comment">--</span><span>
+</span><span id="line-277"></span><span class="hs-comment">-- === Division</span><span>
+</span><span id="line-278"></span><span class="hs-comment">-- &gt;&gt;&gt; import Numeric.Algebra (MSpace ((.%)))</span><span>
+</span><span id="line-279"></span><span class="hs-comment">-- &gt;&gt;&gt; mb1 .% 10</span><span>
+</span><span id="line-280"></span><span class="hs-comment">-- MkBytes 2</span><span>
+</span><span id="line-281"></span><span class="hs-comment">--</span><span>
+</span><span id="line-282"></span><span class="hs-comment">-- One may wonder how the 'Numeric.Algebra.Additive.AGroup.AGroup' instance</span><span>
+</span><span id="line-283"></span><span class="hs-comment">-- for 'SomeSize' could possibly work. It is possible (indeed, expected) that</span><span>
+</span><span id="line-284"></span><span class="hs-comment">-- we could have two 'SomeSize's that have different underlying 'Bytes' types.</span><span>
+</span><span id="line-285"></span><span class="hs-comment">-- To handle this, the 'SomeSize' instance will convert both 'Bytes' to a</span><span>
+</span><span id="line-286"></span><span class="hs-comment">-- 'Bytes' ''B' before adding/subtracting.</span><span>
+</span><span id="line-287"></span><span class="hs-comment">--</span><span>
+</span><span id="line-288"></span><span class="hs-comment">-- &gt;&gt;&gt; let some1 = hideSize (MkBytes 1000 :: Bytes 'G Double)</span><span>
+</span><span id="line-289"></span><span class="hs-comment">-- &gt;&gt;&gt; let some2 = hideSize (MkBytes 500_000 :: Bytes 'M Double)</span><span>
+</span><span id="line-290"></span><span class="hs-comment">-- &gt;&gt;&gt; some1 .+. some2</span><span>
+</span><span id="line-291"></span><span class="hs-comment">-- MkSomeSize SB (MkBytes 1.5e12)</span><span>
+</span><span id="line-292"></span><span class="hs-comment">-- &gt;&gt;&gt; some1 .-. some2</span><span>
+</span><span id="line-293"></span><span class="hs-comment">-- MkSomeSize SB (MkBytes 5.0e11)</span><span>
+</span><span id="line-294"></span><span class="hs-comment">--</span><span>
+</span><span id="line-295"></span><span class="hs-comment">-- This respects 'SomeSize'\'s equivalence-class based 'Eq'.</span><span>
+</span><span id="line-296"></span></pre></body></html>
