@@ -160,6 +160,9 @@ import Numeric.Convert.Integer
 import Numeric.Convert.Rational
 import Numeric.Convert.Real
 
+-- $setup
+-- >>> :set -XOverloadedRecordDot
+
 -- $intro
 -- The main idea is to attach phantom labels to the numeric bytes, so we
 -- can track the size and direction units. This allows us to safely

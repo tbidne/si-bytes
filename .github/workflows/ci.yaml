@@ -21,8 +21,8 @@ jobs:
           - "9.0.2"
           - "9.2.8"
           - "9.4.8"
-          - "9.6.5"
-          - "9.8.2"
+          - "9.6.6"
+          - "9.8.4"
           - "9.10.1"
           - "9.12.1"
         platform:
@@ -50,17 +50,17 @@ jobs:
       - name: Compile
         run: cabal build lib:si-bytes
 
-      # Only run select doctests due to ghc >= 9.6 changing how DataKinds are
-      # printed (i.e. no ticks). Trying to make this work across all
-      # versions would be too much work.
+      - name: Doctests
+        if: ${{ matrix.ghc == '9.8.4'
+             || matrix.ghc == '9.10.1'
+             || matrix.ghc == '9.12.1'
+            }}
+        run: |
+          echo "*** Installing doctest ***"
+          cabal install --ignore-project doctest --flag cabal-doctest
 
-      - name: Doc Tests
-        if: ${{ !contains(fromJson('["8.10.7", "9.0.2", "9.2.8", "9.4.8"]'), matrix.ghc) }}
-        run : |
-          cabal configure --enable-tests --write-ghc-environment-files always
-          cabal build
-          ${{ matrix.platform.set-env }} RUN_DOCTEST=1
-          cabal test doctest
+          echo "*** Running doctest ***"
+          cabal doctest
 
       - name: Unit Tests
         run: cabal test unit --test-options "--hedgehog-tests 100000"
