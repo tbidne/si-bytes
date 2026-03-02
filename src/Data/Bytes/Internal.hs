@@ -56,7 +56,11 @@ import Numeric.Algebra
   ( AGroup ((.-.)),
     AMonoid (zero),
     ASemigroup ((.+.)),
+    Demimodule,
+    Demiring,
     Field,
+    Hemimodule,
+    Hemiring,
     MGroup ((.%.)),
     MSemiSpace ((.*)),
     MSemigroup ((.*.)),
@@ -64,6 +68,12 @@ import Numeric.Algebra
     MetricSpace (diffR),
     Module,
     Normed (norm, sgn),
+    PseudoModule,
+    PseudoRing,
+    PseudoSemifield,
+    PseudoSemivectorSpace,
+    Quartamodule,
+    Quartaring,
     Ring,
     Semifield,
     Semimodule,
@@ -273,10 +283,25 @@ instance (Normed n) => Normed (Bytes s n) where
   {-# INLINE sgn #-}
 
 -- | @since 0.1
+instance (Quartaring n) => Quartamodule (Bytes s n) n
+
+-- | @since 0.1
+instance (Hemiring n) => Hemimodule (Bytes s n) n
+
+-- | @since 0.1
+instance (Demiring n) => Demimodule (Bytes s n) n
+
+-- | @since 0.1
 instance (Semiring n) => Semimodule (Bytes s n) n
 
 -- | @since 0.1
+instance (PseudoRing n) => PseudoModule (Bytes s n) n
+
+-- | @since 0.1
 instance (Ring n) => Module (Bytes s n) n
+
+-- | @since 0.1
+instance (PseudoSemifield n) => PseudoSemivectorSpace (Bytes s n) n
 
 -- | @since 0.1
 instance (Semifield n) => SemivectorSpace (Bytes s n) n
@@ -509,7 +534,7 @@ instance (FromInteger n, MGroup n, ToReal n) => ToReal (SomeSize n) where
   {-# INLINE toR #-}
 
 -- | @since 0.1
-instance (ASemigroup n, FromInteger n, MGroup n) => ASemigroup (SomeSize n) where
+instance (FromInteger n, PseudoSemifield n) => ASemigroup (SomeSize n) where
   x .+. y = MkSomeSize SB $ convert_ x .+. convert_ y
   {-# INLINE (.+.) #-}
 
@@ -519,7 +544,7 @@ instance (FromInteger n, Semifield n) => AMonoid (SomeSize n) where
   {-# INLINE zero #-}
 
 -- | @since 0.1
-instance (Field n, FromInteger n) => AGroup (SomeSize n) where
+instance (FromInteger n, Field n) => AGroup (SomeSize n) where
   x .-. y = MkSomeSize SB $ convert_ x .-. convert_ y
   {-# INLINE (.-.) #-}
 
@@ -542,16 +567,31 @@ instance (Normed n) => Normed (SomeSize n) where
   {-# INLINE sgn #-}
 
 -- | @since 0.1
+instance (FromInteger n, PseudoSemifield n) => Quartamodule (SomeSize n) n
+
+-- | @since 0.1
+instance (FromInteger n, Semifield n) => Hemimodule (SomeSize n) n
+
+-- | @since 0.1
+instance (FromInteger n, Semifield n) => Demimodule (SomeSize n) n
+
+-- | @since 0.1
 instance (FromInteger n, Semifield n) => Semimodule (SomeSize n) n
 
 -- | @since 0.1
-instance (Field n, FromInteger n) => Module (SomeSize n) n
+instance (FromInteger n, Field n) => PseudoModule (SomeSize n) n
+
+-- | @since 0.1
+instance (FromInteger n, Field n) => Module (SomeSize n) n
+
+-- | @since 0.1
+instance (FromInteger n, Semifield n) => PseudoSemivectorSpace (SomeSize n) n
 
 -- | @since 0.1
 instance (FromInteger n, Semifield n) => SemivectorSpace (SomeSize n) n
 
 -- | @since 0.1
-instance (Field n, FromInteger n) => VectorSpace (SomeSize n) n
+instance (FromInteger n, Field n) => VectorSpace (SomeSize n) n
 
 -- | @since 0.1
 instance (FromInteger n, MetricSpace n, MGroup n) => MetricSpace (SomeSize n) where

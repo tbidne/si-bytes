@@ -70,7 +70,11 @@ import Numeric.Algebra
   ( AGroup ((.-.)),
     AMonoid (zero),
     ASemigroup ((.+.)),
+    Demimodule,
+    Demiring,
     Field,
+    Hemimodule,
+    Hemiring,
     MGroup,
     MSemiSpace ((.*)),
     MSemigroup,
@@ -78,6 +82,12 @@ import Numeric.Algebra
     MetricSpace (diffR),
     Module,
     Normed (norm, sgn),
+    PseudoModule,
+    PseudoRing,
+    PseudoSemifield,
+    PseudoSemivectorSpace,
+    Quartamodule,
+    Quartaring,
     Ring,
     Semifield,
     Semimodule,
@@ -308,10 +318,25 @@ instance (MGroup n) => MSpace (NetBytes d s n) n where
   {-# INLINEABLE (.%) #-}
 
 -- | @since 0.1
+instance (Quartaring n) => Quartamodule (NetBytes d s n) n
+
+-- | @since 0.1
+instance (Hemiring n) => Hemimodule (NetBytes d s n) n
+
+-- | @since 0.1
+instance (Demiring n) => Demimodule (NetBytes d s n) n
+
+-- | @since 0.1
 instance (Semiring n) => Semimodule (NetBytes d s n) n
 
 -- | @since 0.1
+instance (PseudoRing n) => PseudoModule (NetBytes d s n) n
+
+-- | @since 0.1
 instance (Ring n) => Module (NetBytes d s n) n
+
+-- | @since 0.1
+instance (PseudoSemifield n) => PseudoSemivectorSpace (NetBytes d s n) n
 
 -- | @since 0.1
 instance (Semifield n) => SemivectorSpace (NetBytes d s n) n
@@ -545,10 +570,25 @@ instance (Normed n) => Normed (SomeNetSize d n) where
   {-# INLINE sgn #-}
 
 -- | @since 0.1
+instance (FromInteger n, PseudoSemifield n) => Quartamodule (SomeNetSize d n) n
+
+-- | @since 0.1
+instance (FromInteger n, Semifield n) => Hemimodule (SomeNetSize d n) n
+
+-- | @since 0.1
+instance (FromInteger n, Semifield n) => Demimodule (SomeNetSize d n) n
+
+-- | @since 0.1
 instance (FromInteger n, Semifield n) => Semimodule (SomeNetSize d n) n
 
 -- | @since 0.1
+instance (FromInteger n, Field n) => PseudoModule (SomeNetSize d n) n
+
+-- | @since 0.1
 instance (Field n, FromInteger n) => Module (SomeNetSize d n) n
+
+-- | @since 0.1
+instance (FromInteger n, Semifield n) => PseudoSemivectorSpace (SomeNetSize d n) n
 
 -- | @since 0.1
 instance (FromInteger n, Semifield n) => SemivectorSpace (SomeNetSize d n) n
